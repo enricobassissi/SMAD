@@ -6,4 +6,3 @@ Version check is very important in collaborative projects, expecially if the num
 
 *Politecnico di Milano - AY 2020/2021*
 
-evviva
