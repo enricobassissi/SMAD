@@ -589,9 +589,13 @@ def H_OCC(dict_risk_list):
     # ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
     # plt.show()
 <<<<<<< HEAD
+<<<<<<< HEAD
     return x,y
 =======
 >>>>>>> parent of ab44e71 (Merge branch 'main' of https://github.com/enricobassissi/SMAD)
+=======
+    return x,y
+>>>>>>> parent of 61cefc9 (minor changes)
 =======
     return x,y
 >>>>>>> parent of 61cefc9 (minor changes)
