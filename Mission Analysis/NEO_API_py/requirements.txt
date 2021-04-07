@@ -2,7 +2,5 @@
 astropy == 4.1
 astroquery == 0.4.1
 matplotlib == 3.3.4
-nbimporter == 0.3.4
 numpy == 1.19.5
-pandas == 1.0.3
 requests == 2.23.0

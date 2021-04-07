@@ -51,7 +51,7 @@ def get_mission_profiles(asteroid_name,mjd0,span,tof_min,tof_max,step):
 
     # Elaboration of data
     available_missions = len(data['selectedMissions'])
-    mission_profiles={};
+    mission_profiles={}
     mjd01Jan2021 = 59215
     mjd31Dec2028 = 62136
     mjd01Jan2048 = 69076
@@ -69,17 +69,17 @@ def get_mission_profiles(asteroid_name,mjd0,span,tof_min,tof_max,step):
                       "elong_arr": data["selectedMissions"][mission_id][6], 
                       "decl_dep": data["selectedMissions"][mission_id][7],
                       "approach_ang": data["selectedMissions"][mission_id][8],      
-                     };
-            mission_profiles[str(j)]=sel_profile;
+                     }
+            mission_profiles[str(j)]=sel_profile
             j = j+1
     
     # Find min dv mission profile
-    mission_profile_min_dv, mp_dv_plot = get_min_dv_mission_profile(mission_profiles);
+    mission_profile_min_dv  = get_min_dv_mission_profile(mission_profiles) #mp_dv_plot removed
     
     # Porkchop data
-    porkchop_dv, dep_date, tof, pc_plot = get_mission_porkchop(data);
+    porkchop_dv, dep_date, tof = get_mission_porkchop(data) #pc_plot removed
     #return mission_profiles    
-    return mission_profiles, porkchop_dv, dep_date, tof, pc_plot, mission_profile_min_dv, mp_dv_plot
+    return mission_profiles, porkchop_dv, dep_date, tof,  mission_profile_min_dv #pc_plot, , mp_dv_plot removed
 
 def get_min_dv_mission_profile(mission_profiles):
      # Find the best Mission Profile
@@ -97,14 +97,14 @@ def get_min_dv_mission_profile(mission_profiles):
         mission_profile_min_dv = mission_profiles[str(int(idx_min[0]))] # NOTE: there could be more than one best solution, here i took arbitrarly the first
     
     # Plot of the mission profiles and highlight the best one
-    fig = plt.figure()
-    plt.plot(dv, "*");
-    fig.suptitle('Mission Profile dv Distribution for '+ mission_profile_min_dv["fullname"])
-    plt.xlabel('$idx$ (-)')
-    plt.ylabel('$dv$ (km/s)')
-    plt.plot(int(idx_min[0]), dv[int(idx_min[0])], "r+");
+    # fig = plt.figure()
+    # plt.plot(dv, "*");
+    # fig.suptitle('Mission Profile dv Distribution for '+ mission_profile_min_dv["fullname"])
+    # plt.xlabel('$idx$ (-)')
+    # plt.ylabel('$dv$ (km/s)')
+    # plt.plot(int(idx_min[0]), dv[int(idx_min[0])], "r+");
     
-    return mission_profile_min_dv, fig
+    return mission_profile_min_dv#, fig
 
 def get_mission_porkchop(data):
     # to pass mjd2000 to date format
@@ -121,18 +121,18 @@ def get_mission_porkchop(data):
     
     # Porchop Plot
     #fig, ax = plt.subplots()
-    fig = plt.figure()
-    plt.contour(dep_date, tof, porkchop_map, np.linspace(0,30,31), cmap="gnuplot") # arbitrary max contour level at dv = 30 km/s
-    fig.suptitle('Porkchop Plot for '+ data["object"]["fullname"])
-    plt.xlabel('$Date_{dep}$ (-)')
-    plt.ylabel('$ToF$ (d)')       
-    plt.colorbar()
+    # fig = plt.figure()
+    # plt.contour(dep_date, tof, porkchop_map, np.linspace(0,30,31), cmap="gnuplot") # arbitrary max contour level at dv = 30 km/s
+    # fig.suptitle('Porkchop Plot for '+ data["object"]["fullname"])
+    # plt.xlabel('$Date_{dep}$ (-)')
+    # plt.ylabel('$ToF$ (d)')       
+    # plt.colorbar()
     
-    locator = mdates.MonthLocator()
-    plt.gca().xaxis.set_major_locator(locator)
+    # locator = mdates.MonthLocator()
+    # plt.gca().xaxis.set_major_locator(locator)
     
-    plt.gcf().autofmt_xdate()
-
+    # plt.gcf().autofmt_xdate()
+#fino a qui decommentare
     # date as xtick 
     # Major ticks every 6 months.
     # fmt_half_year = mdates.MonthLocator(interval=6)
@@ -145,7 +145,7 @@ def get_mission_porkchop(data):
     # Rotates and right aligns the x labels, and moves the bottom of the axes up to make room for them.
     #fig.autofmt_xdate()
     
-    return porkchop_map, dep_date, tof, fig
+    return porkchop_map, dep_date, tof#, fig
 ##### DO NOT RUN NOW, TO CHECK THE USE
 
 
@@ -479,10 +479,124 @@ def get_sentry_risk_list():
         sentry_risk_names.append(name_)
     return sentry_risk_names
 def merge_risk_lists(esa,sentry):
-    risk_list=esa;
-    counter=0;
-    for risk_name in sentry:
-        if risk_name not in esa:
+    risk_list=sentry
+    for risk_name in esa:
+        if risk_name not in sentry:
             risk_list.append(risk_name)
     return risk_list
 
+def refined_selection():
+    # This function return a dictionair of asteroid satisfyng the requirements
+
+    esa_risk_names=extract_esa_name_from_file("esa_risk_list.txt")
+    sentry_risk_names=get_sentry_risk_list()
+    risk_list=merge_risk_lists(esa_risk_names, sentry_risk_names)
+    dict_risk_list=get_dict(risk_list)
+
+    # MOID<=0.05au, H<=26 (if H is not available diameter>=200m)
+    MOID_H_selected=[]
+    for key in dict_risk_list.keys():
+        if float(dict_risk_list[key]['moid'].scale)<=0.05: #MOID<=0.05 AU
+            if (dict_risk_list[key]["magn_radius_flag"]=='H' and float(dict_risk_list[key]["H"])<=26) or (dict_risk_list[key]["magn_radius_flag"]=='D' and float(dict_risk_list[key]["D"])>=200):
+                MOID_H_selected.append(key)
+
+    # At least one impact 2026<year<2048 with a Palermo Scale>=-7
+    date_selected=[]
+    PS_date_selected=[]
+    for key in dict_risk_list.keys():
+        if '0' in dict_risk_list[key]['impacts'].keys():
+            max_P=-100;
+            date_flag=0;
+            for imp_id in dict_risk_list[key]['impacts'].keys():
+                word='';
+                for c in dict_risk_list[key]['impacts'][imp_id]['date']:
+                    #pprint(c)
+                    if c=='-':
+                        break;
+                    else:
+                        word=word+c;
+                if int(word)<2048 and int(word)>2026:
+                    date_flag=1;
+                    if float(dict_risk_list[key]['impacts'][imp_id]['ps'])>max_P:
+                        max_P=float(dict_risk_list[key]['impacts'][imp_id]['ps']);
+            if date_flag==1:
+                date_selected.append(key)
+                if max_P>=-7:
+                    PS_date_selected.append(key)
+            dict_risk_list[key]["PS"]=max_P;        
+
+    # Orbit Uncertantains filter (number of observation>=40)
+    OU_selected=[]
+    for key in dict_risk_list:
+            if int(dict_risk_list[key]['N_obs'])>=40:
+                OU_selected.append(key)
+    #Intersection of filtered lists
+    refined_selected=list(set(list(set(PS_date_selected) & set(MOID_H_selected))) & set(OU_selected))
+    i=0
+    refined_dict={}
+    PS_list=[]
+    for selected in refined_selected:            
+                PS_list.append(dict_risk_list[selected]['PS'])
+
+    index_list=[i[0] for i in sorted(enumerate(PS_list), key=lambda x:x[1])]
+    index_list.reverse()
+    for ind in index_list:
+        pprint(refined_selected[ind])
+        pprint('Max Palermo Scale:' + str(PS_list[ind]))
+        pprint('OCC:' + str(dict_risk_list[refined_selected[ind]]['condition_code']))
+        refined_dict[refined_selected[ind]]={}
+        refined_dict[refined_selected[ind]]=dict_risk_list[refined_selected[ind]]
+    return(refined_dict, refined_selected)
+
+#DB EXPLORATION TOOL
+def MOID_H(dict_risk_list):
+    #Earth minimum orbit instersection distance and magnitude plotting
+    H_=[]
+    MOID_=[]
+    for key in dict_risk_list:
+        try:
+            H_.append(float(dict_risk_list[key]['H']))
+            MOID_.append(float(dict_risk_list[key]['moid'].scale))
+        except:
+            pprint(key+' does not have magnitude info')
+    x = MOID_
+    y = H_
+    # fig, ax = plt.subplots()
+    # ax.plot(x,y, marker='o', linewidth=0)
+    # start, end = ax.get_ylim()
+    # ax.yaxis.set_ticks(np.arange(-14, 306, 20))
+    # ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
+    # plt.show()
+    return x,y
+def H_OCC(dict_risk_list):
+    #Magnitude and Orbital Condition Code plotting
+    H_=[]
+    OCC_=[]
+    for key in dict_risk_list:
+        try:
+            H_.append(float(dict_risk_list[key]['H']))
+            OCC_.append(int(dict_risk_list[key]['condition_code']))
+        except:
+            pprint(key+' does not have magnitude info')
+    x = H_
+    y = OCC_
+    # fig, ax = plt.subplots()
+    # ax.plot(x,y, marker='o', linewidth=0)
+    # start, end = ax.get_ylim()
+    # ax.yaxis.set_ticks(np.arange(-14, 306, 20))
+    # ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
+    # plt.show()
+    return x,y
+
+def bi_impulsive_mission(refined_selected, req_mjd0, req_duration, req_min_tof, req_max_tof, req_step_size):
+    # req_mjd0 MJD200 of departure date
+    # req_duration
+    # req_min_tof minimum time of flight
+    # req_max_tof maximum time of flight
+    # req_step_size step size
+    refined_selected_MD={}
+    for name in refined_selected:
+        refined_selected_MD[name]={}
+        refined_selected_MD[name]['missions'], refined_selected_MD[name]['porkchop_dv'], refined_selected_MD[name]['dep_date'], refined_selected_MD[name]['tof'],  refined_selected_MD[name]['mp_min_dv'] = \
+            get_mission_profiles(name,req_mjd0,req_duration,req_min_tof,req_max_tof,req_step_size) #removed refined_selected_MD[name]['pc_plot'], refined_selected_MD[name]['mp_dv_plot'] check order
+    return refined_selected_MD
