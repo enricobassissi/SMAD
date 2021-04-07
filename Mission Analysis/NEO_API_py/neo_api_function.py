@@ -479,12 +479,12 @@ def get_sentry_risk_list():
         sentry_risk_names.append(name_)
     return sentry_risk_names
 def merge_risk_lists(esa,sentry):
-    risk_list=esa;
-    counter=0;
-    for risk_name in sentry:
-        if risk_name not in esa:
+    risk_list=sentry
+    for risk_name in esa:
+        if risk_name not in sentry:
             risk_list.append(risk_name)
     return risk_list
+
 def refined_selection():
     # This function return a dictionair of asteroid satisfyng the requirements
 
@@ -547,3 +547,43 @@ def refined_selection():
         refined_dict[refined_selected[ind]]={}
         refined_dict[refined_selected[ind]]=dict_risk_list[refined_selected[ind]]
     return(refined_dict)
+
+#DB EXPLORATION TOOL
+def MOID_H(dict_risk_list):
+    #Earth minimum orbit instersection distance and magnitude plotting
+    H_=[]
+    MOID_=[]
+    for key in dict_risk_list:
+        try:
+            H_.append(float(dict_risk_list[key]['H']))
+            MOID_.append(float(dict_risk_list[key]['moid'].scale))
+        except:
+            pprint(key+' does not have magnitude info')
+    x = MOID_
+    y = H_
+    # fig, ax = plt.subplots()
+    # ax.plot(x,y, marker='o', linewidth=0)
+    # start, end = ax.get_ylim()
+    # ax.yaxis.set_ticks(np.arange(-14, 306, 20))
+    # ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
+    # plt.show()
+    return x,y
+def H_OCC(dict_risk_list):
+    #Magnitude and Orbital Condition Code plotting
+    H_=[]
+    OCC_=[]
+    for key in dict_risk_list:
+        try:
+            H_.append(float(dict_risk_list[key]['H']))
+            OCC_.append(int(dict_risk_list[key]['condition_code']))
+        except:
+            pprint(key+' does not have magnitude info')
+    x = H_
+    y = OCC_
+    # fig, ax = plt.subplots()
+    # ax.plot(x,y, marker='o', linewidth=0)
+    # start, end = ax.get_ylim()
+    # ax.yaxis.set_ticks(np.arange(-14, 306, 20))
+    # ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
+    # plt.show()
+    return x,y
