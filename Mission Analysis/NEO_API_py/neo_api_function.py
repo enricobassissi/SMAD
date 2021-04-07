@@ -479,12 +479,14 @@ def get_sentry_risk_list():
         sentry_risk_names.append(name_)
     return sentry_risk_names
 def merge_risk_lists(esa,sentry):
-    risk_list=sentry
-    for risk_name in esa:
-        if risk_name not in sentry:
+    risk_list=esa;
+    counter=0;
+    for risk_name in sentry:
+        if risk_name not in esa:
             risk_list.append(risk_name)
     return risk_list
 
+<<<<<<< HEAD
 def refined_selection():
     # This function return a dictionair of asteroid satisfyng the requirements
 
@@ -587,3 +589,5 @@ def H_OCC(dict_risk_list):
     # ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
     # plt.show()
     return x,y
+=======
+>>>>>>> parent of ab44e71 (Merge branch 'main' of https://github.com/enricobassissi/SMAD)
