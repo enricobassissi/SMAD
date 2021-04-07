@@ -51,7 +51,7 @@ def get_mission_profiles(asteroid_name,mjd0,span,tof_min,tof_max,step):
 
     # Elaboration of data
     available_missions = len(data['selectedMissions'])
-    mission_profiles={};
+    mission_profiles={}
     mjd01Jan2021 = 59215
     mjd31Dec2028 = 62136
     mjd01Jan2048 = 69076
@@ -69,17 +69,17 @@ def get_mission_profiles(asteroid_name,mjd0,span,tof_min,tof_max,step):
                       "elong_arr": data["selectedMissions"][mission_id][6], 
                       "decl_dep": data["selectedMissions"][mission_id][7],
                       "approach_ang": data["selectedMissions"][mission_id][8],      
-                     };
-            mission_profiles[str(j)]=sel_profile;
+                     }
+            mission_profiles[str(j)]=sel_profile
             j = j+1
     
     # Find min dv mission profile
-    mission_profile_min_dv, mp_dv_plot = get_min_dv_mission_profile(mission_profiles);
+    mission_profile_min_dv  = get_min_dv_mission_profile(mission_profiles) #mp_dv_plot removed
     
     # Porkchop data
-    porkchop_dv, dep_date, tof, pc_plot = get_mission_porkchop(data);
+    porkchop_dv, dep_date, tof = get_mission_porkchop(data) #pc_plot removed
     #return mission_profiles    
-    return mission_profiles, porkchop_dv, dep_date, tof, pc_plot, mission_profile_min_dv, mp_dv_plot
+    return mission_profiles, porkchop_dv, dep_date, tof,  mission_profile_min_dv #pc_plot, , mp_dv_plot removed
 
 def get_min_dv_mission_profile(mission_profiles):
      # Find the best Mission Profile
@@ -97,14 +97,14 @@ def get_min_dv_mission_profile(mission_profiles):
         mission_profile_min_dv = mission_profiles[str(int(idx_min[0]))] # NOTE: there could be more than one best solution, here i took arbitrarly the first
     
     # Plot of the mission profiles and highlight the best one
-    fig = plt.figure()
-    plt.plot(dv, "*");
-    fig.suptitle('Mission Profile dv Distribution for '+ mission_profile_min_dv["fullname"])
-    plt.xlabel('$idx$ (-)')
-    plt.ylabel('$dv$ (km/s)')
-    plt.plot(int(idx_min[0]), dv[int(idx_min[0])], "r+");
+    # fig = plt.figure()
+    # plt.plot(dv, "*");
+    # fig.suptitle('Mission Profile dv Distribution for '+ mission_profile_min_dv["fullname"])
+    # plt.xlabel('$idx$ (-)')
+    # plt.ylabel('$dv$ (km/s)')
+    # plt.plot(int(idx_min[0]), dv[int(idx_min[0])], "r+");
     
-    return mission_profile_min_dv, fig
+    return mission_profile_min_dv#, fig
 
 def get_mission_porkchop(data):
     # to pass mjd2000 to date format
@@ -121,18 +121,18 @@ def get_mission_porkchop(data):
     
     # Porchop Plot
     #fig, ax = plt.subplots()
-    fig = plt.figure()
-    plt.contour(dep_date, tof, porkchop_map, np.linspace(0,30,31), cmap="gnuplot") # arbitrary max contour level at dv = 30 km/s
-    fig.suptitle('Porkchop Plot for '+ data["object"]["fullname"])
-    plt.xlabel('$Date_{dep}$ (-)')
-    plt.ylabel('$ToF$ (d)')       
-    plt.colorbar()
+    # fig = plt.figure()
+    # plt.contour(dep_date, tof, porkchop_map, np.linspace(0,30,31), cmap="gnuplot") # arbitrary max contour level at dv = 30 km/s
+    # fig.suptitle('Porkchop Plot for '+ data["object"]["fullname"])
+    # plt.xlabel('$Date_{dep}$ (-)')
+    # plt.ylabel('$ToF$ (d)')       
+    # plt.colorbar()
     
-    locator = mdates.MonthLocator()
-    plt.gca().xaxis.set_major_locator(locator)
+    # locator = mdates.MonthLocator()
+    # plt.gca().xaxis.set_major_locator(locator)
     
-    plt.gcf().autofmt_xdate()
-
+    # plt.gcf().autofmt_xdate()
+#fino a qui decommentare
     # date as xtick 
     # Major ticks every 6 months.
     # fmt_half_year = mdates.MonthLocator(interval=6)
@@ -145,7 +145,7 @@ def get_mission_porkchop(data):
     # Rotates and right aligns the x labels, and moves the bottom of the axes up to make room for them.
     #fig.autofmt_xdate()
     
-    return porkchop_map, dep_date, tof, fig
+    return porkchop_map, dep_date, tof#, fig
 ##### DO NOT RUN NOW, TO CHECK THE USE
 
 
@@ -479,14 +479,12 @@ def get_sentry_risk_list():
         sentry_risk_names.append(name_)
     return sentry_risk_names
 def merge_risk_lists(esa,sentry):
-    risk_list=esa;
-    counter=0;
-    for risk_name in sentry:
-        if risk_name not in esa:
+    risk_list=sentry
+    for risk_name in esa:
+        if risk_name not in sentry:
             risk_list.append(risk_name)
     return risk_list
 
-<<<<<<< HEAD
 def refined_selection():
     # This function return a dictionair of asteroid satisfyng the requirements
 
@@ -548,7 +546,7 @@ def refined_selection():
         pprint('OCC:' + str(dict_risk_list[refined_selected[ind]]['condition_code']))
         refined_dict[refined_selected[ind]]={}
         refined_dict[refined_selected[ind]]=dict_risk_list[refined_selected[ind]]
-    return(refined_dict)
+    return(refined_dict, refined_selected)
 
 #DB EXPLORATION TOOL
 def MOID_H(dict_risk_list):
@@ -588,14 +586,17 @@ def H_OCC(dict_risk_list):
     # ax.yaxis.set_ticks(np.arange(-14, 306, 20))
     # ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
     # plt.show()
-<<<<<<< HEAD
-<<<<<<< HEAD
     return x,y
-=======
->>>>>>> parent of ab44e71 (Merge branch 'main' of https://github.com/enricobassissi/SMAD)
-=======
-    return x,y
->>>>>>> parent of 61cefc9 (minor changes)
-=======
-    return x,y
->>>>>>> parent of 61cefc9 (minor changes)
+
+def bi_impulsive_mission(refined_selected, req_mjd0, req_duration, req_min_tof, req_max_tof, req_step_size):
+    # req_mjd0 MJD200 of departure date
+    # req_duration
+    # req_min_tof minimum time of flight
+    # req_max_tof maximum time of flight
+    # req_step_size step size
+    refined_selected_MD={}
+    for name in refined_selected:
+        refined_selected_MD[name]={}
+        refined_selected_MD[name]['missions'], refined_selected_MD[name]['porkchop_dv'], refined_selected_MD[name]['dep_date'], refined_selected_MD[name]['tof'],  refined_selected_MD[name]['mp_min_dv'] = \
+            get_mission_profiles(name,req_mjd0,req_duration,req_min_tof,req_max_tof,req_step_size) #removed refined_selected_MD[name]['pc_plot'], refined_selected_MD[name]['mp_dv_plot'] check order
+    return refined_selected_MD
