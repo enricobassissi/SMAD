@@ -310,6 +310,7 @@ def get_accessible_sb(records_lim,optim_crit,years,sb_class,rdzvs,profile,ball_f
                 j = j+1        
 
     return accessible_valid_sb
+
 def get_min_dv_accessible_sb(accessible_valid_sb):
     # Find the best Mission Profile among the valid accessible small bodies
     dv = np.zeros(len(accessible_valid_sb.keys()))
@@ -485,13 +486,8 @@ def merge_risk_lists(esa,sentry):
             risk_list.append(risk_name)
     return risk_list
 
-def refined_selection():
+def refined_selection(dict_risk_list):
     # This function return a dictionair of asteroid satisfyng the requirements
-
-    esa_risk_names=extract_esa_name_from_file("esa_risk_list.txt")
-    sentry_risk_names=get_sentry_risk_list()
-    risk_list=merge_risk_lists(esa_risk_names, sentry_risk_names)
-    dict_risk_list=get_dict(risk_list)
 
     # MOID<=0.05au, H<=26 (if H is not available diameter>=200m)
     MOID_H_selected=[]
