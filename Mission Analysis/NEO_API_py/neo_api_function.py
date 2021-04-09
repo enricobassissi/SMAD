@@ -9,11 +9,11 @@ import astropy.units as u
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import matplotlib.ticker as ticker
-from pprint import pprint
+#from pprint import pprint
 from datetime import datetime
-
 from array import *
 
+"""
 # This API provides access to the JPL/SSD small-body mission design suite. The following operation modes are available:
 # Mode A (accessible) - retrieves the list of accessible small bodies based on user-defined constraint.
 # Mode Q (query) - retrieves pre-computed mission options to a specific object. Both impulsive and low-thrust gravity-assist mission options are available.
@@ -28,8 +28,10 @@ from array import *
 # vinf_dep
 # vinf_arr
 # Reference of the API construction, data input and output: https://ssd-api.jpl.nasa.gov/doc/mdesign.html
+"""
 
 def get_mission_profiles(asteroid_name,mjd0,span,tof_min,tof_max,step):
+    """
     # asteroid_name:    designation (provisional or IAU-number) of the desired object (e.g., 2015 AB or 141P or 433).
     #                   NOTE: when submitting a des containing a space in your query string, you must replace the space with %20, for example 2015%20AB
     # mjd0:             first launch date to be explored (Modified Julian Date)
@@ -37,7 +39,8 @@ def get_mission_profiles(asteroid_name,mjd0,span,tof_min,tof_max,step):
     # tof-min:          minimum time of flight to be considered (days)
     # tof-max:          maximum time of flight to be considered (days)
     # step:             time step used to advance both the launch date and the time of flight (days). 
-                        
+    """
+
     # The size of the transfer map is limited to 1,500,000 points
     sim_lim_points = 1500000 #1.5 millions
     if int(span)/int(step) > sim_lim_points:
@@ -82,6 +85,7 @@ def get_mission_profiles(asteroid_name,mjd0,span,tof_min,tof_max,step):
     return mission_profiles, porkchop_dv, dep_date, tof,  mission_profile_min_dv #pc_plot, , mp_dv_plot removed
 
 def get_min_dv_mission_profile(mission_profiles):
+
      # Find the best Mission Profile
     dv = np.zeros(len(mission_profiles.keys()))
     for profile in range(len(mission_profiles)):
@@ -107,18 +111,21 @@ def get_min_dv_mission_profile(mission_profiles):
     return mission_profile_min_dv#, fig
 
 def get_mission_porkchop(data):
+
     # to pass mjd2000 to date format
-    dep_date=Time(data["dep_date"], format='mjd').to_value('iso', 'date');
+    # dep_date=Time(data["dep_date"], format='mjd').to_value('iso', 'date');
+    dep_date=data["dep_date"];
     tof=data["tof"];
     
     # Elaboration of data
-    m = len(data["dep_date"])
-    n = len(data["tof"])
+    m = len(dep_date)
+    n = len(tof)
     porkchop_map = np.zeros([n,m]) # porkchop_map[i,j]
     for i in range(n):
         for j in range(m):
             porkchop_map[i,j]=abs(data["vinf_arr"][i][j])+abs(data["vinf_dep"][i][j])
     
+    """
     # Porchop Plot
     #fig, ax = plt.subplots()
     # fig = plt.figure()
@@ -132,7 +139,7 @@ def get_mission_porkchop(data):
     # plt.gca().xaxis.set_major_locator(locator)
     
     # plt.gcf().autofmt_xdate()
-#fino a qui decommentare
+
     # date as xtick 
     # Major ticks every 6 months.
     # fmt_half_year = mdates.MonthLocator(interval=6)
@@ -144,18 +151,22 @@ def get_mission_porkchop(data):
     #ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
     # Rotates and right aligns the x labels, and moves the bottom of the axes up to make room for them.
     #fig.autofmt_xdate()
-    
+    """
+
     return porkchop_map, dep_date, tof#, fig
+
 ##### DO NOT RUN NOW, TO CHECK THE USE
-
-
+"""
 # Mode T - Request list of small bodies that come closest (or within a prescribed distance) to a user-specified heliocentric 
 # orbit (assumes two-body dynamics). Proxy for easiest-to-reach targets for an extended mission phase.
 # example url
 # https://ssd-api.jpl.nasa.gov/mdesign.api?ec=0.2056408220896557&qr=0.3074958016246215&tp=2459067.6508400026&
 # om=48.30597718083336&w=29.18348714438387&in=7.003733902930839&jd0=2458849.5&jdf=2459132.5&maxout=100&maxdist=0.0010
+"""
 
 def get_close_approach_to_asteroid(orb_params,jd0,jdf,n_object_requested,distance_within):
+
+    """
     # orb_params:            array containing the orbital parameters required to run the query
     #     ec:                eccentricity [>0]
     #     qr:                perihelion distance [>0]
@@ -167,7 +178,8 @@ def get_close_approach_to_asteroid(orb_params,jd0,jdf,n_object_requested,distanc
     # jdf:                   end of the requested time span (JD). Time span must not be longer than one year
     # n_object_requested:    maximum number of records to be returned
     # distance_within:       ignore objects with distance of closest approach greater than "distance_within" [>0, optional]
-    
+    """
+
     # Extraction of inputs
     ec = orb_params[1]
     qr = orb_params[2]
@@ -181,11 +193,13 @@ def get_close_approach_to_asteroid(orb_params,jd0,jdf,n_object_requested,distanc
     url = f'{url_base}?ec={str(ec)}&qr={str(qr)}&tp={str(tp)}&om={str(OM)}&w={str(om)}&in={str(incl)}&jd0={str(jd0)}&jdf={str(jdf)}&maxout={str(n_object_requested)}&maxdist={str(distance_within)}'
     r = requests.get(url)
     data = r.json()
+
     return data
 
 #MODE A
 def get_accessible_sb(records_lim,optim_crit,years,sb_class,rdzvs,profile,ball_flag,lt_flag):
 
+    """
     # If ballistic missions are requested, the API expects crit to be defined. 
     # If low-thrust missions are requested, the API expects profile and rdzvs to be defined.
     
@@ -245,7 +259,8 @@ def get_accessible_sb(records_lim,optim_crit,years,sb_class,rdzvs,profile,ball_f
     # pha - Potentially-Hazardous Asteroid flag.
     # bin - binary flag.
     # pdes - designation.
-    
+    """
+
     url_base = 'https://ssd-api.jpl.nasa.gov/mdesign.api'
     
     if (ball_flag==1 and lt_flag == 0): # ballistic profile mission requested
@@ -312,6 +327,7 @@ def get_accessible_sb(records_lim,optim_crit,years,sb_class,rdzvs,profile,ball_f
     return accessible_valid_sb
 
 def get_min_dv_accessible_sb(accessible_valid_sb):
+
     # Find the best Mission Profile among the valid accessible small bodies
     dv = np.zeros(len(accessible_valid_sb.keys()))
     for profile in range(len(accessible_valid_sb)):
@@ -336,9 +352,10 @@ def get_min_dv_accessible_sb(accessible_valid_sb):
     
     return accessible_sb_min_dv, fig
 
-
 #JPL SBDB 
 def get_dict(name_list):
+
+    """
     # Return information for each bodies in name_list from JPL Small Body Database in form of dictionair
     # INPUT
     # name_list      list [name1, name2, ..., nameN]
@@ -378,7 +395,8 @@ def get_dict(name_list):
     #                                      'dist'
     #                                      'v_imp'
     #                                      'ps'
-    
+    """
+
     our_id=0;
     dict_bodies={};
 
@@ -437,14 +455,16 @@ def get_dict(name_list):
                             else:
                                 asteroid["impacts"][str(i)][key]=sbdb["vi_data"][key][i];
                         except:
-                            pprint(name+" could raise error in importing virtual impact data") #this exception is raised if only one impact is present
+                            print(name+" could raise error in importing virtual impact data") #this exception is raised if only one impact is present
             dict_bodies[name]=asteroid;
             our_id=our_id+1;
             flag_bool=1;
             del asteroid;
+
     return dict_bodies
         
 def extract_esa_name_from_file(file_name):
+
     f = open(file_name, "r")
     #f = open('NEO_API_py/' + file_name, "r")
     line=f.readline()
@@ -461,8 +481,11 @@ def extract_esa_name_from_file(file_name):
             else:
                 word=word+c
         esa_names.append(word);  
+
     return esa_names
+
 def get_sentry_risk_list():
+
     url = 'https://ssd-api.jpl.nasa.gov/sentry.api'
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36'}
 
@@ -478,7 +501,9 @@ def get_sentry_risk_list():
             else:
                 name_=name_+c;
         sentry_risk_names.append(name_)
+
     return sentry_risk_names
+
 def merge_risk_lists(esa,sentry):
     risk_list=sentry
     for risk_name in esa:
@@ -487,6 +512,7 @@ def merge_risk_lists(esa,sentry):
     return risk_list
 
 def refined_selection(dict_risk_list):
+
     # This function return a dictionair of asteroid satisfyng the requirements
 
     # MOID<=0.05au, H<=26 (if H is not available diameter>=200m)
@@ -537,15 +563,17 @@ def refined_selection(dict_risk_list):
     index_list=[i[0] for i in sorted(enumerate(PS_list), key=lambda x:x[1])]
     index_list.reverse()
     for ind in index_list:
-        pprint(refined_selected[ind])
-        pprint('Max Palermo Scale:' + str(PS_list[ind]))
-        pprint('OCC:' + str(dict_risk_list[refined_selected[ind]]['condition_code']))
+        print(refined_selected[ind])
+        print('Max Palermo Scale:' + str(PS_list[ind]))
+        print('OCC:' + str(dict_risk_list[refined_selected[ind]]['condition_code']))
         refined_dict[refined_selected[ind]]={}
         refined_dict[refined_selected[ind]]=dict_risk_list[refined_selected[ind]]
+
     return(refined_dict, refined_selected)
 
 #DB EXPLORATION TOOL
 def MOID_H(dict_risk_list):
+
     #Earth minimum orbit instersection distance and magnitude plotting
     H_=[]
     MOID_=[]
@@ -554,17 +582,23 @@ def MOID_H(dict_risk_list):
             H_.append(float(dict_risk_list[key]['H']))
             MOID_.append(float(dict_risk_list[key]['moid'].scale))
         except:
-            pprint(key+' does not have magnitude info')
+            print(key+' does not have magnitude info')
     x = MOID_
     y = H_
+
+    """
     # fig, ax = plt.subplots()
     # ax.plot(x,y, marker='o', linewidth=0)
     # start, end = ax.get_ylim()
     # ax.yaxis.set_ticks(np.arange(-14, 306, 20))
     # ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
     # plt.show()
+    """
+
     return x,y
+
 def H_OCC(dict_risk_list):
+
     #Magnitude and Orbital Condition Code plotting
     H_=[]
     OCC_=[]
@@ -573,26 +607,35 @@ def H_OCC(dict_risk_list):
             H_.append(float(dict_risk_list[key]['H']))
             OCC_.append(int(dict_risk_list[key]['condition_code']))
         except:
-            pprint(key+' does not have magnitude info')
+            print(key+' does not have magnitude info')
     x = H_
     y = OCC_
+
+    """
     # fig, ax = plt.subplots()
     # ax.plot(x,y, marker='o', linewidth=0)
     # start, end = ax.get_ylim()
     # ax.yaxis.set_ticks(np.arange(-14, 306, 20))
     # ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
     # plt.show()
+    """
+
     return x,y
 
 def bi_impulsive_mission(refined_selected, req_mjd0, req_duration, req_min_tof, req_max_tof, req_step_size):
+    
+    """
     # req_mjd0 MJD200 of departure date
     # req_duration
     # req_min_tof minimum time of flight
     # req_max_tof maximum time of flight
     # req_step_size step size
+    """
+
     refined_selected_MD={}
     for name in refined_selected:
         refined_selected_MD[name]={}
         refined_selected_MD[name]['missions'], refined_selected_MD[name]['porkchop_dv'], refined_selected_MD[name]['dep_date'], refined_selected_MD[name]['tof'],  refined_selected_MD[name]['mp_min_dv'] = \
             get_mission_profiles(name,req_mjd0,req_duration,req_min_tof,req_max_tof,req_step_size) #removed refined_selected_MD[name]['pc_plot'], refined_selected_MD[name]['mp_dv_plot'] check order
+    
     return refined_selected_MD
