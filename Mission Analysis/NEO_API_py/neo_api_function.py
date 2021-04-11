@@ -9,9 +9,9 @@ import astropy.units as u
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import matplotlib.ticker as ticker
-#from pprint import pprint
 from datetime import datetime
 from array import *
+import re
 
 """
 # This API provides access to the JPL/SSD small-body mission design suite. The following operation modes are available:
@@ -163,7 +163,7 @@ def get_mission_porkchop(data):
 # https://ssd-api.jpl.nasa.gov/mdesign.api?ec=0.2056408220896557&qr=0.3074958016246215&tp=2459067.6508400026&
 # om=48.30597718083336&w=29.18348714438387&in=7.003733902930839&jd0=2458849.5&jdf=2459132.5&maxout=100&maxdist=0.0010
 """
-
+# MODE T
 def get_close_approach_to_asteroid(orb_params,jd0,jdf,n_object_requested,distance_within):
 
     """
@@ -196,7 +196,7 @@ def get_close_approach_to_asteroid(orb_params,jd0,jdf,n_object_requested,distanc
 
     return data
 
-#MODE A
+# MODE A
 def get_accessible_sb(records_lim,optim_crit,years,sb_class,rdzvs,profile,ball_flag,lt_flag):
 
     """
@@ -352,7 +352,7 @@ def get_min_dv_accessible_sb(accessible_valid_sb):
     
     return accessible_sb_min_dv, fig
 
-#JPL SBDB 
+# JPL SBDB 
 def get_dict(name_list):
 
     """
@@ -571,7 +571,7 @@ def refined_selection(dict_risk_list):
 
     return(refined_dict, refined_selected)
 
-#DB EXPLORATION TOOL
+# DB EXPLORATION TOOL
 def MOID_H(dict_risk_list):
 
     #Earth minimum orbit instersection distance and magnitude plotting
@@ -622,20 +622,77 @@ def H_OCC(dict_risk_list):
 
     return x,y
 
-def bi_impulsive_mission(refined_selected, req_mjd0, req_duration, req_min_tof, req_max_tof, req_step_size):
+def bi_impulsive_mission(refined_selected, mjd0, duration, min_tof, max_tof, step_size):
     
     """
-    # req_mjd0 MJD200 of departure date
-    # req_duration
-    # req_min_tof minimum time of flight
-    # req_max_tof maximum time of flight
-    # req_step_size step size
+    mjd0 MJD2000 of departure date
+    duration
+    min_tof minimum time of flight
+    max_tof maximum time of flight
+    step_size step size
     """
 
     refined_selected_MD={}
     for name in refined_selected:
         refined_selected_MD[name]={}
         refined_selected_MD[name]['missions'], refined_selected_MD[name]['porkchop_dv'], refined_selected_MD[name]['dep_date'], refined_selected_MD[name]['tof'],  refined_selected_MD[name]['mp_min_dv'] = \
-            get_mission_profiles(name,req_mjd0,req_duration,req_min_tof,req_max_tof,req_step_size) #removed refined_selected_MD[name]['pc_plot'], refined_selected_MD[name]['mp_dv_plot'] check order
+            get_mission_profiles(name,mjd0,duration,min_tof,max_tof,step_size) #removed refined_selected_MD[name]['pc_plot'], refined_selected_MD[name]['mp_dv_plot'] check order
     
     return refined_selected_MD
+
+# NASA JPL Horizons
+def get_horizons_ephemerides(name,pov,epoch_start,epoch_stop,step_size,idx_elements):
+    
+    # step: step size, [10m, 1d, 1y]
+    
+    if pov.lower() == 'sun':
+        loc = '500@10' # position relative to the sun
+    elif pov.lower() == 'goldstone':
+        loc = '257' # from goldstone
+    elif pov.lower() == 'maunakea':
+        loc = '568' # maunakea
+    else:
+        print('Not Valid Location Point Of View')
+    
+    # Process to get homogeneity from main script full name '2012QD8' to a valid name for Horizon call '2012 QD8'
+    if len(re.findall('([0-9])', name)) <= 4: # 4 is the min numbers in every name, the date year of discovery
+        r = re.compile("([0-9]+)([a-zA-Z]+)").match(name)
+        k1 = r.group(1) # the date of the name
+        k2 = r.group(2) # the code of the date
+        valid_name = k1 + " " + k2 
+    else:
+        r = re.compile("([0-9]+)([a-zA-Z]+)([0-9]+)").match(name)
+        k1 = r.group(1) # the date of the name
+        k2 = r.group(2) # the code of the date
+        k3 = r.group(3) # id after the letters
+        valid_name = k1 + " " + k2 + k3
+    
+    obj = Horizons(id=valid_name, 
+               location=loc, 
+               epochs={'start': epoch_start, 'stop':epoch_stop,
+                       'step': step_size})
+    
+    if idx_elements.lower() == 'vectors':
+        data = obj.vectors() # vectorial elements
+    elif idx_elements.lower() == 'ephemerides':
+        data = obj.ephemerides()
+        
+    return data
+
+def get_earth_ephemerides(epoch_start,epoch_stop,step_size,type_elements):
+    
+    # step: step size, [10m, 1d, 1y]
+
+    obj = Horizons(id = 'Geocenter', 
+               location = '500@10', 
+               epochs = {'start': epoch_start, 'stop':epoch_stop,
+                       'step': step_size},
+               id_type = 'majorbody')
+    
+    if type_elements.lower() == 'vectors':
+        data = obj.vectors() # vectorial elements
+    elif type_elements.lower() == 'ephemerides':
+        data = obj.ephemerides()
+        
+    return data
+
