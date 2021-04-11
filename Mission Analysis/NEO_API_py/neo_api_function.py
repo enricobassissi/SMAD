@@ -679,12 +679,12 @@ def get_horizons_ephemerides(name,pov,epoch_start,epoch_stop,step_size,type_elem
 
     len_rows = len(data_output)
     len_cols = 6 # 3 positions 'x','y','z', and 3 velocities 'vx', 'vy', 'vz'
-    idx_x = 3 # 'x' is at position 3 in the table
+    idx_x = 5 # 'x' is at position 5 in the table (starting from 0)
     data =  np.zeros([len_rows,len_cols]) 
     for row in range(len_rows):
         for col in range(6): 
-            idx_col_in_table = idx_x + col # because the 'x' start at 3rd col, going up till the 9th that is 'vz'
-            data[row,col] = data_output[row][idx_col_in_table]        
+            idx_col_in_table = idx_x + col # because the 'x' start at 6th col, going up till the 12th that is 'vz'
+            data[row,col] = data_output[row][idx_col_in_table]      
             
     return data
 
