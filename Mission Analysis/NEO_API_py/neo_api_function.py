@@ -641,7 +641,7 @@ def bi_impulsive_mission(refined_selected, mjd0, duration, min_tof, max_tof, ste
     return refined_selected_MD
 
 # NASA JPL Horizons
-def get_horizons_ephemerides(name,pov,epoch_start,epoch_stop,step_size,idx_elements):
+def get_horizons_ephemerides(name,pov,epoch_start,epoch_stop,step_size,type_elements):
     
     # step: step size, [10m, 1d, 1y]
     
@@ -672,11 +672,20 @@ def get_horizons_ephemerides(name,pov,epoch_start,epoch_stop,step_size,idx_eleme
                epochs={'start': epoch_start, 'stop':epoch_stop,
                        'step': step_size})
     
-    if idx_elements.lower() == 'vectors':
-        data = obj.vectors() # vectorial elements
-    elif idx_elements.lower() == 'ephemerides':
-        data = obj.ephemerides()
-        
+    if type_elements.lower() == 'vectors':
+        data_output = obj.vectors() # vectorial elements
+    elif type_elements.lower() == 'ephemerides':
+        data_output = obj.ephemerides()
+
+    len_rows = len(data_output)
+    len_cols = 6 # 3 positions 'x','y','z', and 3 velocities 'vx', 'vy', 'vz'
+    idx_x = 3 # 'x' is at position 3 in the table
+    data =  np.zeros([len_rows,len_cols]) 
+    for row in range(len_rows):
+        for col in range(6): 
+            idx_col_in_table = idx_x + col # because the 'x' start at 3rd col, going up till the 9th that is 'vz'
+            data[row,col] = data_output[row][idx_col_in_table]        
+            
     return data
 
 def get_earth_ephemerides(epoch_start,epoch_stop,step_size,type_elements):
@@ -690,9 +699,18 @@ def get_earth_ephemerides(epoch_start,epoch_stop,step_size,type_elements):
                id_type = 'majorbody')
     
     if type_elements.lower() == 'vectors':
-        data = obj.vectors() # vectorial elements
+        data_output = obj.vectors() # vectorial elements
     elif type_elements.lower() == 'ephemerides':
-        data = obj.ephemerides()
-        
+        data_output = obj.ephemerides()
+    
+    len_rows = len(data_output)
+    len_cols = 6 # 3 positions 'x','y','z', and 3 velocities 'vx', 'vy', 'vz'
+    idx_x = 3 # 'x' is at position 3 in the table
+    data =  np.zeros([len_rows,len_cols]) 
+    for row in range(len_rows):
+        for col in range(6): 
+            idx_col_in_table = idx_x + col # because the 'x' start at 3rd col, going up till the 9th that is 'vz'
+            data[row,col] = data_output[row][idx_col_in_table]
+
     return data
 
