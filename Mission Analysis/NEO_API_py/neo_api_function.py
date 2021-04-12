@@ -114,8 +114,8 @@ def get_mission_porkchop(data):
 
     # to pass mjd2000 to date format
     # dep_date=Time(data["dep_date"], format='mjd').to_value('iso', 'date');
-    dep_date=data["dep_date"];
-    tof=data["tof"];
+    dep_date=data["dep_date"]
+    tof=data["tof"]
     
     # Elaboration of data
     m = len(dep_date)
@@ -276,7 +276,7 @@ def get_accessible_sb(records_lim,optim_crit,years,sb_class,rdzvs,profile,ball_f
     data = r.json()
     
     # Elaboration of data
-    accessible_valid_sb={};
+    accessible_valid_sb={}
     # Definition of limit condition to consider valid small body among the accessible ones
     mjd31Dec2028 = 62136
     mjd01Jan2048 = 69076
@@ -299,8 +299,8 @@ def get_accessible_sb(records_lim,optim_crit,years,sb_class,rdzvs,profile,ball_f
                           "class": data['data'][accessible_sb][10],
                           "H": data['data'][accessible_sb][11],
                           "condition_code": data['data'][accessible_sb][12],
-                          };
-                accessible_valid_sb[str(j)]=valid_sb;
+                          }
+                accessible_valid_sb[str(j)]=valid_sb
                 j = j+1
     elif (ball_flag == 0 and lt_flag == 1): # low thrust profile mission requested
         j = 0
@@ -320,7 +320,7 @@ def get_accessible_sb(records_lim,optim_crit,years,sb_class,rdzvs,profile,ball_f
                           "class": data['data'][accessible_sb][13],
                           "H": data['data'][accessible_sb][14],
                           "condition_code": data['data'][accessible_sb][15],
-                          };
+                          }
                 accessible_valid_sb[str(j)]=valid_sb;
                 j = j+1        
 
@@ -344,11 +344,11 @@ def get_min_dv_accessible_sb(accessible_valid_sb):
     
     # Plot of the mission profiles and highlight the best one
     fig = plt.figure()
-    plt.plot(dv, "*");
+    plt.plot(dv, "*")
     fig.suptitle('Accessible Small Bodies Mission dv, and the minimum is ' + accessible_sb_min_dv["fullname"])
     plt.xlabel('$idx$ (-)')
     plt.ylabel('$dv$ (km/s)')
-    plt.plot(int(idx_min[0]), dv[int(idx_min[0])], "r+");
+    plt.plot(int(idx_min[0]), dv[int(idx_min[0])], "r+")
     
     return accessible_sb_min_dv, fig
 
@@ -397,8 +397,8 @@ def get_dict(name_list):
     #                                      'ps'
     """
 
-    our_id=0;
-    dict_bodies={};
+    our_id=0
+    dict_bodies={}
 
     for name in name_list:
         sbdb = SBDB.query(name, neo_only=True, full_precision=True, phys=True, virtual_impactor=True)
@@ -414,40 +414,40 @@ def get_dict(name_list):
               "condition_code": sbdb["orbit"]["condition_code"], #OCC
               "rms": sbdb["orbit"]["rms"],
               "orbit_comment":sbdb["orbit"]["comment"],
-             };
-            try:     
-                asteroid["magn_radius_flag"]='H';
-                asteroid["H"]=sbdb['phys_par']['H'];
+             }
+            try:
+                asteroid["magn_radius_flag"]='H'
+                asteroid["H"]=sbdb['phys_par']['H']
             except:
-                asteroid["magn_radius_flag"]='D';
-                asteroid["D"]=sbdb['phys_par']['diameter'];
-            asteroid["N_obs"]=sbdb['orbit']['n_obs_used'];
-            asteroid["obs_span"]=sbdb['orbit']['data_arc'];
+                asteroid["magn_radius_flag"]='D'
+                asteroid["D"]=sbdb['phys_par']['diameter']
+            asteroid["N_obs"]=sbdb['orbit']['n_obs_used']
+            asteroid["obs_span"]=sbdb['orbit']['data_arc']
             
             asteroid["impacts"]={}
-            flag_bool=1;
+            flag_bool=1
             if 'phys_par' in sbdb.keys():
-                spect_flag=0;
+                spect_flag=0
                 if 'spec_T' in sbdb['phys_par'].keys():
                     asteroid["spectral_category_flag"]='T'
                     asteroid["spectral_category"]=sbdb['phys_par']['spec_T']
-                    spect_flag=1;
+                    spect_flag=1
                 if 'spec_B' in sbdb['phys_par'].keys():
                     asteroid["spectral_category_flag"]='B'
                     asteroid["spectral_category"]=sbdb['phys_par']['spec_B']
-                    spect_flag=1;
+                    spect_flag=1
                 if spect_flag==0:
                     asteroid["spectral_category_flag"]='0'
             else:
                 asteroid["spectral_category"]='0'
                 
             if 'ip' in sbdb["vi_data"]:
-                n_imp=len(sbdb["vi_data"]['ip']);
+                n_imp=len(sbdb["vi_data"]['ip'])
                 for key in sbdb["vi_data"].keys():
                     if flag_bool==1:
                         for i in range(0,n_imp):
-                            asteroid["impacts"][str(i)]={};
-                        flag_bool=0;
+                            asteroid["impacts"][str(i)]={}
+                        flag_bool=0
                     for i in range(0,n_imp): 
                         try:
                             if isinstance(sbdb["vi_data"][key],str):
@@ -456,10 +456,10 @@ def get_dict(name_list):
                                 asteroid["impacts"][str(i)][key]=sbdb["vi_data"][key][i];
                         except:
                             print(name+" could raise error in importing virtual impact data") #this exception is raised if only one impact is present
-            dict_bodies[name]=asteroid;
-            our_id=our_id+1;
-            flag_bool=1;
-            del asteroid;
+            dict_bodies[name]=asteroid
+            our_id=our_id+1
+            flag_bool=1
+            del asteroid
 
     return dict_bodies
         
@@ -494,12 +494,12 @@ def get_sentry_risk_list():
     sentry_risk_names=[]
     for i in range(0,len(data['data'])):
         name_=""
-        name=data['data'][i]['des'];
+        name=data['data'][i]['des']
         for c in name:
             if c==' ':
-                a=0;
+                a=0
             else:
-                name_=name_+c;
+                name_=name_+c
         sentry_risk_names.append(name_)
 
     return sentry_risk_names
@@ -527,18 +527,18 @@ def refined_selection(dict_risk_list):
     PS_date_selected=[]
     for key in dict_risk_list.keys():
         if '0' in dict_risk_list[key]['impacts'].keys():
-            max_P=-100;
-            date_flag=0;
+            max_P=-100
+            date_flag=0
             for imp_id in dict_risk_list[key]['impacts'].keys():
-                word='';
+                word=''
                 for c in dict_risk_list[key]['impacts'][imp_id]['date']:
                     #pprint(c)
                     if c=='-':
-                        break;
+                        break
                     else:
-                        word=word+c;
+                        word=word+c
                 if int(word)<2048 and int(word)>2026:
-                    date_flag=1;
+                    date_flag=1
                     if float(dict_risk_list[key]['impacts'][imp_id]['ps'])>max_P:
                         max_P=float(dict_risk_list[key]['impacts'][imp_id]['ps']);
             if date_flag==1:
