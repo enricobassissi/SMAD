@@ -636,7 +636,7 @@ def get_df_for_sbdb_visualization(dict_risk_list):
             #http://www.physics.sfasu.edu/astro/asteroids/sizemagnitude.html
             H.append(float(-np.log10(dict_risk_list[str(el)]['D'].scale*np.sqrt(arbitrary_albedo)/1329)*5));
 
-        worse_impact_ps_lim = -999
+        worse_impact_ps_lim = -20
         worse_impact_ps.append(float(worse_impact_ps_lim))
 
         for i in range(len(dict_risk_list[str(el)]['impacts'])):
@@ -651,7 +651,10 @@ def get_df_for_sbdb_visualization(dict_risk_list):
     kinda_dict_physical_properties = {'moid': array("f",moid), 'occ': array("i",occ), 
                                     'H':  array("f",H),'worse_impact_ps': array("f",worse_impact_ps)}
     df_physical_properties = pd.DataFrame(data=kinda_dict_physical_properties)
-    df_physical_properties
+
+    physical_properties_name = kinda_dict_physical_properties.keys()
+
+    return df_physical_properties, physical_properties_name
 
 def bi_impulsive_mission(refined_selected, mjd0, duration, min_tof, max_tof, step_size):
     
