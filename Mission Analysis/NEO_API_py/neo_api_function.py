@@ -12,6 +12,7 @@ import matplotlib.ticker as ticker
 from datetime import datetime
 from array import *
 import re
+import pandas as pd
 
 """
 # This API provides access to the JPL/SSD small-body mission design suite. The following operation modes are available:
@@ -619,8 +620,38 @@ def H_OCC(dict_risk_list):
     # ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
     # plt.show()
     """
-
     return x,y
+
+def get_df_for_sbdb_visualization(dict_risk_list):
+    moid=[]; occ=[]; H=[]; worse_impact_ps=[];
+    idx = 0
+    arbitrary_albedo = 0.14 #between 0.05 and 0.25, but most of the asteroids are on higher ranges
+    for el in dict_risk_list:
+        moid.append(float(dict_risk_list[str(el)]['moid'].scale))
+        occ.append(int(dict_risk_list[str(el)]['condition_code']))
+        try:
+            H.append(float(dict_risk_list[str(el)]['H']))
+        except:
+            print(el +' does not have magnitude info')
+            #http://www.physics.sfasu.edu/astro/asteroids/sizemagnitude.html
+            H.append(float(-np.log10(dict_risk_list[str(el)]['D'].scale*np.sqrt(arbitrary_albedo)/1329)*5));
+
+        worse_impact_ps_lim = -999
+        worse_impact_ps.append(float(worse_impact_ps_lim))
+
+        for i in range(len(dict_risk_list[str(el)]['impacts'])):
+            if (dict_risk_list[str(el)]['impacts'][str(i)]['ps'] > worse_impact_ps_lim):
+                worse_impact_ps.pop(idx)
+                worse_impact_ps.insert(idx, float(dict_risk_list[str(el)]['impacts'][str(i)]['ps']))
+                
+                worse_impact_ps_lim = float(dict_risk_list[str(el)]['impacts'][str(i)]['ps'])     
+                
+        idx = idx + 1
+
+    kinda_dict_physical_properties = {'moid': array("f",moid), 'occ': array("i",occ), 
+                                    'H':  array("f",H),'worse_impact_ps': array("f",worse_impact_ps)}
+    df_physical_properties = pd.DataFrame(data=kinda_dict_physical_properties)
+    df_physical_properties
 
 def bi_impulsive_mission(refined_selected, mjd0, duration, min_tof, max_tof, step_size):
     
