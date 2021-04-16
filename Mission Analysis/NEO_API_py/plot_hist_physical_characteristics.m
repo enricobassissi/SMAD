@@ -9,6 +9,7 @@ function h_fig_pha_char_dist = plot_hist_physical_characteristics(physical_prope
     h1.FaceColor=colors(1,:);
     h1.EdgeColor=colors(1,:);
     h1.FaceAlpha=1;
+    morebins(h1); morebins(h1); morebins(h1); morebins(h1);
     % h1(2).Color=colors(2,:);
     % yscale logarithm
     xlabel('(a)')
@@ -40,10 +41,13 @@ function h_fig_pha_char_dist = plot_hist_physical_characteristics(physical_prope
     legend('Location','northwest');
 
     subplot(2,2,3)
-    h3=histfit(physical_properties(:,3),40,'kernel'); % weibull
-    h3(1).FaceColor=colors(1,:);
-    h3(1).EdgeColor=colors(1,:);
-    h3(2).Color=colors(2,:);
+%     h3=histfit(physical_properties(:,3),40,'kernel'); % weibull
+    h3=histogram(physical_properties(:,3)); % weibull
+    h3.FaceColor=colors(1,:);
+    h3.EdgeColor=colors(1,:);
+    h3.FaceAlpha = 1;
+    morebins(h3); morebins(h3); morebins(h3);
+%     h3(2).Color=colors(2,:);
     xlabel('(c)')
     ylabel('Asteroid Count ($\#$)')
     legend('H')
@@ -57,12 +61,16 @@ function h_fig_pha_char_dist = plot_hist_physical_characteristics(physical_prope
     legend('Location','northwest');
 
     subplot(2,2,4)
-    h4=histfit(ps_vector,400,'kernel');%,'DisplayName','PS'
+%     h4=histfit(ps_vector,400,'kernel');%,'DisplayName','PS'
+    h4=histogram(ps_vector);%,'DisplayName','PS'
     legend('PS') %,'Interpolation'
     xlim([-13,0])
-    h4(1).FaceColor=colors(1,:);
-    h4(1).EdgeColor=colors(1,:);
-    h4(2).Color=colors(2,:);
+    h4.FaceColor=colors(1,:);
+    h4.FaceAlpha = 1;
+    h4.EdgeColor=colors(1,:);
+    morebins(h4); morebins(h4); morebins(h4); morebins(h4); morebins(h4); morebins(h4); morebins(h4);
+    morebins(h4); morebins(h4); morebins(h4); morebins(h4); morebins(h4); morebins(h4); morebins(h4);
+%     h4(2).Color=colors(2,:);
     xlabel('(d)')
     ylabel('Asteroid Count ($\#$)')
     Y_4 = prctile(ps_vector,[25,50,75],2);
