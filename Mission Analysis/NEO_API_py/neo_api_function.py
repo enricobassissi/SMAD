@@ -546,7 +546,7 @@ def refined_selection(dict_risk_list):
                 date_selected.append(key)
                 if max_P>=-7:
                     PS_date_selected.append(key)
-            dict_risk_list[key]["PS"]=max_P;        
+            dict_risk_list[key]["PS"]=max_P
 
     # Orbit Uncertantains filter (number of observation>=40)
     OU_selected=[]
@@ -570,7 +570,37 @@ def refined_selection(dict_risk_list):
         refined_dict[refined_selected[ind]]={}
         refined_dict[refined_selected[ind]]=dict_risk_list[refined_selected[ind]]
 
-    return(refined_dict, refined_selected)
+    return(refined_dict, refined_selected, ps_vector)
+
+def palermo_scale(dict_risk_list):
+    # At least one impact 2026<year<2048 with a Palermo Scale>=-7
+    date_selected=[]
+    PS_date_selected=[]
+    ps_vector=[]
+    for key in dict_risk_list.keys():
+        if '0' in dict_risk_list[key]['impacts'].keys():
+            max_P=-100
+            date_flag=0
+            for imp_id in dict_risk_list[key]['impacts'].keys():
+                word=''
+                for c in dict_risk_list[key]['impacts'][imp_id]['date']:
+                    #pprint(c)
+                    if c=='-':
+                        break
+                    else:
+                        word=word+c
+                if int(word)<3000 and int(word)>2021:
+                    date_flag=1
+                    if float(dict_risk_list[key]['impacts'][imp_id]['ps'])>max_P:
+                        max_P=float(dict_risk_list[key]['impacts'][imp_id]['ps']);
+            dict_risk_list[key]["PS"]=max_P
+            try:
+                ps_vector.append(dict_risk_list[key]["PS"])
+            except:
+                print(key)
+
+    return ps_vector
+
 
 # DB EXPLORATION TOOL
 def MOID_H(dict_risk_list):
@@ -633,28 +663,32 @@ def get_df_for_sbdb_visualization(dict_risk_list):
             H.append(float(dict_risk_list[str(el)]['H']))
         except:
             print(el +' does not have magnitude info')
-            #http://www.physics.sfasu.edu/astro/asteroids/sizemagnitude.html
+            # http://www.physics.sfasu.edu/astro/asteroids/sizemagnitude.html
             H.append(float(-np.log10(dict_risk_list[str(el)]['D'].scale*np.sqrt(arbitrary_albedo)/1329)*5));
 
-        worse_impact_ps_lim = -20
-        worse_impact_ps.append(float(worse_impact_ps_lim))
+        #worse_impact_ps_lim = -999
+        #worse_impact_ps.insert(idx, float(worse_impact_ps_lim))
+        impact_ps_vect=[]
+        #for i in range(len(dict_risk_list[str(el)]['impacts'])):
+        #    impact_ps_vect.append(float(dict_risk_list[str(el)]['impacts'][str(i)]['ps']))
 
-        for i in range(len(dict_risk_list[str(el)]['impacts'])):
-            if (dict_risk_list[str(el)]['impacts'][str(i)]['ps'] > worse_impact_ps_lim):
-                worse_impact_ps.pop(idx)
-                worse_impact_ps.insert(idx, float(dict_risk_list[str(el)]['impacts'][str(i)]['ps']))
-                
-                worse_impact_ps_lim = float(dict_risk_list[str(el)]['impacts'][str(i)]['ps'])     
-                
+        no_impact_detected=[]
+        if len(dict_risk_list[str(el)]['impacts'])==0:
+            no_impact_detected.append(str(el))
+
+        #worse_impact_ps.append(max(impact_ps_vect))   
+
         idx = idx + 1
 
+    #kinda_dict_physical_properties = {'moid': array("f",moid), 'occ': array("i",occ), 
+    #                                'H':  array("f",H),'worse_impact_ps': array("f",worse_impact_ps)}
     kinda_dict_physical_properties = {'moid': array("f",moid), 'occ': array("i",occ), 
-                                    'H':  array("f",H),'worse_impact_ps': array("f",worse_impact_ps)}
+                                    'H':  array("f",H)}
     df_physical_properties = pd.DataFrame(data=kinda_dict_physical_properties)
 
     physical_properties_name = kinda_dict_physical_properties.keys()
 
-    return df_physical_properties, physical_properties_name
+    return df_physical_properties, physical_properties_name, no_impact_detected
 
 def bi_impulsive_mission(refined_selected, mjd0, duration, min_tof, max_tof, step_size):
     
