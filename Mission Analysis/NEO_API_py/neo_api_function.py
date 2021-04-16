@@ -570,7 +570,7 @@ def refined_selection(dict_risk_list):
         refined_dict[refined_selected[ind]]={}
         refined_dict[refined_selected[ind]]=dict_risk_list[refined_selected[ind]]
 
-    return(refined_dict, refined_selected, ps_vector)
+    return(refined_dict, refined_selected)
 
 def palermo_scale(dict_risk_list):
     # At least one impact 2026<year<2048 with a Palermo Scale>=-7
@@ -600,7 +600,6 @@ def palermo_scale(dict_risk_list):
                 print(key)
 
     return ps_vector
-
 
 # DB EXPLORATION TOOL
 def MOID_H(dict_risk_list):
