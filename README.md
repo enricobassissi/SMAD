@@ -3,7 +3,7 @@
 ![LOGO_POLI](https://github.com/enricobassissi/SMAD/blob/main/LOGO/Politecnico_di_MIlano_LOGO_bianco.png){:height="50%" width="50%"}
 *Politecnico di Milano - AY 2020/2021*
 
-![LOGO_MORPHEUS](https://github.com/enricobassissi/SMAD/blob/main/LOGO/MORPHEUS_LOGO.png?raw=true){:height="50%" width="50%"}
+<img src="https://github.com/enricobassissi/SMAD/blob/main/LOGO/MORPHEUS_LOGO.png" width="100" height="100">
 
 # What we will do
 ## Abstract
