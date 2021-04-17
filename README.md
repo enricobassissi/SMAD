@@ -1,7 +1,8 @@
 # Welcome to MORPHEUS team GitHub Repository, Space Mission Analysis and Design Final Course Project
 *Politecnico di Milano - AY 2020/2021*
 
-<img src="https://github.com/enricobassissi/SMAD/blob/main/LOGO/MORPHEUS_LOGO.png" width="200" height="200">  <img src="https://github.com/enricobassissi/SMAD/blob/main/LOGO/Politecnico_di_MIlano_LOGO_bianco.png" width="660" height="200"> 
+<img src="https://github.com/enricobassissi/SMAD/blob/main/LOGO/MORPHEUS_LOGO.png" width="200" height="200">  
+<img src="https://github.com/enricobassissi/SMAD/blob/main/LOGO/Politecnico_di_MIlano_LOGO_bianco.png" width="660" height="200"> 
 
 # What we will do
 ## Abstract
