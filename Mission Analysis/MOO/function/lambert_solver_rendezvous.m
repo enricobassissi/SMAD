@@ -1,7 +1,7 @@
-function [dvtot,VI,VF,TOF]=lambert_solver_rendezvous( R1, R2, V1, V2, t1, t2, ksun, vlim)
-
+function [dvtot]=lambert_solver_rendezvous( R1, R2, V1, V2, t1, t2, ksun, vlim)
+%[dvtot,VI,VF,TOF]=lambert_solver_rendezvous( R1, R2, V1, V2, t1, t2, ksun, vlim)
 ToF_sec = t2 - t1;
-TOF = ToF_sec/(3600*24);
+% TOF = ToF_sec/(3600*24);
 [~,~,~,~,VI,VF,~,~] = lambertMR(R1,R2,ToF_sec,ksun,0,0,0,0);
 
 dv1=sqrt((VI(1)-V1(1))^2+(VI(2)-V1(2))^2+(VI(3)-V1(3))^2);
