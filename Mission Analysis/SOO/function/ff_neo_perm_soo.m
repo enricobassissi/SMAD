@@ -1,4 +1,4 @@
-function obj_fun = ff_neo_perm(x,PermutationMatrix)
+function obj_fun = ff_neo_perm_soo(x,PermutationMatrix)
 % setting the input times
 MJD01 = x(1);
 TOF1 = x(2);
@@ -74,12 +74,13 @@ vlim = 100;
 [dv_tot4]=lambert_solver_rendezvous(r7,r8,v7,v8,t7_sec,t8_sec,ksun,vlim);
 
 obj_fun(1) = dv_tot1 + dv_tot2 + dv_tot3 + dv_tot4;
-   
-if isnan(obj_fun(1))
-    obj_fun(2) = NaN;
+
+TOF_tot = TOF1 + TOF2 + TOF3 + TOF4;
+
+TOF_lim = 12*365; % 12 years
+if TOF_tot > TOF_lim
+    obj_fun = NaN;
 else
-    obj_fun(2) = TOF1 + TOF2 + TOF3 + TOF4;
-end
 
 end
 

@@ -82,9 +82,9 @@ end
 sol  = x;
 res = fun_x;
 
-if nite == nmax
-    fprintf('maximum number of iterations reached. error %f ; residual %f \n' , error, res);
-end
+% if nite == nmax
+%     fprintf('maximum number of iterations reached. error %f ; residual %f \n' , error, res);
+% end
 
 
 end

@@ -147,7 +147,7 @@ end
 options.UseParallel = true;
 
 %% Build the moo
-FitnessFunction = @(x) ff_neo_perm(x, PermutationMatrix); % Function handle to the fitness function
+FitnessFunction = @(x) ff_neo_perm_soo(x, PermutationMatrix); % Function handle to the fitness function
 numberOfVariables = length(sim.moo_bound.ub); % Number of decision variables
 
 tic
