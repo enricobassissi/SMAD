@@ -1,6 +1,6 @@
-%% ------------------------------------------ %%
-%% ----------- EA Ast1 Ast2 Transfer ------------ %%
-%% ------------------------------------------ %%
+%% -------------------------------------------------------- %%
+%% ----------- EA Ast1 Ast2 Ast3 Ast4 Transfer ------------ %%
+%% -------------------------------------------------------- %%
 %% Setup for default options
 set(0, 'DefaultTextFontSize', 20)
 set(0, 'DefaultAxesFontSize', 20)
@@ -34,7 +34,7 @@ colors = [0    50   71;... % (1) DEEP SPACE
           51   94   111;... % (11) DEEP SPACE -1
           0    0    0]./255; % (12) BLACK
 
-%% INTRO
+%% INTRO ADIMENSIONALISATION
 sim.mu = 1.32712440017987e11; % Sun planetary constant (mu = mass * G) (from DE405) [km^3/s^2]
 sim.DU = 149597870.691; % Distance Unit = Astronomical Unit (AU) (from DE405) [km]
 sim.TU = (sim.DU^3/sim.mu)^0.5; % Time Unit
@@ -43,14 +43,14 @@ sim.mu = 1;
 %% Call to NASA JPL Horizons to get Asteroid's Ephemerides
 % Import module of Python
 module = py.importlib.import_module('neo_api_function');
+
 %%
 % Asteroids
-% Ast at arr
-
 % data extraction section
 asteroid_names = ["2006HX57";"2008XU2";"2008KN11";"2012SY49";"2012QD8";"2020UE";...
                   "2006SC";"2005WG57";"2012BY1"];
-              
+
+% Number of possible combination of 4 asteroids among the ones in the list
 HowMany = factorial(length(asteroid_names)) / factorial(length(asteroid_names) - 4);
 [PermutationMatrix, ~] = permnUnique(asteroid_names, 4);
 
@@ -127,11 +127,11 @@ options.Display = 'iter';
 options.DistanceMeasureFcn = {@distancecrowding,'phenotype'};
 % A hybrid function is another minimization function that runs after the 
 % multiobjective genetic algorithm terminates
-options.HybridFcn = 'fgoalattain';
+% options.HybridFcn = 'fgoalattain';
 
-options.PopulationSize = 50; % ideal 1000
+options.PopulationSize = 300; % ideal 1000
 options.ParetoFraction = 0.5;
-options.MaxGenerations = 10; % ideal 100
+options.MaxGenerations = 100; % ideal 100
 options.FunctionTolerance = 1e-6;
 options.MaxStallGenerations = 10;
 
@@ -193,8 +193,14 @@ sol.v_inf_magn = x(knee_idx,3);
 sol.v_inf_alpha = rad2deg(x(knee_idx,4));
 sol.v_inf_beta = rad2deg(x(knee_idx,5));
 
+%% Mass Consumption for High Thrust Impulsive Case
+g0 = 9.81; %m/s^2
+% https://www.space-propulsion.com/spacecraft-propulsion/hydrazine-thrusters/20n-hydrazine-thruster.html
+Isp = 230; %s 
+m_dry = 100; %kg
+m_prop = m_dry*(exp(sol.dV_tot*1e3/(g0*Isp)) - 1); %kg
 %% Plot trajectories
-plot_mission_4neo(sol,colors,asteroid_sequence)
+sol = plot_mission_4neo(sol,colors,asteroid_sequence)
 
 %% Plot orbit asteroids
 plot_orbits_asteroids(asteroid_names,colors)
