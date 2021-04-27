@@ -740,20 +740,32 @@ def get_horizons_ephemerides(name,pov,epoch_start,epoch_stop,step_size,type_elem
                        'step': step_size})
     
     if type_elements.lower() == 'vectors':
-        data_output = obj.vectors() # vectorial elements
-    elif type_elements.lower() == 'ephemerides':
-        data_output = obj.ephemerides()
+        data = obj.vectors() # vectorial elements
+        
+        len_rows = len(data)
+        len_cols = 6 # 3 positions 'x','y','z', and 3 velocities 'vx', 'vy', 'vz'
+        idx_x = 5 # 'x' is at position 5 in the table (starting from 0)
+        adata =  np.zeros([len_rows,len_cols]) 
+        for row in range(len_rows):
+            for col in range(6): 
+                idx_col_in_table = idx_x + col # because the 'x' start at 6th col, going up till the 12th that is 'vz'
+                adata[row,col] = data[row][idx_col_in_table]
 
-    len_rows = len(data_output)
-    len_cols = 6 # 3 positions 'x','y','z', and 3 velocities 'vx', 'vy', 'vz'
-    idx_x = 5 # 'x' is at position 5 in the table (starting from 0)
-    data =  np.zeros([len_rows,len_cols]) 
-    for row in range(len_rows):
-        for col in range(6): 
-            idx_col_in_table = idx_x + col # because the 'x' start at 6th col, going up till the 12th that is 'vz'
-            data[row,col] = data_output[row][idx_col_in_table]      
-            
-    return data
+    elif type_elements.lower() == 'elements':
+        data = obj.elements()
+        
+        len_rows = len(data)
+        len_cols = 6 # (a e i OM om theta)
+        adata =  np.zeros([len_rows,len_cols]) 
+        for row in range(len_rows):
+            adata[row,0] = data[row][14] # 15th column of data -> semimajor axis
+            adata[row,1] = data[row][5] # 6th column of data -> eccentricity
+            adata[row,2] = data[row][7] # 8th column of data -> inclination
+            adata[row,3] = data[row][8] # 9th column of data -> RAAN, (OMEGA)
+            adata[row,4] = data[row][9] # 10th column of data -> argument of perigee, (omega)
+            adata[row,5] = data[row][13] # 14th column of data -> True anomaly, (theta)
+        
+    return adata
 
 def get_earth_ephemerides(epoch_start,epoch_stop,step_size,type_elements):
     
