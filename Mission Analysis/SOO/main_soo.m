@@ -56,78 +56,84 @@ HowMany = factorial(length(asteroid_names)) / factorial(length(asteroid_names) -
 
 %% Boundaries
 % Departure dates
-sim.bound.date_ed = [2022, 1, 1, 0, 0, 0];
-sim.bound.date_ld =  [2028, 1, 1, 0, 0, 0];
-sim.bound.mjd2000_ed = date2mjd2000(sim.bound.date_ed);
-sim.bound.mjd2000_ld = date2mjd2000(sim.bound.date_ld);
+sim.soo_lim.date_ed = [2022, 1, 1, 0, 0, 0];
+sim.soo_lim.date_ld =  [2028, 1, 1, 0, 0, 0];
+sim.soo_lim.mjd2000_ed = date2mjd2000(sim.soo_lim.date_ed);
+sim.soo_lim.mjd2000_ld = date2mjd2000(sim.soo_lim.date_ld);
 % TOF1
-sim.bound.TOF1_min = 200; % days
-sim.bound.TOF1_max = 3*365; % days
+sim.soo_lim.TOF1_min = 200; % days
+sim.soo_lim.TOF1_max = 3*365; % days
 % Launcher velocity given and angles
-sim.bound.v_inf_magn_min = 0;
-sim.bound.v_inf_magn_max = sqrt(40); % c3 = 40 km/s^2
-sim.bound.alpha_min = deg2rad(0);
-sim.bound.alpha_max = deg2rad(360);
-sim.bound.beta_min = deg2rad(0);
-sim.bound.beta_max = deg2rad(360);
+sim.soo_lim.v_inf_magn_min = 0;
+sim.soo_lim.v_inf_magn_max = sqrt(40); % c3 = 40 km/s^2
+sim.soo_lim.alpha_min = deg2rad(0);
+sim.soo_lim.alpha_max = deg2rad(360);
+sim.soo_lim.beta_min = deg2rad(0);
+sim.soo_lim.beta_max = deg2rad(360);
 % Buffer time 1
-sim.bound.bt1_min = 30;
-sim.bound.bt1_max = 180;
+sim.soo_lim.bt1_min = 30;
+sim.soo_lim.bt1_max = 180;
 % TOF2
-sim.bound.TOF2_min = 50; % days
-sim.bound.TOF2_max = 3*365; % days
+sim.soo_lim.TOF2_min = 50; % days
+sim.soo_lim.TOF2_max = 3*365; % days
 % Matrix of permutations
 % to use round in the code... so we have same probility to be rounded to
 % the first or to the last element in the matrix as in the middle elements!
-sim.bound.permutations_low = 0.5; 
-sim.bound.permutations_up = HowMany + 0.4999;
+sim.soo_lim.permutations_low = 0.5; 
+sim.soo_lim.permutations_up = HowMany + 0.4999;
 % Buffer time 2
-sim.bound.bt2_min = 30;
-sim.bound.bt2_max = 180;
+sim.soo_lim.bt2_min = 30;
+sim.soo_lim.bt2_max = 180;
 % TOF3
-sim.bound.TOF3_min = 50; % days
-sim.bound.TOF3_max = 3*365; % days
+sim.soo_lim.TOF3_min = 50; % days
+sim.soo_lim.TOF3_max = 3*365; % days
 % Buffer time 3 
-sim.bound.bt3_min = 30;
-sim.bound.bt3_max = 180;
+sim.soo_lim.bt3_min = 30;
+sim.soo_lim.bt3_max = 180;
 % TOF4
-sim.bound.TOF4_min = 50; % days
-sim.bound.TOF4_max = 3*365; % days
+sim.soo_lim.TOF4_min = 50; % days
+sim.soo_lim.TOF4_max = 3*365; % days
 
 % x = [MJD0,TOF1,v_inf_magn,aplha,beta,buffer_time,TOF2,ID_permutation,...
 %      buffer_time2,TOF3,buffer_time3,TOF4]
-sim.bound.lb = [sim.bound.mjd2000_ed, sim.bound.TOF1_min, sim.bound.v_inf_magn_min,...
-      sim.bound.alpha_min, sim.bound.beta_min, sim.bound.bt1_min,...
-      sim.bound.TOF2_min,sim.bound.permutations_low,sim.bound.bt2_min,...
-      sim.bound.TOF3_min,sim.bound.bt3_min,sim.bound.TOF4_min]; % Lower bound
-sim.bound.ub = [sim.bound.mjd2000_ld, sim.bound.TOF1_max, sim.bound.v_inf_magn_max,...
-      sim.bound.alpha_max, sim.bound.beta_max, sim.bound.bt1_max,...
-      sim.bound.TOF2_max,sim.bound.permutations_up,sim.bound.bt2_max,...
-      sim.bound.TOF3_max,sim.bound.bt3_max,sim.bound.TOF4_max]; % Upper bound
-  
-%% Constraints
-sim.constr.A = []; % linear inequality constraints
-sim.constr.b = []; % linear inequality constraints
-sim.constr.Aeq = []; % linear equality constraints
-sim.constr.beq = []; % linear equality constraints
-sim.constr.nonlcon = []; % linear equality constraints
+sim.soo_bound.lb = [sim.soo_lim.mjd2000_ed, sim.soo_lim.TOF1_min, sim.soo_lim.v_inf_magn_min,...
+      sim.soo_lim.alpha_min, sim.soo_lim.beta_min, sim.soo_lim.bt1_min,...
+      sim.soo_lim.TOF2_min,sim.soo_lim.permutations_low,sim.soo_lim.bt2_min,...
+      sim.soo_lim.TOF3_min,sim.soo_lim.bt3_min,sim.soo_lim.TOF4_min]; % Lower bound
+sim.soo_bound.ub = [sim.soo_lim.mjd2000_ld, sim.soo_lim.TOF1_max, sim.soo_lim.v_inf_magn_max,...
+      sim.soo_lim.alpha_max, sim.soo_lim.beta_max, sim.soo_lim.bt1_max,...
+      sim.soo_lim.TOF2_max,sim.soo_lim.permutations_up,sim.soo_lim.bt2_max,...
+      sim.soo_lim.TOF3_max,sim.soo_lim.bt3_max,sim.soo_lim.TOF4_max]; % Upper bound
 
+% sim.moo_bound.lb = [sim.moo_lim.mjd2000_ed, sim.moo_lim.TOF1_min, sim.moo_lim.v_inf_magn_min,...
+%       sim.moo_lim.alpha_min, sim.moo_lim.beta_min, sim.moo_lim.buffer_time_min,...
+%       sim.moo_lim.TOF2_min]; % Lower bound
+% sim.moo_bound.ub = [sim.moo_lim.mjd2000_ld, sim.moo_lim.TOF1_max, sim.moo_lim.v_inf_magn_max,...
+%       sim.moo_lim.alpha_max, sim.moo_lim.beta_max, sim.moo_lim.buffer_time_max,...
+%       sim.moo_lim.TOF2_max]; % Upper bound
+
+%% Constraints
+sim.soo_constr.A = []; % linear inequality constraints
+sim.soo_constr.b = []; % linear inequality constraints
+sim.soo_constr.Aeq = []; % linear equality constraints
+sim.soo_constr.beq = []; % linear equality constraints
+sim.soo_constr.nonlcon = []; % linear equality constraints
 %% Options
-options = optimoptions(@gamultiobj);
-% options.PlotFcn = @gaplotpareto;
+options = optimoptions(@ga);
+% options.PlotFcn = {@gaplotbestf};
 options.Display = 'iter';
 % y = score; -> phenotype, Measure the distance in fitness function space; 
 % y = pop; -> genotype, Measure the distance in decision variable space.
-options.DistanceMeasureFcn = {@distancecrowding,'phenotype'};
+% options.DistanceMeasureFcn = {@distancecrowding,'phenotype'};
 % A hybrid function is another minimization function that runs after the 
 % multiobjective genetic algorithm terminates
 % options.HybridFcn = 'fgoalattain';
 
-options.PopulationSize = 100; % ideal 1000
-options.ParetoFraction = 0.7;
-options.MaxGenerations = 5; % ideal 100
+options.PopulationSize = 50; % ideal 1000
+% options.ParetoFraction = 0.5;
+options.MaxGenerations = 50; % ideal 100
 options.FunctionTolerance = 1e-6;
-options.MaxStallGenerations = 3;
+options.MaxStallGenerations = 30;
 
 % Parallel pool
 % Open the parallel pool
@@ -140,52 +146,39 @@ end
 
 options.UseParallel = true;
 
-%% Build the moo
-FitnessFunction = @(x) ff_neo_perm(x, PermutationMatrix); % Function handle to the fitness function
-numberOfVariables = length(sim.bound.ub); % Number of decision variables
+%% Build the soo
+FitnessFunction = @(x) ff_neo_perm_soo(x, PermutationMatrix); % Function handle to the fitness function
+numberOfVariables = length(sim.soo_bound.ub); % Number of decision variables
 
 tic
-[x,Fval,exitFlag,Output] = gamultiobj(FitnessFunction,numberOfVariables,sim.constr.A, ...
-    sim.constr.b,sim.constr.Aeq,sim.constr.beq,sim.bound.lb,sim.bound.ub,...
-    sim.constr.nonlcon,options);
+[x,Fval,exitFlag,Output] = ga(FitnessFunction,numberOfVariables,sim.soo_constr.A, ...
+    sim.soo_constr.b,sim.soo_constr.Aeq,sim.soo_constr.beq,sim.soo_bound.lb,sim.soo_bound.ub,...
+    sim.soo_constr.nonlcon,options);
 el_time_min_pp = toc/60;
-
-%% Find the knee solution
-[knee_idx, d] = find_knee_solution(Fval);
-
-% Plot Pareto Plot
-figure('Name','GA MO Pareto Plot')
-title('Pareto Points in Parameter Space')
-h_pp = plot(Fval(:,1),Fval(:,2),'o','Color',colors(1,:));
-hold on
-h_kpp = plot(Fval(knee_idx,1),Fval(knee_idx,2),'o','Color',colors(2,:));
-xlabel('$Obj_1: \ \Delta V$ [km/s]')
-ylabel('$Obj_2: \ TOF$ [d]')
-legend([h_pp,h_kpp],'Sub-Optim Sol','Knee Sol')
-clearvars h_pp h_kpp
 
 %% Build solution structure
 % set the knee as main solution
-asteroid_sequence = PermutationMatrix(round(x(knee_idx,8)),:);
+asteroid_sequence = PermutationMatrix(round(x(8)),:);
 sol.ast_1 = asteroid_sequence(1);
 sol.ast_2 = asteroid_sequence(2);
 sol.ast_3 = asteroid_sequence(3);
 sol.ast_4 = asteroid_sequence(4);
-sol.MJD0 = x(knee_idx,1);
+sol.MJD0 = x(1);
 sol.dep_date = mjd20002date(sol.MJD0)';
-sol.end_of_mission_date = mjd20002date(sol.MJD0+Fval(knee_idx,2))';
-sol.dV_tot = Fval(knee_idx,1);
-sol.TOF_tot = Fval(knee_idx,2);
-sol.TOF1 = x(knee_idx,2);
-sol.buffer_time1 = x(knee_idx,6);
-sol.TOF2 = x(knee_idx,7);
-sol.buffer_time2 = x(knee_idx,9);
-sol.TOF3 = x(knee_idx,10);
-sol.buffer_time3 = x(knee_idx,11);
-sol.TOF4 = x(knee_idx,12);
-sol.v_inf_magn = x(knee_idx,3);
-sol.v_inf_alpha = rad2deg(x(knee_idx,4));
-sol.v_inf_beta = rad2deg(x(knee_idx,5));
+sol.TOF_tot_D = x(2)+x(6)+x(7)+x(9)+x(10)+x(11)+x(12);
+sol.TOF_tot_Y = sol.TOF_tot_D/365;
+sol.end_of_mission_date = mjd20002date(sol.MJD0+sol.TOF_tot_D)';
+sol.dV_tot = Fval(1);
+sol.TOF1 = x(2);
+sol.buffer_time1 = x(6);
+sol.TOF2 = x(7);
+sol.buffer_time2 = x(9);
+sol.TOF3 = x(10);
+sol.buffer_time3 = x(11);
+sol.TOF4 = x(12);
+sol.v_inf_magn = x(3);
+sol.v_inf_alpha = rad2deg(x(4));
+sol.v_inf_beta = rad2deg(x(5));
 
 %% Mass Consumption for High Thrust Impulsive Case
 g0 = 9.81; %m/s^2
