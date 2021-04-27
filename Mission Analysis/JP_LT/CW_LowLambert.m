@@ -137,7 +137,7 @@ if isreal(l_d)
     tan_gam = -r.*(plan_b + 2*plan_c*l + 3*plan_d*l2 + 4*plan_e*l3 + 5*plan_f*l4 + 6*plan_g*l5);
     gam = atan(tan_gam);
     
-    %rrt
+    % rrt
     l_dd = -1./(2.*r4).*( (4*tan_gam)./((1./r)+2*plan_c + 6*plan_d*l + 12*plan_e*l2 + 20*plan_f*l3 + 30*plan_g*l4) + (6*plan_d+24*plan_e*l+60*plan_f*l2 + 120*plan_g*l3 - tan_gam./r)./((1./r)+2*plan_c + 6*plan_d*l + 12*plan_e*l2 + 20*plan_f*l3 + 30*plan_g*l4).^2 );
     
     % radial velocity

@@ -71,8 +71,10 @@ options.DistanceMeasureFcn = {@distancecrowding,'phenotype'};
 % options.HybridFcn = 'fgoalattain';
 
 options.PopulationSize = 1000; % ideal 1000
+
 options.ParetoFraction = 0.7;
 options.MaxGenerations = 100; % ideal 100
+
 options.FunctionTolerance = 1e-6;
 options.MaxStallGenerations = 30;
 
@@ -140,8 +142,38 @@ plot(output.t*sim.TU/86400,output.m);
 xlabel('Time [days]')
 ylabel('Mass [kg]')
 
+
+%%
+day1 = [2021 1 1 0 0 0];
+day2 = [2023 1 1 0 0 0];
+
+t1 = date2mjd2000(day1);
+t2 = date2mjd2000(day2);
+times = linspace(t1,t2,1000);
+
+for i=1:length(times)
+    % Orbit 1
+    [kep1,ksun] = uplanet(times(i),3);
+    [r1(i,1:3),~] = sv_from_coe(kep1,ksun);
+    r1(i,1:3) = r1(i,1:3)/sim.DU;
+    % Orbit 2
+    [kep2,ksun] = uplanet(times(i),4);
+    [r2(i,1:3),~] = sv_from_coe(kep2,ksun);
+    r2(i,1:3) = r2(i,1:3)/sim.DU;
+end
+
+
 figure()
 plot3(output.r.*cos(output.l),output.r.*sin(output.l),output.z)
 axis equal
 grid on
+hold on
+% Earth
+hold on
+h(1)=plot3(r1(:,1),r1(:,2),r1(:,3),'--');
+% Mars
+hold on
+h(2)=plot3(r2(:,1),r2(:,2),r2(:,3),'--');
 
+
+% vedi in che ref frame è output.r 
