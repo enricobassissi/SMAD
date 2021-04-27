@@ -8,5 +8,6 @@ function [knee_idx, d] = find_knee_solution(Fval)
     end
 
     knee_idx = find(min(d)==d);
+    
 
 end
