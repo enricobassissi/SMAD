@@ -38,7 +38,7 @@ sim.TU    = (sim.DU^3/sim.mu )^0.5; % time unit [s]
 sim.mu    = 1;                      % non-dimensional attractor parameter [DU^3/TU^2]
 sim.n_sol = 100;                    % number of computational nodes
 sim.x = linspace(0,1,sim.n_sol)';   % 
-sim.out_shape = 2;                  % out-of-plane shape
+sim.out_shape = 2;                  % out-of-plane shape, 2 = Conway-Wall shape
 sim.g0 = 9.81*(sim.TU^2/(1000*sim.DU)); % non-dimensional g0
 sim.direction = -1;                     % direction of integration (1 FW, -1 BW)
 
@@ -83,9 +83,17 @@ options.DistanceMeasureFcn = {@distancecrowding,'phenotype'};
 % multiobjective genetic algorithm terminates
 % options.HybridFcn = 'fgoalattain';
 
+<<<<<<< HEAD
 options.PopulationSize = 5; % ideal 1000
 options.ParetoFraction = 0.5;
 options.MaxGenerations = 5; % ideal 100
+=======
+options.PopulationSize = 1000; % ideal 1000
+
+options.ParetoFraction = 0.7;
+options.MaxGenerations = 100; % ideal 100
+
+>>>>>>> 4ca14fa9be626bd8727e48250c968fd15d630796
 options.FunctionTolerance = 1e-6;
 options.MaxStallGenerations = 30;
 

@@ -1,4 +1,3 @@
-function [ output] = CW_LowLambert( RI , RF , VI , VF , N_rev , TOF ,M ,hp , kp , PS ,sim )
 function [ output ] = CW_LowLambert( RI , RF , VI , VF , N_rev , TOF ,M ,hp , kp , PS ,sim )
 
 % Measurament units definition
