@@ -84,18 +84,12 @@ options.DistanceMeasureFcn = {@distancecrowding,'phenotype'};
 % options.HybridFcn = 'fgoalattain';
 
 <<<<<<< HEAD
-options.PopulationSize = 5; % ideal 1000
-options.ParetoFraction = 0.5;
-options.MaxGenerations = 5; % ideal 100
-=======
-options.PopulationSize = 1000; % ideal 1000
-
+options.PopulationSize = 10; % ideal 1000
 options.ParetoFraction = 0.7;
-options.MaxGenerations = 100; % ideal 100
+options.MaxGenerations = 5; % ideal 100
 
->>>>>>> 4ca14fa9be626bd8727e48250c968fd15d630796
 options.FunctionTolerance = 1e-6;
-options.MaxStallGenerations = 30;
+options.MaxStallGenerations = 3;
 
 % Parallel pool
 % Open the parallel pool

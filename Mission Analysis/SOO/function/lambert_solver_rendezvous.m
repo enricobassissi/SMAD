@@ -1,4 +1,4 @@
-function [dvtot]=lambert_solver_rendezvous( R1, R2, V1, V2, t1, t2, ksun, vlim)
+function [dvtot,dv1,dv2]=lambert_solver_rendezvous( R1, R2, V1, V2, t1, t2, ksun, vlim)
 %[dvtot,VI,VF,TOF]=lambert_solver_rendezvous( R1, R2, V1, V2, t1, t2, ksun, vlim)
 ToF_sec = t2 - t1;
 % TOF = ToF_sec/(3600*24);

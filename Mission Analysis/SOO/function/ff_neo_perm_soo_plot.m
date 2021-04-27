@@ -1,4 +1,4 @@
-function obj_fun = ff_neo_perm_soo(x,PermutationMatrix,sim)
+function obj_fun = ff_neo_perm_soo(x,PermutationMatrix)
 % setting the input times
 MJD01 = x(1);
 TOF1 = x(2);
@@ -62,9 +62,9 @@ t8_sec = MJDF4*60*60*24;
 % v_inj = v1+v_inf'; % v1 is row, v_inf would be column as built
 
 % DV calculation with lambert
-vlim = 100; %km/s
+vlim = 100;
 [~,dv1_12,dv2_12]=lambert_solver_rendezvous(r1,r2,v1,v2,t1_sec,t2_sec,ksun,vlim);
-if dv1_12 < sqrt(sim.C3_max) % vinf that the launcher can give max
+if dv1_12 < sqrt(sim.C3) % vinf that the launcher can give max
     [dv_tot34]=lambert_solver_rendezvous(r3,r4,v3,v4,t3_sec,t4_sec,ksun,vlim); 
     [dv_tot56]=lambert_solver_rendezvous(r5,r6,v5,v6,t5_sec,t6_sec,ksun,vlim); 
     [dv_tot78]=lambert_solver_rendezvous(r7,r8,v7,v8,t7_sec,t8_sec,ksun,vlim);

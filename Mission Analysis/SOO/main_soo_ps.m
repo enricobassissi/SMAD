@@ -55,78 +55,60 @@ HowMany = factorial(length(asteroid_names)) / factorial(length(asteroid_names) -
 [PermutationMatrix, ~] = permnUnique(asteroid_names, 4);
 
 %% Boundaries
-% Departure dates
+% Departure dates (1)
 sim.soo_lim.date_ed = [2022, 1, 1, 0, 0, 0];
 sim.soo_lim.date_ld =  [2028, 1, 1, 0, 0, 0];
 sim.soo_lim.mjd2000_ed = date2mjd2000(sim.soo_lim.date_ed);
 sim.soo_lim.mjd2000_ld = date2mjd2000(sim.soo_lim.date_ld);
-% TOF1
+% TOF1 (2)
 sim.soo_lim.TOF1_min = 200; % days
 sim.soo_lim.TOF1_max = 3*365; % days
-% Launcher velocity given and angles
-sim.soo_lim.v_inf_magn_min = 0;
-sim.soo_lim.v_inf_magn_max = sqrt(40); % c3 = 40 km/s^2
-sim.soo_lim.alpha_min = deg2rad(0);
-sim.soo_lim.alpha_max = deg2rad(360);
-sim.soo_lim.beta_min = deg2rad(0);
-sim.soo_lim.beta_max = deg2rad(360);
-% Buffer time 1
+% Buffer time 1 (3)
 sim.soo_lim.bt1_min = 30;
 sim.soo_lim.bt1_max = 180;
-% TOF2
+% TOF2 (4)
 sim.soo_lim.TOF2_min = 50; % days
 sim.soo_lim.TOF2_max = 3*365; % days
-% Matrix of permutations
+% Matrix of permutations (5)
 % to use round in the code... so we have same probility to be rounded to
 % the first or to the last element in the matrix as in the middle elements!
 sim.soo_lim.permutations_low = 0.5; 
 sim.soo_lim.permutations_up = HowMany + 0.4999;
-% Buffer time 2
+% Buffer time 2 (6)
 sim.soo_lim.bt2_min = 30;
 sim.soo_lim.bt2_max = 180;
-% TOF3
+% TOF3 (7)
 sim.soo_lim.TOF3_min = 50; % days
 sim.soo_lim.TOF3_max = 3*365; % days
-% Buffer time 3 
+% Buffer time 3 (8)
 sim.soo_lim.bt3_min = 30;
 sim.soo_lim.bt3_max = 180;
-% TOF4
+% TOF4 (9)
 sim.soo_lim.TOF4_min = 50; % days
 sim.soo_lim.TOF4_max = 3*365; % days
 
-% x = [MJD0,TOF1,v_inf_magn,aplha,beta,buffer_time,TOF2,ID_permutation,...
+% x = [MJD0,TOF1,buffer_time,TOF2,ID_permutation,...
 %      buffer_time2,TOF3,buffer_time3,TOF4]
-sim.soo_bound.lb = [sim.soo_lim.mjd2000_ed, sim.soo_lim.TOF1_min, sim.soo_lim.v_inf_magn_min,...
-      sim.soo_lim.alpha_min, sim.soo_lim.beta_min, sim.soo_lim.bt1_min,...
+sim.soo_bound.lb = [sim.soo_lim.mjd2000_ed, sim.soo_lim.TOF1_min,...
+      sim.soo_lim.bt1_min,...
       sim.soo_lim.TOF2_min,sim.soo_lim.permutations_low,sim.soo_lim.bt2_min,...
       sim.soo_lim.TOF3_min,sim.soo_lim.bt3_min,sim.soo_lim.TOF4_min]; % Lower bound
-sim.soo_bound.ub = [sim.soo_lim.mjd2000_ld, sim.soo_lim.TOF1_max, sim.soo_lim.v_inf_magn_max,...
-      sim.soo_lim.alpha_max, sim.soo_lim.beta_max, sim.soo_lim.bt1_max,...
+sim.soo_bound.ub = [sim.soo_lim.mjd2000_ld, sim.soo_lim.TOF1_max,...
+      sim.soo_lim.bt1_max,...
       sim.soo_lim.TOF2_max,sim.soo_lim.permutations_up,sim.soo_lim.bt2_max,...
       sim.soo_lim.TOF3_max,sim.soo_lim.bt3_max,sim.soo_lim.TOF4_max]; % Upper bound
 
-%% Constraints
-sim.soo_constr.A = []; % linear inequality constraints
-sim.soo_constr.b = []; % linear inequality constraints
-sim.soo_constr.Aeq = []; % linear equality constraints
-sim.soo_constr.beq = []; % linear equality constraints
-sim.soo_constr.nonlcon = []; % linear equality constraints
-%% Options
-options = optimoptions(@ga);
-% options.PlotFcn = {@gaplotbestf};
-options.Display = 'iter';
-% y = score; -> phenotype, Measure the distance in fitness function space; 
-% y = pop; -> genotype, Measure the distance in decision variable space.
-% options.DistanceMeasureFcn = {@distancecrowding,'phenotype'};
-% A hybrid function is another minimization function that runs after the 
-% multiobjective genetic algorithm terminates
-% options.HybridFcn = 'fgoalattain';
+% Constraint on C3 Launcher
+sim.C3_max = 40; % km^2/s^2
 
-options.PopulationSize = 50; % ideal 1000
-% options.ParetoFraction = 0.5;
-options.MaxGenerations = 20; % ideal 100
+%% Options
+options = optimoptions('particleswarm');
+% ,'SwarmSize',50,'HybridFcn',@fmincon
+options.MaxIterations = 20; %  Default is 200*nvars
+options.MaxStallIterations = 10; % Default 20
+options.SwarmSize = 50; % Default is min(100,10*nvars),
+options.Display = 'iter';
 options.FunctionTolerance = 1e-6;
-options.MaxStallGenerations = 30;
 
 % Parallel pool
 % Open the parallel pool
@@ -140,13 +122,12 @@ end
 options.UseParallel = true;
 
 %% Build the soo
-FitnessFunction = @(x) ff_neo_perm_soo(x, PermutationMatrix); % Function handle to the fitness function
+FitnessFunction = @(x) ff_neo_perm_soo(x, PermutationMatrix, sim); % Function handle to the fitness function
 numberOfVariables = length(sim.soo_bound.ub); % Number of decision variables
 
 tic
-[x,Fval,exitFlag,Output] = ga(FitnessFunction,numberOfVariables,sim.soo_constr.A, ...
-    sim.soo_constr.b,sim.soo_constr.Aeq,sim.soo_constr.beq,sim.soo_bound.lb,sim.soo_bound.ub,...
-    sim.soo_constr.nonlcon,options);
+[x,Fval,exitFlag,Output] = particleswarm(FitnessFunction,numberOfVariables...
+    ,sim.soo_bound.lb,sim.soo_bound.ub,options);
 el_time_min_pp = toc/60;
 
 %% Build solution structure

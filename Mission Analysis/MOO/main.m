@@ -123,9 +123,9 @@ options.DistanceMeasureFcn = {@distancecrowding,'phenotype'};
 % multiobjective genetic algorithm terminates
 % options.HybridFcn = 'fgoalattain';
 
-options.PopulationSize = 100; % ideal 1000
+options.PopulationSize = 3; % ideal 1000
 options.ParetoFraction = 0.7;
-options.MaxGenerations = 5; % ideal 100
+options.MaxGenerations = 3; % ideal 100
 options.FunctionTolerance = 1e-6;
 options.MaxStallGenerations = 3;
 
@@ -139,6 +139,8 @@ else
 end
 
 options.UseParallel = true;
+
+options.UseParallel = false;
 
 %% Build the moo
 FitnessFunction = @(x) ff_neo_perm(x, PermutationMatrix); % Function handle to the fitness function
@@ -197,4 +199,4 @@ m_prop = m_dry*(exp(sol.dV_tot*1e3/(g0*Isp)) - 1); %kg
 sol = plot_mission_4neo(sol,colors,asteroid_sequence)
 
 %% Plot orbit asteroids
-plot_orbits_asteroids(asteroid_names,colors)
+% plot_orbits_asteroids(asteroid_names,colors)
