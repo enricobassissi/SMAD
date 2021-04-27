@@ -18,6 +18,19 @@ colors = [0    50   71;... % (1) DEEP SPACE
           0    103  98;... % (10) PURE TEAL +2
           51   94   111;... % (11) DEEP SPACE -1
           0    0    0]./255; % (12) BLACK
+      
+%% Setup for default options
+set(0, 'DefaultTextFontSize', 20)
+set(0, 'DefaultAxesFontSize', 20)
+set(0, 'DefaultLegendFontSize', 20)
+set(0, 'DefaultAxesXGrid', 'on')
+set(0, 'DefaultAxesYGrid', 'on')
+set(0, 'DefaultLegendInterpreter', 'latex')
+set(0, 'DefaultAxesTickLabelInterpreter', 'latex')
+set(0, 'DefaultTextInterpreter', 'latex')
+set(0, 'DefaultLineLineWidth', 1.8)
+format short
+
 %% simulation parameters
 sim.mu    = 132712440018          ; % actractor parameter [km^3 s^-2]
 sim.DU    = 149597870.7           ; % distance unit [km]
@@ -70,9 +83,9 @@ options.DistanceMeasureFcn = {@distancecrowding,'phenotype'};
 % multiobjective genetic algorithm terminates
 % options.HybridFcn = 'fgoalattain';
 
-options.PopulationSize = 1000; % ideal 1000
+options.PopulationSize = 5; % ideal 1000
 options.ParetoFraction = 0.5;
-options.MaxGenerations = 15; % ideal 100
+options.MaxGenerations = 5; % ideal 100
 options.FunctionTolerance = 1e-6;
 options.MaxStallGenerations = 30;
 
