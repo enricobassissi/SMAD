@@ -7,7 +7,6 @@ function [knee_idx, d] = find_knee_solution(Fval)
         d(i,1) = sqrt((Fval(i,1)/max_dV)^2+(Fval(i,2)/max_TOF)^2);
     end
 
-    knee_idx = find(min(d)==d);
     
 
 end

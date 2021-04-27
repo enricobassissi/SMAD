@@ -75,7 +75,6 @@ vlim = 100;
 
 obj_fun(1) = dv_tot1 + dv_tot2 + dv_tot3 + dv_tot4;
 
-TOF_tot = TOF1 + TOF2 + TOF3 + TOF4;
 TOF_tot = TOF1 + buffer_time1 + TOF2 + buffer_time2 + TOF3 + buffer_time3 + TOF4;
 
 TOF_lim = 12*365; % 12 years

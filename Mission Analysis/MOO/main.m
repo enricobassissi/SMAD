@@ -56,26 +56,14 @@ HowMany = factorial(length(asteroid_names)) / factorial(length(asteroid_names) -
 
 %% Boundaries
 % Departure dates
-sim.moo_lim.date_ed = [2022, 1, 1, 0, 0, 0];
-sim.moo_lim.date_ld =  [2028, 1, 1, 0, 0, 0];
-sim.moo_lim.mjd2000_ed = date2mjd2000(sim.moo_lim.date_ed);
-sim.moo_lim.mjd2000_ld = date2mjd2000(sim.moo_lim.date_ld);
 sim.bound.date_ed = [2022, 1, 1, 0, 0, 0];
 sim.bound.date_ld =  [2028, 1, 1, 0, 0, 0];
 sim.bound.mjd2000_ed = date2mjd2000(sim.bound.date_ed);
 sim.bound.mjd2000_ld = date2mjd2000(sim.bound.date_ld);
 % TOF1
-sim.moo_lim.TOF1_min = 200; % days
-sim.moo_lim.TOF1_max = 3*365; % days
 sim.bound.TOF1_min = 200; % days
 sim.bound.TOF1_max = 3*365; % days
 % Launcher velocity given and angles
-sim.moo_lim.v_inf_magn_min = 0;
-sim.moo_lim.v_inf_magn_max = sqrt(40); % c3 = 40 km/s^2
-sim.moo_lim.alpha_min = deg2rad(0);
-sim.moo_lim.alpha_max = deg2rad(360);
-sim.moo_lim.beta_min = deg2rad(0);
-sim.moo_lim.beta_max = deg2rad(360);
 sim.bound.v_inf_magn_min = 0;
 sim.bound.v_inf_magn_max = sqrt(40); % c3 = 40 km/s^2
 sim.bound.alpha_min = deg2rad(0);
@@ -83,61 +71,31 @@ sim.bound.alpha_max = deg2rad(360);
 sim.bound.beta_min = deg2rad(0);
 sim.bound.beta_max = deg2rad(360);
 % Buffer time 1
-sim.moo_lim.bt1_min = 30;
-sim.moo_lim.bt1_max = 180;
 sim.bound.bt1_min = 30;
 sim.bound.bt1_max = 180;
 % TOF2
-sim.moo_lim.TOF2_min = 50; % days
-sim.moo_lim.TOF2_max = 3*365; % days
 sim.bound.TOF2_min = 50; % days
 sim.bound.TOF2_max = 3*365; % days
 % Matrix of permutations
 % to use round in the code... so we have same probility to be rounded to
 % the first or to the last element in the matrix as in the middle elements!
-sim.moo_lim.permutations_low = 0.5; 
-sim.moo_lim.permutations_up = HowMany + 0.4999;
 sim.bound.permutations_low = 0.5; 
 sim.bound.permutations_up = HowMany + 0.4999;
 % Buffer time 2
-sim.moo_lim.bt2_min = 30;
-sim.moo_lim.bt2_max = 180;
 sim.bound.bt2_min = 30;
 sim.bound.bt2_max = 180;
 % TOF3
-sim.moo_lim.TOF3_min = 50; % days
-sim.moo_lim.TOF3_max = 3*365; % days
 sim.bound.TOF3_min = 50; % days
 sim.bound.TOF3_max = 3*365; % days
 % Buffer time 3 
-sim.moo_lim.bt3_min = 30;
-sim.moo_lim.bt3_max = 180;
 sim.bound.bt3_min = 30;
 sim.bound.bt3_max = 180;
 % TOF4
-sim.moo_lim.TOF4_min = 50; % days
-sim.moo_lim.TOF4_max = 3*365; % days
 sim.bound.TOF4_min = 50; % days
 sim.bound.TOF4_max = 3*365; % days
 
 % x = [MJD0,TOF1,v_inf_magn,aplha,beta,buffer_time,TOF2,ID_permutation,...
 %      buffer_time2,TOF3,buffer_time3,TOF4]
-sim.moo_bound.lb = [sim.moo_lim.mjd2000_ed, sim.moo_lim.TOF1_min, sim.moo_lim.v_inf_magn_min,...
-      sim.moo_lim.alpha_min, sim.moo_lim.beta_min, sim.moo_lim.bt1_min,...
-      sim.moo_lim.TOF2_min,sim.moo_lim.permutations_low,sim.moo_lim.bt2_min,...
-      sim.moo_lim.TOF3_min,sim.moo_lim.bt3_min,sim.moo_lim.TOF4_min]; % Lower bound
-sim.moo_bound.ub = [sim.moo_lim.mjd2000_ld, sim.moo_lim.TOF1_max, sim.moo_lim.v_inf_magn_max,...
-      sim.moo_lim.alpha_max, sim.moo_lim.beta_max, sim.moo_lim.bt1_max,...
-      sim.moo_lim.TOF2_max,sim.moo_lim.permutations_up,sim.moo_lim.bt2_max,...
-      sim.moo_lim.TOF3_max,sim.moo_lim.bt3_max,sim.moo_lim.TOF4_max]; % Upper bound
-
-% sim.moo_bound.lb = [sim.moo_lim.mjd2000_ed, sim.moo_lim.TOF1_min, sim.moo_lim.v_inf_magn_min,...
-%       sim.moo_lim.alpha_min, sim.moo_lim.beta_min, sim.moo_lim.buffer_time_min,...
-%       sim.moo_lim.TOF2_min]; % Lower bound
-% sim.moo_bound.ub = [sim.moo_lim.mjd2000_ld, sim.moo_lim.TOF1_max, sim.moo_lim.v_inf_magn_max,...
-%       sim.moo_lim.alpha_max, sim.moo_lim.beta_max, sim.moo_lim.buffer_time_max,...
-%       sim.moo_lim.TOF2_max]; % Upper bound
-
 sim.bound.lb = [sim.bound.mjd2000_ed, sim.bound.TOF1_min, sim.bound.v_inf_magn_min,...
       sim.bound.alpha_min, sim.bound.beta_min, sim.bound.bt1_min,...
       sim.bound.TOF2_min,sim.bound.permutations_low,sim.bound.bt2_min,...
@@ -148,10 +106,6 @@ sim.bound.ub = [sim.bound.mjd2000_ld, sim.bound.TOF1_max, sim.bound.v_inf_magn_m
       sim.bound.TOF3_max,sim.bound.bt3_max,sim.bound.TOF4_max]; % Upper bound
   
 %% Constraints
-sim.moo_constr.A = []; % linear inequality constraints
-sim.moo_constr.b = []; % linear inequality constraints
-sim.moo_constr.Aeq = []; % linear equality constraints
-sim.moo_constr.beq = []; % linear equality constraints
 sim.constr.A = []; % linear inequality constraints
 sim.constr.b = []; % linear inequality constraints
 sim.constr.Aeq = []; % linear equality constraints
@@ -170,8 +124,6 @@ options.DistanceMeasureFcn = {@distancecrowding,'phenotype'};
 % options.HybridFcn = 'fgoalattain';
 
 options.PopulationSize = 100; % ideal 1000
-options.ParetoFraction = 0.5;
-options.MaxGenerations = 10; % ideal 100
 options.ParetoFraction = 0.7;
 options.MaxGenerations = 5; % ideal 100
 options.FunctionTolerance = 1e-6;
@@ -190,12 +142,9 @@ options.UseParallel = true;
 
 %% Build the moo
 FitnessFunction = @(x) ff_neo_perm(x, PermutationMatrix); % Function handle to the fitness function
-numberOfVariables = length(sim.moo_bound.ub); % Number of decision variables
 numberOfVariables = length(sim.bound.ub); % Number of decision variables
 
 tic
-[x,Fval,exitFlag,Output] = gamultiobj(FitnessFunction,numberOfVariables,sim.moo_constr.A, ...
-    sim.moo_constr.b,sim.moo_constr.Aeq,sim.moo_constr.beq,sim.moo_bound.lb,sim.moo_bound.ub,options);
 [x,Fval,exitFlag,Output] = gamultiobj(FitnessFunction,numberOfVariables,sim.constr.A, ...
     sim.constr.b,sim.constr.Aeq,sim.constr.beq,sim.bound.lb,sim.bound.ub,...
     sim.constr.nonlcon,options);
