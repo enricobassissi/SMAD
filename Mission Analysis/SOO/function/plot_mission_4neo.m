@@ -1,4 +1,4 @@
-function [sol] = plot_mission_4neo(sol,colors,asteroid_names_sequence)
+function [sol] = plot_mission_4neo(sol,colors,asteroid_names_sequence,data)
     
     AU = astroConstants(2);
 
@@ -18,15 +18,22 @@ function [sol] = plot_mission_4neo(sol,colors,asteroid_names_sequence)
     ast4 = asteroid_names_sequence(4);
     
     % Position of planet at solutions moments
-    [kep_EA, muSun] = uplanet(MJD01, 3); % Earth Departure
-    [r_EA, v_EA] = sv_from_coe(kep_EA,muSun); %km, km/s
-    [r_ast1_1,v_ast1_1] = uNEO(MJDF1, ast1); %km, km/s, Ast 1 Arrival
-    [r_ast1_2,v_ast1_2] = uNEO(MJD02, ast1); % Ast 1 Departure after Coasting
-    [r_ast2_1,v_ast2_1] = uNEO(MJDF2, ast2); % Ast 2 Arrival
-    [r_ast2_2,v_ast2_2] = uNEO(MJD03, ast2); % Ast 2 Departure after Coasting
-    [r_ast3_1,v_ast3_1] = uNEO(MJDF3, ast3); % Ast 3 Arrival
-    [r_ast3_2,v_ast3_2] = uNEO(MJD04, ast3); % Ast 3 Departure after Coasting
-    [r_ast4_1,v_ast4_1] = uNEO(MJDF4, ast4); % Ast 4 Arrival
+    [kep_EA, ksun] = uplanet(MJD01, 3); % Earth Departure
+    [r_EA, v_EA] = sv_from_coe(kep_EA,ksun); %km, km/s
+    [kep_ast_1_1] = uNEO2(MJDF1,ast1,data);
+    [r_ast1_1,v_ast1_1] = sv_from_coe(kep_ast_1_1,ksun); % km, km/s
+    [kep_ast_1_2] = uNEO2(MJD02,ast1,data);
+    [r_ast1_2,v_ast1_2] = sv_from_coe(kep_ast_1_2,ksun); % km, km/s % Ast 1 Departure after Coasting
+    [kep_ast_2_1] = uNEO2(MJDF2,ast2,data);
+    [r_ast2_1,v_ast2_1] = sv_from_coe(kep_ast_2_1,ksun); % km, km/s
+    [kep_ast_2_2] = uNEO2(MJD03,ast2,data);
+    [r_ast2_2,v_ast2_2] = sv_from_coe(kep_ast_2_2,ksun); % km, km/s
+    [kep_ast_3_1] = uNEO2(MJDF3,ast3,data);
+    [r_ast3_1,v_ast3_1] = sv_from_coe(kep_ast_3_1,ksun); % km, km/s
+    [kep_ast_3_2] = uNEO2(MJD04,ast3,data);
+    [r_ast3_2,v_ast3_2] = sv_from_coe(kep_ast_3_2,ksun); % km, km/s % Ast 3 Departure after Coasting
+    [kep_ast_4_1] = uNEO2(MJDF4,ast4,data);
+    [r_ast4_1,v_ast4_1] = sv_from_coe(kep_ast_4_1,ksun); % km, km/s % Ast 4 Arrival
     
     % Converting mJD2000 in seconds
     t1_sec = MJD01*60*60*24;
@@ -38,33 +45,33 @@ function [sol] = plot_mission_4neo(sol,colors,asteroid_names_sequence)
     t7_sec = MJD04*60*60*24;
     t8_sec = MJDF4*60*60*24;
     
-    % Earth injection orbits
-    v_inf = sol.v_inf_magn.*[cos(sol.v_inf_alpha)*cos(sol.v_inf_beta); 
-                    sin(sol.v_inf_alpha)*cos(sol.v_inf_beta); 
-                    sin(sol.v_inf_beta)];
-    v_inj = v_EA+v_inf'; % v_EA is row, v_inf would be column as built
+%     % Earth injection orbits
+%     v_inf = sol.v_inf_magn.*[cos(sol.v_inf_alpha)*cos(sol.v_inf_beta); 
+%                     sin(sol.v_inf_alpha)*cos(sol.v_inf_beta); 
+%                     sin(sol.v_inf_beta)];
+%     v_inj = v_EA+v_inf'; % v_EA is row, v_inf would be column as built
     
     % Lamberts and deltaVs
     ToF12_sec = t2_sec - t1_sec;
-    [~,~,~,~,VI12,VF12,~,~] = lambertMR(r_EA,r_ast1_1,ToF12_sec,muSun,0,0,0,0);
-    dv1 = sqrt((VI12(1)-v_inj(1))^2+(VI12(2)-v_inj(2))^2+(VI12(3)-v_inj(3))^2);
+    [~,~,~,~,VI12,VF12,~,~] = lambertMR(r_EA,r_ast1_1,ToF12_sec,ksun,0,0,0,0);
+%     dv1 = sqrt((VI12(1)-v_EA(1))^2+(VI12(2)-v_EA(2))^2+(VI12(3)-v_EA(3))^2);
     dv2 = sqrt((VF12(1)-v_ast1_1(1))^2+(VF12(2)-v_ast1_1(2))^2+(VF12(3)-v_ast1_1(3))^2);
-    sol.dV_tot_ea_ast1 = dv1 + dv2;
+    sol.dV_tot_ea_ast1 = dv2;
     
     ToF34_sec = t4_sec - t3_sec;
-    [~,~,~,~,VI34,VF34,~,~] = lambertMR(r_ast1_2,r_ast2_1,ToF34_sec,muSun,0,0,0,0);
+    [~,~,~,~,VI34,VF34,~,~] = lambertMR(r_ast1_2,r_ast2_1,ToF34_sec,ksun,0,0,0,0);
     dv3 = sqrt((VI34(1)-v_ast1_2(1))^2+(VI34(2)-v_ast1_2(2))^2+(VI34(3)-v_ast1_2(3))^2);
     dv4 = sqrt((VF34(1)-v_ast2_1(1))^2+(VF34(2)-v_ast2_1(2))^2+(VF34(3)-v_ast2_1(3))^2);
     sol.dV_tot_ast1_ast2 = dv3 + dv4;
     
     ToF56_sec = t6_sec - t5_sec;
-    [~,~,~,~,VI56,VF56,~,~] = lambertMR(r_ast2_2,r_ast3_1,ToF56_sec,muSun,0,0,0,0);
+    [~,~,~,~,VI56,VF56,~,~] = lambertMR(r_ast2_2,r_ast3_1,ToF56_sec,ksun,0,0,0,0);
     dv5 = sqrt((VI56(1)-v_ast2_2(1))^2+(VI56(2)-v_ast2_2(2))^2+(VI56(3)-v_ast2_2(3))^2);
     dv6 = sqrt((VF56(1)-v_ast3_1(1))^2+(VF56(2)-v_ast3_1(2))^2+(VF56(3)-v_ast3_1(3))^2);
     sol.dV_tot_ast2_ast3 = dv5 + dv6;
     
     ToF78_sec = t8_sec - t7_sec;
-    [~,~,~,~,VI78,VF78,~,~] = lambertMR(r_ast3_2,r_ast4_1,ToF78_sec,muSun,0,0,0,0);
+    [~,~,~,~,VI78,VF78,~,~] = lambertMR(r_ast3_2,r_ast4_1,ToF78_sec,ksun,0,0,0,0);
     dv7 = sqrt((VI78(1)-v_ast3_2(1))^2+(VI78(2)-v_ast3_2(2))^2+(VI78(3)-v_ast3_2(3))^2);
     dv8 = sqrt((VF78(1)-v_ast4_1(1))^2+(VF78(2)-v_ast4_1(2))^2+(VF78(3)-v_ast4_1(3))^2);
     sol.dV_tot_ast3_ast4 = dv7 + dv8;
@@ -76,8 +83,8 @@ function [sol] = plot_mission_4neo(sol,colors,asteroid_names_sequence)
     T_EA = linspace(MJD01,MJD01+oneyearEA,n);
     R_EA = zeros(n,3); V_EA = zeros(n,3);
     for k=1:n
-        [kep_EA,muSun] = uplanet(T_EA(k), 3);
-        [r_EA, v_EA] = sv_from_coe(kep_EA,muSun);  
+        [kep_EA,ksun] = uplanet(T_EA(k), 3);
+        [r_EA, v_EA] = sv_from_coe(kep_EA,ksun);  
         R_EA(k,:)=r_EA/AU; % it's in km it becomes already AU, to be plotted
         V_EA(k,:)=v_EA;
     end

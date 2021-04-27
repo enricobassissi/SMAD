@@ -34,25 +34,29 @@ colors = [0    50   71;... % (1) DEEP SPACE
           51   94   111;... % (11) DEEP SPACE -1
           0    0    0]./255; % (12) BLACK
 
-%% INTRO ADIMENSIONALISATION
-sim.mu = 1.32712440017987e11; % Sun planetary constant (mu = mass * G) (from DE405) [km^3/s^2]
-sim.DU = 149597870.691; % Distance Unit = Astronomical Unit (AU) (from DE405) [km]
-sim.TU = (sim.DU^3/sim.mu)^0.5; % Time Unit
-sim.mu = 1;
+% %% INTRO ADIMENSIONALISATION
+% sim.mu = 1.32712440017987e11; % Sun planetary constant (mu = mass * G) (from DE405) [km^3/s^2]
+% sim.DU = 149597870.691; % Distance Unit = Astronomical Unit (AU) (from DE405) [km]
+% sim.TU = (sim.DU^3/sim.mu)^0.5; % Time Unit
+% sim.mu = 1;
 
-%% Call to NASA JPL Horizons to get Asteroid's Ephemerides
+%% Call to Python Functions module
 % Import module of Python
 module = py.importlib.import_module('neo_api_function');
 
-%%
-% Asteroids
+%% Asteroids
 % data extraction section
-asteroid_names = ["2006HX57";"2008XU2";"2008KN11";"2012SY49";"2012QD8";"2020UE";...
+data.asteroid_names = ["2006HX57";"2008XU2";"2008KN11";"2012SY49";"2012QD8";"2020UE";...
                   "2006SC";"2005WG57";"2012BY1"];
 
 % Number of possible combination of 4 asteroids among the ones in the list
-HowMany = factorial(length(asteroid_names)) / factorial(length(asteroid_names) - 4);
-[PermutationMatrix, ~] = permnUnique(asteroid_names, 4);
+data.HowMany = factorial(length(data.asteroid_names)) / factorial(length(data.asteroid_names) - 4);
+[data.PermutationMatrix, ~] = permnUnique(data.asteroid_names, 4);
+
+%% uNEO
+load('data.mat')
+% if the asteroid have changed, run the find_eph_neo below, it takes about 1 min
+% [data.y_interp_ft, data.t_vector] = find_eph_neo(data.asteroid_names);
 
 %% Boundaries
 % Departure dates (1)
@@ -73,7 +77,7 @@ sim.soo_lim.TOF2_max = 3*365; % days
 % to use round in the code... so we have same probility to be rounded to
 % the first or to the last element in the matrix as in the middle elements!
 sim.soo_lim.permutations_low = 0.5; 
-sim.soo_lim.permutations_up = HowMany + 0.4999;
+sim.soo_lim.permutations_up = data.HowMany + 0.4999;
 % Buffer time 2 (6)
 sim.soo_lim.bt2_min = 30;
 sim.soo_lim.bt2_max = 180;
@@ -103,10 +107,10 @@ sim.C3_max = 40; % km^2/s^2
 
 %% Options
 options = optimoptions('particleswarm');
-% ,'SwarmSize',50,'HybridFcn',@fmincon
-options.MaxIterations = 20; %  Default is 200*nvars
-options.MaxStallIterations = 10; % Default 20
-options.SwarmSize = 50; % Default is min(100,10*nvars),
+% options.HybridFcn = @fmincon;
+options.MaxIterations = 500; %  Default is 200*nvars
+options.MaxStallIterations = 50; % Default 20
+options.SwarmSize = 2000; % Default is min(100,10*nvars),
 options.Display = 'iter';
 options.FunctionTolerance = 1e-6;
 
@@ -122,7 +126,7 @@ end
 options.UseParallel = true;
 
 %% Build the soo
-FitnessFunction = @(x) ff_neo_perm_soo(x, PermutationMatrix, sim); % Function handle to the fitness function
+FitnessFunction = @(x) ff_neo_perm_soo(x, data, sim); % Function handle to the fitness function
 numberOfVariables = length(sim.soo_bound.ub); % Number of decision variables
 
 tic
@@ -132,27 +136,24 @@ el_time_min_pp = toc/60;
 
 %% Build solution structure
 % set the knee as main solution
-asteroid_sequence = PermutationMatrix(round(x(8)),:);
+asteroid_sequence = data.PermutationMatrix(round(x(5)),:);
 sol.ast_1 = asteroid_sequence(1);
 sol.ast_2 = asteroid_sequence(2);
 sol.ast_3 = asteroid_sequence(3);
 sol.ast_4 = asteroid_sequence(4);
 sol.MJD0 = x(1);
 sol.dep_date = mjd20002date(sol.MJD0)';
-sol.TOF_tot_D = x(2)+x(6)+x(7)+x(9)+x(10)+x(11)+x(12);
+sol.TOF_tot_D = x(2)+x(3)+x(4)+x(6)+x(7)+x(8)+x(9);
 sol.TOF_tot_Y = sol.TOF_tot_D/365;
 sol.end_of_mission_date = mjd20002date(sol.MJD0+sol.TOF_tot_D)';
 sol.dV_tot = Fval(1);
 sol.TOF1 = x(2);
-sol.buffer_time1 = x(6);
-sol.TOF2 = x(7);
-sol.buffer_time2 = x(9);
-sol.TOF3 = x(10);
-sol.buffer_time3 = x(11);
-sol.TOF4 = x(12);
-sol.v_inf_magn = x(3);
-sol.v_inf_alpha = rad2deg(x(4));
-sol.v_inf_beta = rad2deg(x(5));
+sol.buffer_time1 = x(3);
+sol.TOF2 = x(4);
+sol.buffer_time2 = x(6);
+sol.TOF3 = x(7);
+sol.buffer_time3 = x(8);
+sol.TOF4 = x(9);
 
 %% Mass Consumption for High Thrust Impulsive Case
 g0 = 9.81; %m/s^2
@@ -161,7 +162,7 @@ Isp = 230; %s
 m_dry = 100; %kg
 m_prop = m_dry*(exp(sol.dV_tot*1e3/(g0*Isp)) - 1); %kg
 %% Plot trajectories
-sol = plot_mission_4neo(sol,colors,asteroid_sequence)
+sol = plot_mission_4neo(sol,colors,asteroid_sequence,data)
 
 %% Plot orbit asteroids
 plot_orbits_asteroids(asteroid_names,colors)

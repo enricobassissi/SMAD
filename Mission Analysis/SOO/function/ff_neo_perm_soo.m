@@ -1,4 +1,4 @@
-function obj_fun = ff_neo_perm_soo(x,PermutationMatrix,sim)
+function obj_fun = ff_neo_perm_soo(x, data, sim)
 % setting the input times
 MJD01 = x(1);
 TOF1 = x(2);
@@ -18,32 +18,39 @@ MJDF4 = MJD04 + TOF4;
 
 % chosing which asteroid to visit
 IDP = round(x(5)); %index of permutation, the column of the Permutation Matrix of the asteroids
-asteroid_1 = PermutationMatrix(IDP,1);
-asteroid_2 = PermutationMatrix(IDP,2);
-asteroid_3 = PermutationMatrix(IDP,3);
-asteroid_4 = PermutationMatrix(IDP,4);
+asteroid_1 = data.PermutationMatrix(IDP,1);
+asteroid_2 = data.PermutationMatrix(IDP,2);
+asteroid_3 = data.PermutationMatrix(IDP,3);
+asteroid_4 = data.PermutationMatrix(IDP,4);
 
 % Computing position and velocity of the planets in that days
 % Departure from Earth
 [kep_EA,ksun] = uplanet(MJD01, 3);
-[r1, v1] = sv_from_coe(kep_EA,ksun);
+[r1, v1] = sv_from_coe(kep_EA,ksun); % km, km/s
 % arrival at 1st ast
-[r2,v2] = uNEO(MJDF1, asteroid_1);
+[kep_ast_1_1] = uNEO2(MJDF1,asteroid_1,data);
+[r2, v2] = sv_from_coe(kep_ast_1_1,ksun); % km, km/s
 
 % dep at 1st after buffer
-[r3, v3] = uNEO(MJD02, asteroid_1);
+[kep_ast_1_2] = uNEO2(MJD02,asteroid_1,data);
+[r3, v3] = sv_from_coe(kep_ast_1_2,ksun); % km, km/s
 % arrival at 2nd asteroid 
-[r4, v4] = uNEO(MJDF2, asteroid_2);
+[kep_ast_2_1] = uNEO2(MJDF2,asteroid_2,data);
+[r4, v4] = sv_from_coe(kep_ast_2_1,ksun); % km, km/s
 
 % dep at 2nd asteroid 
-[r5, v5] = uNEO(MJD03, asteroid_2);
+[kep_ast_2_2] = uNEO2(MJD03,asteroid_2,data);
+[r5, v5] = sv_from_coe(kep_ast_2_2,ksun); % km, km/s
 % arrival at 3rd asteroid 
-[r6, v6] = uNEO(MJDF3, asteroid_3);
+[kep_ast_3_1] = uNEO2(MJDF3,asteroid_3,data);
+[r6, v6] = sv_from_coe(kep_ast_3_1,ksun); % km, km/s
 
 % dep at 3rd asteroid 
-[r7, v7] = uNEO(MJD04, asteroid_3);
+[kep_ast_3_2] = uNEO2(MJD04,asteroid_3,data);
+[r7, v7] = sv_from_coe(kep_ast_3_2,ksun); % km, km/s
 % arrival at 4th asteroid 
-[r8, v8] = uNEO(MJDF4, asteroid_4);
+[kep_ast_4_1] = uNEO2(MJDF4,asteroid_4,data);
+[r8, v8] = sv_from_coe(kep_ast_4_1,ksun); % km, km/s
 
 % Converting mJ2000 in seconds
 t1_sec = MJD01*60*60*24;
