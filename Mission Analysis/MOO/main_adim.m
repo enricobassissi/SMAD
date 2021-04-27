@@ -35,10 +35,11 @@ colors = [0    50   71;... % (1) DEEP SPACE
           0    0    0]./255; % (12) BLACK
 
 %% INTRO ADIMENSIONALISATION
-sim.mu = 1.32712440017987e11; % Sun planetary constant (mu = mass * G) (from DE405) [km^3/s^2]
-sim.DU = 149597870.691; % Distance Unit = Astronomical Unit (AU) (from DE405) [km]
-sim.TU = (sim.DU^3/sim.mu)^0.5; % Time Unit
-sim.mu = 1;
+sim.mu    = 132712440018          ; % actractor parameter [km^3 s^-2]
+sim.DU    = 149597870.7           ; % distance unit [km]
+sim.TU    = (sim.DU^3/sim.mu )^0.5; % time unit [s]
+sim.mu    = 1;                      % non-dimensional attractor parameter [DU^3/TU^2]
+sim.g0 = 9.81*(sim.TU^2/(1000*sim.DU)); % non-dimensional g0
 
 %% Call to NASA JPL Horizons to get Asteroid's Ephemerides
 % Import module of Python
@@ -58,41 +59,41 @@ HowMany = factorial(length(asteroid_names)) / factorial(length(asteroid_names) -
 % Departure dates
 sim.bound.date_ed = [2022, 1, 1, 0, 0, 0];
 sim.bound.date_ld =  [2028, 1, 1, 0, 0, 0];
-sim.bound.mjd2000_ed = date2mjd2000(sim.bound.date_ed);
-sim.bound.mjd2000_ld = date2mjd2000(sim.bound.date_ld);
+sim.bound.mjd2000_ed = date2mjd2000(sim.bound.date_ed)*3600*24/sim.TU;
+sim.bound.mjd2000_ld = date2mjd2000(sim.bound.date_ld)*3600*24/sim.TU;
 % TOF1
-sim.bound.TOF1_min = 200; % days
-sim.bound.TOF1_max = 3*365; % days
+sim.bound.TOF1_min = 200*3600*24/sim.TU; 
+sim.bound.TOF1_max = 3*365*3600*24/sim.TU;
 % Launcher velocity given and angles
 sim.bound.v_inf_magn_min = 0;
-sim.bound.v_inf_magn_max = sqrt(40); % c3 = 40 km/s^2
+sim.bound.v_inf_magn_max = sqrt(40)./sim.DU.*sim.TU; % c3 = 40 km/s^2
 sim.bound.alpha_min = deg2rad(0);
 sim.bound.alpha_max = deg2rad(360);
 sim.bound.beta_min = deg2rad(0);
 sim.bound.beta_max = deg2rad(360);
 % Buffer time 1
-sim.bound.bt1_min = 30;
-sim.bound.bt1_max = 180;
+sim.bound.bt1_min = 30*3600*24/sim.TU;
+sim.bound.bt1_max = 180*3600*24/sim.TU;
 % TOF2
-sim.bound.TOF2_min = 50; % days
-sim.bound.TOF2_max = 3*365; % days
+sim.bound.TOF2_min = 50*3600*24/sim.TU; % days
+sim.bound.TOF2_max = 3*365*3600*24/sim.TU; % days
 % Matrix of permutations
 % to use round in the code... so we have same probility to be rounded to
 % the first or to the last element in the matrix as in the middle elements!
 sim.bound.permutations_low = 0.5; 
 sim.bound.permutations_up = HowMany + 0.4999;
 % Buffer time 2
-sim.bound.bt2_min = 30;
-sim.bound.bt2_max = 180;
+sim.bound.bt2_min = 30*3600*24/sim.TU;
+sim.bound.bt2_max = 180*3600*24/sim.TU;
 % TOF3
-sim.bound.TOF3_min = 50; % days
-sim.bound.TOF3_max = 3*365; % days
+sim.bound.TOF3_min = 50*3600*24/sim.TU; % days
+sim.bound.TOF3_max = 3*365*3600*24/sim.TU; % days
 % Buffer time 3 
-sim.bound.bt3_min = 30;
-sim.bound.bt3_max = 180;
+sim.bound.bt3_min = 30*3600*24/sim.TU;
+sim.bound.bt3_max = 180*3600*24/sim.TU;
 % TOF4
-sim.bound.TOF4_min = 50; % days
-sim.bound.TOF4_max = 3*365; % days
+sim.bound.TOF4_min = 50*3600*24/sim.TU; % days
+sim.bound.TOF4_max = 3*365*3600*24/sim.TU; % days
 
 % x = [MJD0,TOF1,v_inf_magn,aplha,beta,buffer_time,TOF2,ID_permutation,...
 %      buffer_time2,TOF3,buffer_time3,TOF4]
@@ -140,8 +141,8 @@ end
 
 options.UseParallel = true;
 
-%% Build the moo
-FitnessFunction = @(x) ff_neo_perm(x, PermutationMatrix); % Function handle to the fitness function
+%% Build the moo 
+FitnessFunction = @(x) ff_neo_perm_adim(x, PermutationMatrix, sim); % Function handle to the fitness function
 numberOfVariables = length(sim.bound.ub); % Number of decision variables
 
 tic
@@ -165,6 +166,9 @@ legend([h_pp,h_kpp],'Sub-Optim Sol','Knee Sol')
 clearvars h_pp h_kpp
 
 %% Build solution structure
+% readimensionalise the solution
+
+
 % set the knee as main solution
 asteroid_sequence = PermutationMatrix(round(x(knee_idx,8)),:);
 sol.ast_1 = asteroid_sequence(1);

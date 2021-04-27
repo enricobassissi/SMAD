@@ -78,7 +78,7 @@ obj_fun(1) = dv_tot1 + dv_tot2 + dv_tot3 + dv_tot4;
 if isnan(obj_fun(1))
     obj_fun(2) = NaN;
 else
-    obj_fun(2) = TOF1 + TOF2 + TOF3 + TOF4;
+    obj_fun(2) = TOF1 + buffer_time1 + TOF2 + buffer_time2 + TOF3 + buffer_time3 + TOF4;
 end
 
 end
