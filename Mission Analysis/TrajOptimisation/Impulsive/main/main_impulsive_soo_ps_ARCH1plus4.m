@@ -86,40 +86,28 @@ sim.soo_lim.mjd2000_ld = date2mjd2000(sim.soo_lim.date_ld);
 % TOF1 (2)
 sim.soo_lim.TOF1_min = 200; % days
 sim.soo_lim.TOF1_max = 3*365; % days
-% Buffer time 1 (3)
-sim.soo_lim.bt1_min = 30;
-sim.soo_lim.bt1_max = 180;
-% TOF2 (4)
+% TOF2 (3)
 sim.soo_lim.TOF2_min = 50; % days
 sim.soo_lim.TOF2_max = 3*365; % days
-% Matrix of permutations (5)
+% TOF3 (4)
+sim.soo_lim.TOF3_min = 50; % days
+sim.soo_lim.TOF3_max = 3*365; % days
+% TOF4 (5)
+sim.soo_lim.TOF4_min = 50; % days
+sim.soo_lim.TOF4_max = 3*365; % days
+% Matrix of permutations (6)
 % to use round in the code... so we have same probility to be rounded to
 % the first or to the last element in the matrix as in the middle elements!
 sim.soo_lim.permutations_low = 0.5; 
 sim.soo_lim.permutations_up = data.HowMany + 0.4999;
-% Buffer time 2 (6)
-sim.soo_lim.bt2_min = 30;
-sim.soo_lim.bt2_max = 180;
-% TOF3 (7)
-sim.soo_lim.TOF3_min = 50; % days
-sim.soo_lim.TOF3_max = 3*365; % days
-% Buffer time 3 (8)
-sim.soo_lim.bt3_min = 30;
-sim.soo_lim.bt3_max = 180;
-% TOF4 (9)
-sim.soo_lim.TOF4_min = 50; % days
-sim.soo_lim.TOF4_max = 3*365; % days
 
-% x = [MJD0,TOF1,buffer_time,TOF2,ID_permutation,...
-%      buffer_time2,TOF3,buffer_time3,TOF4]
+% x = [MJD0,TOF1,TOF2,TOF3,TOF4,ID_permutation]
 sim.soo_bound.lb = [sim.soo_lim.mjd2000_ed, sim.soo_lim.TOF1_min,...
-      sim.soo_lim.bt1_min,...
-      sim.soo_lim.TOF2_min,sim.soo_lim.permutations_low,sim.soo_lim.bt2_min,...
-      sim.soo_lim.TOF3_min,sim.soo_lim.bt3_min,sim.soo_lim.TOF4_min]; % Lower bound
+      sim.soo_lim.TOF2_min,sim.soo_lim.TOF3_min,...
+      sim.soo_lim.TOF4_min,sim.soo_lim.permutations_low]; % Lower bound
 sim.soo_bound.ub = [sim.soo_lim.mjd2000_ld, sim.soo_lim.TOF1_max,...
-      sim.soo_lim.bt1_max,...
-      sim.soo_lim.TOF2_max,sim.soo_lim.permutations_up,sim.soo_lim.bt2_max,...
-      sim.soo_lim.TOF3_max,sim.soo_lim.bt3_max,sim.soo_lim.TOF4_max]; % Upper bound
+      sim.soo_lim.TOF2_max,sim.soo_lim.TOF3_max,...
+      sim.soo_lim.TOF4_max,sim.soo_lim.permutations_up]; % Upper bound
 
 % Constraint on C3 Launcher
 sim.C3_max = 20; % km^2/s^2
@@ -145,7 +133,7 @@ end
 options.UseParallel = true;
 
 %% Build the soo
-FitnessFunction = @(x) ff_impulsive_soo(x, data, sim); % Function handle to the fitness function
+FitnessFunction = @(x) ff_impulsive_soo_ARCH1plus4(x, data, sim); % Function handle to the fitness function
 numberOfVariables = length(sim.soo_bound.ub); % Number of decision variables
 
 tic
@@ -155,24 +143,21 @@ el_time_min_pp = toc/60;
 
 %% Build solution structure
 % set the knee as main solution
-asteroid_sequence = data.PermutationMatrix(round(x(5)),:);
+asteroid_sequence = data.PermutationMatrix(round(x(6)),:);
 sol.ast_1 = asteroid_sequence(1);
 sol.ast_2 = asteroid_sequence(2);
 sol.ast_3 = asteroid_sequence(3);
 sol.ast_4 = asteroid_sequence(4);
 sol.MJD0 = x(1);
 sol.dep_date = mjd20002date(sol.MJD0)';
-sol.TOF_tot_D = x(2)+x(3)+x(4)+x(6)+x(7)+x(8)+x(9);
+sol.TOF_tot_D = x(2)+x(3)+x(4)+x(5);
 sol.TOF_tot_Y = sol.TOF_tot_D/365;
 sol.end_of_mission_date = mjd20002date(sol.MJD0+sol.TOF_tot_D)';
 sol.dV_tot = Fval(1);
 sol.TOF1 = x(2);
-sol.buffer_time1 = x(3);
-sol.TOF2 = x(4);
-sol.buffer_time2 = x(6);
-sol.TOF3 = x(7);
-sol.buffer_time3 = x(8);
-sol.TOF4 = x(9);
+sol.TOF2 = x(3);
+sol.TOF3 = x(4);
+sol.TOF4 = x(5);
 
 %% Mass Consumption for High Thrust Impulsive Case
 g0 = 9.81; %m/s^2
@@ -181,7 +166,7 @@ Isp = 230; %s
 m_dry = 100; %kg
 m_prop = m_dry*(exp(sol.dV_tot*1e3/(g0*Isp)) - 1); %kg
 %% Plot trajectories
-sol = plot_mission_4neo(sol,asteroid_sequence,data,sim,colors)
+sol = plot_mission_4neo_flyby(sol,asteroid_sequence,data,sim,colors)
 
 %% Plot orbit asteroids
 % plot_orbits_asteroids(asteroid_names,colors)

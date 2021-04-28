@@ -1,4 +1,4 @@
-function res = ff_impulsive_moo_ga(x_, data, sim)
+function res = ff_impulsive_moo_ps(x_, data, sim)
 
 size_x_=size(x_);
 res=zeros(size_x_(1),2);

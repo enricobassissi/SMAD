@@ -12,8 +12,13 @@ set(0, 'DefaultLineLineWidth', 2)
 format short
 %% Initialise the environment
 clear; close all; clc;
-addpath time
-addpath Functions
+path_str=split(pwd, 'NeoEph');
+path_utils=string(path_str(1))+'Utils';
+addpath(genpath(path_utils));
+path_py=string(path_str(1))+'PyInterface\NEO_API_py';
+addpath(genpath(path_py));
+path_neoeph=string(path_str(1))+'NeoEph';
+addpath(genpath(path_neoeph));
 
 AU = astroConstants(2);
 muSun = astroConstants(4);
@@ -33,8 +38,13 @@ colors = [0    50   71;... % DEEP SPACE
           0    0    0]./255; % BLACK
 
 %% Python module extraction and elaboration
-% Import the neo_api py library
-module = py.importlib.import_module('neo_api_function');
+% Import module of Python
+try 
+    module = py.importlib.import_module('neo_api_function');
+catch
+    copyfile(path_py+'\neo_api_function.py', pwd, 'f'); 
+    module = py.importlib.import_module('neo_api_function');
+end
 
 % Obtain the Sentry risk list
 sentry_risk_names=py.neo_api_function.get_sentry_risk_list();
@@ -302,3 +312,6 @@ end
 VV_max_orbit_err %AU
 VV_mean_orbit_err %AU
 VV_std_orbit_err %AU
+
+%% delete the python file from this directory
+delete('neo_api_function.py');

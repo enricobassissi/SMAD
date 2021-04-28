@@ -45,11 +45,11 @@ colors = [0    50   71;... % (1) DEEP SPACE
           51   94   111;... % (11) DEEP SPACE -1
           0    0    0]./255; % (12) BLACK
 
-%% INTRO ADIMENSIONALISATION
-sim.mu = 1.32712440017987e11; % Sun planetary constant (mu = mass * G) (from DE405) [km^3/s^2]
-sim.DU = 149597870.691; % Distance Unit = Astronomical Unit (AU) (from DE405) [km]
-sim.TU = (sim.DU^3/sim.mu)^0.5; % Time Unit
-sim.mu = 1;
+% %% INTRO ADIMENSIONALISATION
+% sim.mu = 1.32712440017987e11; % Sun planetary constant (mu = mass * G) (from DE405) [km^3/s^2]
+% sim.DU = 149597870.691; % Distance Unit = Astronomical Unit (AU) (from DE405) [km]
+% sim.TU = (sim.DU^3/sim.mu)^0.5; % Time Unit
+% sim.mu = 1;
 
 %% Call to NASA JPL Horizons to get Asteroid's Ephemerides
 % Import module of Python
@@ -136,8 +136,6 @@ sim.constr.nonlcon = []; % linear equality constraints
 
 %% Options
 
-
-
 % Parallel pool
 % Open the parallel pool
 % par_pool = gcp; 
@@ -175,7 +173,3 @@ MultiObj.var_max = sim.bound.ub;
 %% MOPSO
 REP = MOPSO(params,MultiObj);
 
-
-% [x,Fval,exitFlag,Output] = gamultiobj(FitnessFunction,numberOfVariables,sim.constr.A, ...
-%     sim.constr.b,sim.constr.Aeq,sim.constr.beq,sim.bound.lb,sim.bound.ub,...
-%     sim.constr.nonlcon,options);
