@@ -64,8 +64,8 @@ sim.moo_lim.TOF1_max = 1000*3600*24/sim.TU;
 sim.moo_lim.N_REV_min = -0.5;
 sim.moo_lim.N_REV_max = 3.4999;
 % sim.hp
-sim.moo_lim.hp_min = 2.5;
-sim.moo_lim.hp_max = 5.4999;
+sim.moo_lim.hp_min = -0.5;
+sim.moo_lim.hp_max = 20.4999;
 % vinf_mag
 sim.moo_lim.vinf_mag_min = 0.75;
 sim.moo_lim.vinf_mag_max = 2;
@@ -80,7 +80,7 @@ sim.moo_lim.beta_max =  pi;
 % % x = [MJD0,TOF,N_REV]
 % sim.moo_bound.lb = [sim.moo_lim.mjd2000_ed, sim.moo_lim.TOF1_min, sim.moo_lim.N_REV_min]; % Lower bound
 % sim.moo_bound.ub = [sim.moo_lim.mjd2000_ld, sim.moo_lim.TOF1_max, sim.moo_lim.N_REV_max]; % Upper bound
-% x = [MJD0,TOF,N_REV,hp,vinf_mag,alpha,beta]
+% x = [MJD0,TOF,N_REV,hp]
 sim.moo_bound.lb = [sim.moo_lim.mjd2000_ed, sim.moo_lim.TOF1_min, sim.moo_lim.N_REV_min, sim.moo_lim.hp_min,sim.moo_lim.vinf_mag_min,sim.moo_lim.alpha_min,sim.moo_lim.beta_min]; % Lower bound
 sim.moo_bound.ub = [sim.moo_lim.mjd2000_ld, sim.moo_lim.TOF1_max, sim.moo_lim.N_REV_max, sim.moo_lim.hp_max,sim.moo_lim.vinf_mag_max,sim.moo_lim.alpha_max,sim.moo_lim.beta_max]; % Upper bound
 

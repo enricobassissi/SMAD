@@ -243,7 +243,7 @@ if isreal(l_d)
         
     else
         
-        m = k;
+        m = k; %% what is k? 
         m(1) = M;
         K = -a_vect/(PS.Is*sim.g0)./l_d;
         m(2) = m(1) +dl/2*(K(1)*m(1)+K(2)*m(2));
@@ -273,8 +273,7 @@ if isreal(l_d)
     output.PSY     = L ;
     output.v_r     = v_r ;
     output.w       = l_d;
-    output.v_z     = v_z ;
-    
+    output.v_z     = v_z;    
 else
     
     output.u       = nan ;
