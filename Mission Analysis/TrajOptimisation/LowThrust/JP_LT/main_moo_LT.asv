@@ -105,6 +105,12 @@ options.DistanceMeasureFcn = {@distancecrowding,'phenotype'};
 options.PopulationSize = 1000; % ideal 1000
 options.ParetoFraction = 0.5;
 options.MaxGenerations = 15; % ideal 100
+=======
+<<<<<<< HEAD
+options.PopulationSize = 10; % ideal 1000
+options.ParetoFraction = 0.7;
+options.MaxGenerations = 5; % ideal 100
+>>>>>>> c77695a3413183c5d6adb1d6d679723b80ca46b7:Mission Analysis/TrajOptimisation/LowThrust/JP_LT/main_moo_LT.m
 
 options.FunctionTolerance = 1e-6;
 options.MaxStallGenerations = 3;
