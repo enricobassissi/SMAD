@@ -1,6 +1,0 @@
-elements
-433 eros
-sun body center
-start 2019-01-20, stop 2021-01-20, step = 1d
-reference plane=frame, labels = no, csv format = yes, object page = no
-download/save
