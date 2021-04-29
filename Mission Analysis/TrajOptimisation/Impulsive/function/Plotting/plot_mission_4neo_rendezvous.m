@@ -1,4 +1,4 @@
-function [sol] = plot_mission_4neo(sol,asteroid_names_sequence,data,sim,colors)
+function [sol] = plot_mission_4neo_rendezvous(sol,asteroid_names_sequence,data,sim,colors)
     
     AU = astroConstants(2);
 
@@ -35,24 +35,17 @@ function [sol] = plot_mission_4neo(sol,asteroid_names_sequence,data,sim,colors)
     [kep_ast_4_1] = uNEO2(MJDF4,ast4,data);
     [r_ast4_1,v_ast4_1] = sv_from_coe(kep_ast_4_1,ksun); % km, km/s % Ast 4 Arrival
     
-    % Converting mJD2000 in seconds
-    t1_sec = MJD01*60*60*24;
-    t2_sec = MJDF1*60*60*24;
-    t3_sec = MJD02*60*60*24;
-    t4_sec = MJDF2*60*60*24;
-    t5_sec = MJD03*60*60*24;
-    t6_sec = MJDF3*60*60*24;
-    t7_sec = MJD04*60*60*24;
-    t8_sec = MJDF4*60*60*24;
-    
-%     % Earth injection orbits
-%     v_inf = sol.v_inf_magn.*[cos(sol.v_inf_alpha)*cos(sol.v_inf_beta); 
-%                     sin(sol.v_inf_alpha)*cos(sol.v_inf_beta); 
-%                     sin(sol.v_inf_beta)];
-%     v_inj = v_EA+v_inf'; % v_EA is row, v_inf would be column as built
+    % Converting time points from days to seconds
+    departure_sec = sol.MJD0*60*60*24;
+    ToF12_sec = sol.TOF1*60*60*24;
+    buffer_time1_sec = sol.buffer_time1*60*60*24;
+    ToF34_sec = sol.TOF2*60*60*24;
+    buffer_time2_sec = sol.buffer_time2*60*60*24;
+    ToF56_sec = sol.TOF3*60*60*24;
+    buffer_time3_sec = sol.buffer_time3*60*60*24;
+    ToF78_sec = sol.TOF4*60*60*24;
     
     % Lamberts and deltaVs
-    ToF12_sec = t2_sec - t1_sec;
     [~,~,~,~,VI12,VF12,~,~] = lambertMR(r_EA,r_ast1_1,ToF12_sec,ksun,0,0,0,0);
     dv1 = sqrt((VI12(1)-v_EA(1))^2+(VI12(2)-v_EA(2))^2+(VI12(3)-v_EA(3))^2);
     if dv1 < sqrt(sim.C3_max)
@@ -65,19 +58,16 @@ function [sol] = plot_mission_4neo(sol,asteroid_names_sequence,data,sim,colors)
     sol.dV_single.dV2 = sqrt((VF12(1)-v_ast1_1(1))^2+(VF12(2)-v_ast1_1(2))^2+(VF12(3)-v_ast1_1(3))^2);
     sol.dV_tot_leg1 = sol.dV_single.dV2 + sol.dV_single.dV_extra_launch;
     
-    ToF34_sec = t4_sec - t3_sec;
     [~,~,~,~,VI34,VF34,~,~] = lambertMR(r_ast1_2,r_ast2_1,ToF34_sec,ksun,0,0,0,0);
     sol.dV_single.dV3 = sqrt((VI34(1)-v_ast1_2(1))^2+(VI34(2)-v_ast1_2(2))^2+(VI34(3)-v_ast1_2(3))^2);
     sol.dV_single.dV4 = sqrt((VF34(1)-v_ast2_1(1))^2+(VF34(2)-v_ast2_1(2))^2+(VF34(3)-v_ast2_1(3))^2);
     sol.dV_tot_leg2 = sol.dV_single.dV3 + sol.dV_single.dV4;
     
-    ToF56_sec = t6_sec - t5_sec;
     [~,~,~,~,VI56,VF56,~,~] = lambertMR(r_ast2_2,r_ast3_1,ToF56_sec,ksun,0,0,0,0);
     sol.dV_single.dV5 = sqrt((VI56(1)-v_ast2_2(1))^2+(VI56(2)-v_ast2_2(2))^2+(VI56(3)-v_ast2_2(3))^2);
     sol.dV_single.dV6 = sqrt((VF56(1)-v_ast3_1(1))^2+(VF56(2)-v_ast3_1(2))^2+(VF56(3)-v_ast3_1(3))^2);
     sol.dV_tot_leg3 = sol.dV_single.dV5 + sol.dV_single.dV6;
     
-    ToF78_sec = t8_sec - t7_sec;
     [~,~,~,~,VI78,VF78,~,~] = lambertMR(r_ast3_2,r_ast4_1,ToF78_sec,ksun,0,0,0,0);
     sol.dV_single.dV7 = sqrt((VI78(1)-v_ast3_2(1))^2+(VI78(2)-v_ast3_2(2))^2+(VI78(3)-v_ast3_2(3))^2);
     sol.dV_single.dV8 = sqrt((VF78(1)-v_ast4_1(1))^2+(VF78(2)-v_ast4_1(2))^2+(VF78(3)-v_ast4_1(3))^2);
@@ -85,6 +75,7 @@ function [sol] = plot_mission_4neo(sol,asteroid_names_sequence,data,sim,colors)
 
     % PLOT FULL ORBITS AND BEST LAMBERT TRANSFER 
     figure('Name','Mission Orbits and Phases')
+    
     % Earth
     plot_earth_orbit(MJD01,colors,8);
     hold on
@@ -97,65 +88,72 @@ function [sol] = plot_mission_4neo(sol,asteroid_names_sequence,data,sim,colors)
     
     % Mission Arcs
     % First leg: Earth -> Ast 1
-    t012 = t1_sec;
-    tf12 = t2_sec;
+    departure_EA_sec = departure_sec;
+    arrival_ast1_sec = departure_EA_sec+ToF12_sec;
+    time_int12 = [departure_EA_sec, arrival_ast1_sec];
     y012 = [r_EA; VI12']; %km, km/s; velocity from lambert arc transfer orbit injection
     options = odeset ('RelTol', 1e-13, 'AbsTol', 1e-14); 
-    [~,y12] = ode113(@rates, [t012 tf12], y012,options,'sun');
+    [~,y12] = ode113(@rates, time_int12, y012,options,'sun');
     plot3( y12(:,1)./AU, y12(:,2)./AU, y12(:,3)./AU,'Color',colors(1,:),...
         'DisplayName','First Leg');
 
     % Coasting 1 on Ast 1
-    t023 = t2_sec;
-    tf23 = t3_sec;
+    start_ast1_sec = arrival_ast1_sec;
+    end_ast1_sec = start_ast1_sec+buffer_time1_sec;
+    time_int23 = [start_ast1_sec, end_ast1_sec];
     y023 = [r_ast1_1; v_ast1_1]; %km, km/s; after the application of 2nd dv of its leg, rendezvous with the asteroid, same velocity as the asteroid at that moment
     options = odeset ('RelTol', 1e-13, 'AbsTol', 1e-14); 
-    [~,y23] = ode113(@rates, [t023 tf23],y023,options,'sun');
+    [~,y23] = ode113(@rates, time_int23,y023,options,'sun');
     plot3( y23(:,1)./AU, y23(:,2)./AU, y23(:,3)./AU,'*','Color',colors(1,:),'Markersize',3,...
         'DisplayName','Coasting 1');
 
     % Second leg: Ast 1 -> Ast 2
-    t034 = t3_sec;
-    tf34 = t4_sec;
+    departure_ast1_sec = end_ast1_sec;
+    arrival_ast2_sec = departure_ast1_sec+ToF34_sec;
+    time_int34 = [departure_ast1_sec, arrival_ast2_sec];
     y034 = [r_ast1_2; VI34']; %km, km/s
     options = odeset ('RelTol', 1e-13, 'AbsTol', 1e-14); 
-    [~,y34] = ode113(@rates, [t034 tf34], y034,options,'sun');
+    [~,y34] = ode113(@rates,time_int34, y034,options,'sun');
     plot3( y34(:,1)./AU, y34(:,2)./AU, y34(:,3)./AU,'Color',colors(1,:),...
         'DisplayName','Leg 2');
     
     % Coasting 2 on Ast 2
-    t045 = t4_sec;
-    tf45 = t5_sec;
+    start_ast2_sec = arrival_ast2_sec;
+    end_ast2_sec = start_ast2_sec+buffer_time2_sec;
+    time_int45 = [start_ast2_sec, end_ast2_sec];
     y045 = [r_ast2_1; v_ast2_1]; %km, km/s; after the application of 2nd dv of its transfer leg, rendezvous with asteroid, same velocity as the asteroid at that moment
     options = odeset ('RelTol', 1e-13, 'AbsTol', 1e-14); 
-    [~,y45] = ode113(@rates, [t045 tf45], y045,options,'sun');
+    [~,y45] = ode113(@rates, time_int45, y045,options,'sun');
     plot3( y45(:,1)./AU, y45(:,2)./AU, y45(:,3)./AU,'*','Color',colors(1,:),'Markersize',3,...
         'DisplayName','Coasting 2');
 
     % Third leg: Ast 2 -> Ast 3
-    t056 = t5_sec;
-    tf56 = t6_sec;
+    departure_ast2_sec = end_ast2_sec;
+    arrival_ast3_sec = departure_ast2_sec+ToF56_sec;
+    time_int56 = [departure_ast2_sec, arrival_ast3_sec];
     y056 = [r_ast2_2; VI56']; %km, km/s
     options = odeset ('RelTol', 1e-13, 'AbsTol', 1e-14); 
-    [~,y56] = ode113(@rates, [t056 tf56], y056,options,'sun');
+    [~,y56] = ode113(@rates,time_int56, y056,options,'sun');
     plot3( y56(:,1)./AU, y56(:,2)./AU, y56(:,3)./AU,'Color',colors(1,:),...
         'DisplayName','Leg 3');
     
     % Coasting 3 on Ast 3
-    t067 = t6_sec;
-    tf67 = t7_sec;
+    start_ast3_sec = arrival_ast3_sec;
+    end_ast3_sec = start_ast3_sec+buffer_time3_sec;
+    time_int67 = [start_ast3_sec, end_ast3_sec];
     y067 = [r_ast3_1; v_ast3_1]; %km, km/s; after the application of 2nd dv of its transfer leg, rendezvous with asteroid, same velocity as the asteroid at that moment
     options = odeset ('RelTol', 1e-13, 'AbsTol', 1e-14); 
-    [~,y67] = ode113(@rates, [t067 tf67], y067,options,'sun');
+    [~,y67] = ode113(@rates,time_int67, y067,options,'sun');
     plot3( y67(:,1)./AU, y67(:,2)./AU, y67(:,3)./AU,'*','Color',colors(1,:),'Markersize',3,...
         'DisplayName','Coasting 3');
 
     % Fourth leg: Ast 3 -> Ast 4
-    t078 = t7_sec;
-    tf78 = t8_sec;
+    departure_ast3_sec = end_ast3_sec;
+    arrival_ast4_sec = departure_ast3_sec+ToF78_sec;
+    time_int78 = [departure_ast3_sec, arrival_ast4_sec];
     y078 = [r_ast3_2; VI78']; %km, km/s
     options = odeset ('RelTol', 1e-13, 'AbsTol', 1e-14); 
-    [~,y78] = ode113(@rates, [t078 tf78], y078,options,'sun');
+    [~,y78] = ode113(@rates, time_int78, y078,options,'sun');
     plot3( y78(:,1)./AU, y78(:,2)./AU, y78(:,3)./AU,'Color',colors(1,:),...
         'DisplayName','Leg 4');
     
@@ -182,6 +180,7 @@ function [sol] = plot_mission_4neo(sol,asteroid_names_sequence,data,sim,colors)
     hp8.Annotation.LegendInformation.IconDisplayStyle = 'off';
 
     axis equal; grid on
+    title(sim.case_name)
     xlabel('AU')
     ylabel('AU')
     zlabel('AU')

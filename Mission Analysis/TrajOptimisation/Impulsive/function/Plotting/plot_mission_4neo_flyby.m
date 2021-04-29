@@ -34,37 +34,46 @@ function [sol] = plot_mission_4neo_flyby(sol,asteroid_names_sequence,data,sim,co
     t5_sec = MJDP4*60*60*24;
     
     % Lamberts and deltaVs
-    ToF12_sec = t2_sec - t1_sec;
-    [~,~,~,~,VI12,VF12,~,~] = lambertMR(r_EA,r_ast1,ToF12_sec,ksun,0,0,0,0);
-    dv1 = sqrt((VI12(1)-v_EA(1))^2+(VI12(2)-v_EA(2))^2+(VI12(3)-v_EA(3))^2);
+    ToF_EAast1_sec = t2_sec - t1_sec;
+    [~,~,~,~,VI_EAast1,VF_EAast1,~,~] = lambertMR(r_EA,r_ast1,ToF_EAast1_sec,ksun,0,0,0,0);
+    dv1 = sqrt((VI_EAast1(1)-v_EA(1))^2+(VI_EAast1(2)-v_EA(2))^2+(VI_EAast1(3)-v_EA(3))^2);
     if dv1 < sqrt(sim.C3_max)
-        sol.dV_single.dV_extra_launch = 0;
+        sol.dV_extra_launch = 0;
         sol.Vinf_launcher = dv1;
     else
-        sol.dV_single.dV_extra_launch = dv1 - sqrt(sim.C3_max);
+        sol.dV_extra_launch = dv1 - sqrt(sim.C3_max);
         sol.Vinf_launcher = sqrt(sim.C3_max);
     end
 %     sol.dV_single.dV2 = sqrt((VF12(1)-v_ast1_1(1))^2+(VF12(2)-v_ast1_1(2))^2+(VF12(3)-v_ast1_1(3))^2);
 %     sol.dV_tot_leg1 = sol.dV_single.dV2 + sol.dV_single.dV_extra_launch;
     
-    ToF23_sec = t3_sec - t2_sec;
-    [~,~,~,~,VI23,VF23,~,~] = lambertMR(r_ast1,r_ast2,ToF23_sec,ksun,0,0,0,0);
+    ToF_ast12_sec = t3_sec - t2_sec;
+    [~,~,~,~,VI_ast12,VF_ast12,~,~] = lambertMR(r_ast1,r_ast2,ToF_ast12_sec,ksun,0,0,0,0);
 %     sol.dV_single.dV3 = sqrt((VI34(1)-v_ast1_2(1))^2+(VI34(2)-v_ast1_2(2))^2+(VI34(3)-v_ast1_2(3))^2);
 %     sol.dV_single.dV4 = sqrt((VF34(1)-v_ast2_1(1))^2+(VF34(2)-v_ast2_1(2))^2+(VF34(3)-v_ast2_1(3))^2);
 %     sol.dV_tot_leg2 = sol.dV_single.dV3 + sol.dV_single.dV4;
     
-    ToF34_sec = t4_sec - t3_sec;
-    [~,~,~,~,VI34,VF34,~,~] = lambertMR(r_ast2,r_ast3,ToF34_sec,ksun,0,0,0,0);
+    % dV of flyby passage on asteroid 1
+    sol.dVast1 = sqrt((VI_ast12(1)-VF_EAast1(1))^2+(VI_ast12(2)-VF_EAast1(2))^2+(VI_ast12(3)-VF_EAast1(3))^2);
+    
+    ToF_ast23_sec = t4_sec - t3_sec;
+    [~,~,~,~,VI_ast23,VF_ast23,~,~] = lambertMR(r_ast2,r_ast3,ToF_ast23_sec,ksun,0,0,0,0);
 %     sol.dV_single.dV5 = sqrt((VI56(1)-v_ast2_2(1))^2+(VI56(2)-v_ast2_2(2))^2+(VI56(3)-v_ast2_2(3))^2);
 %     sol.dV_single.dV6 = sqrt((VF56(1)-v_ast3_1(1))^2+(VF56(2)-v_ast3_1(2))^2+(VF56(3)-v_ast3_1(3))^2);
 %     sol.dV_tot_leg3 = sol.dV_single.dV5 + sol.dV_single.dV6;
+
+    % dV of flyby passage on asteroid 2
+    sol.dVast2 = sqrt((VI_ast23(1)-VF_ast12(1))^2+(VI_ast23(2)-VF_ast12(2))^2+(VI_ast23(3)-VF_ast12(3))^2);
     
-    ToF45_sec = t5_sec - t4_sec;
-    [~,~,~,~,VI45,VF45,~,~] = lambertMR(r_ast3,r_ast4,ToF45_sec,ksun,0,0,0,0);
+    ToF_ast34_sec = t5_sec - t4_sec;
+    [~,~,~,~,VI_ast34,VF_ast34,~,~] = lambertMR(r_ast3,r_ast4,ToF_ast34_sec,ksun,0,0,0,0);
 %     sol.dV_single.dV7 = sqrt((VI78(1)-v_ast3_2(1))^2+(VI78(2)-v_ast3_2(2))^2+(VI78(3)-v_ast3_2(3))^2);
 %     sol.dV_single.dV8 = sqrt((VF78(1)-v_ast4_1(1))^2+(VF78(2)-v_ast4_1(2))^2+(VF78(3)-v_ast4_1(3))^2);
 %     sol.dV_tot_leg4 = sol.dV_single.dV7 + sol.dV_single.dV8;
 
+    % dV of flyby passage on asteroid 3
+    sol.dVast3 = sqrt((VI_ast34(1)-VF_ast23(1))^2+(VI_ast34(2)-VF_ast23(2))^2+(VI_ast34(3)-VF_ast23(3))^2);
+    
     % PLOT FULL ORBITS AND BEST LAMBERT TRANSFER 
     figure('Name','Mission Orbits and Phases')
     % Earth
@@ -81,7 +90,7 @@ function [sol] = plot_mission_4neo_flyby(sol,asteroid_names_sequence,data,sim,co
     % First leg: Earth -> Ast 1
     t012 = t1_sec;
     tf12 = t2_sec;
-    y012 = [r_EA; VI12']; %km, km/s; velocity from lambert arc transfer orbit injection
+    y012 = [r_EA; VI_EAast1']; %km, km/s; velocity from lambert arc transfer orbit injection
     options = odeset ('RelTol', 1e-13, 'AbsTol', 1e-14); 
     [~,y12] = ode113(@rates, [t012 tf12], y012,options,'sun');
     plot3( y12(:,1)./AU, y12(:,2)./AU, y12(:,3)./AU,'Color',colors(1,:),...
@@ -90,7 +99,7 @@ function [sol] = plot_mission_4neo_flyby(sol,asteroid_names_sequence,data,sim,co
     % Second leg: Ast 1 -> Ast 2
     t034 = t2_sec;
     tf34 = t3_sec;
-    y034 = [r_ast1; VI23']; %km, km/s
+    y034 = [r_ast1; VI_ast12']; %km, km/s
     options = odeset ('RelTol', 1e-13, 'AbsTol', 1e-14); 
     [~,y34] = ode113(@rates, [t034 tf34], y034,options,'sun');
     plot3( y34(:,1)./AU, y34(:,2)./AU, y34(:,3)./AU,'Color',colors(1,:),...
@@ -99,7 +108,7 @@ function [sol] = plot_mission_4neo_flyby(sol,asteroid_names_sequence,data,sim,co
     % Third leg: Ast 2 -> Ast 3
     t056 = t3_sec;
     tf56 = t4_sec;
-    y056 = [r_ast2; VI34']; %km, km/s
+    y056 = [r_ast2; VI_ast23']; %km, km/s
     options = odeset ('RelTol', 1e-13, 'AbsTol', 1e-14); 
     [~,y56] = ode113(@rates, [t056 tf56], y056,options,'sun');
     plot3( y56(:,1)./AU, y56(:,2)./AU, y56(:,3)./AU,'Color',colors(1,:),...
@@ -108,7 +117,7 @@ function [sol] = plot_mission_4neo_flyby(sol,asteroid_names_sequence,data,sim,co
     % Fourth leg: Ast 3 -> Ast 4
     t078 = t4_sec;
     tf78 = t5_sec;
-    y078 = [r_ast3; VI45']; %km, km/s
+    y078 = [r_ast3; VI_ast34']; %km, km/s
     options = odeset ('RelTol', 1e-13, 'AbsTol', 1e-14); 
     [~,y78] = ode113(@rates, [t078 tf78], y078,options,'sun');
     plot3( y78(:,1)./AU, y78(:,2)./AU, y78(:,3)./AU,'Color',colors(1,:),...
@@ -131,6 +140,7 @@ function [sol] = plot_mission_4neo_flyby(sol,asteroid_names_sequence,data,sim,co
     hp8.Annotation.LegendInformation.IconDisplayStyle = 'off';
 
     axis equal; grid on
+    title(sim.case_name)
     xlabel('AU')
     ylabel('AU')
     zlabel('AU')

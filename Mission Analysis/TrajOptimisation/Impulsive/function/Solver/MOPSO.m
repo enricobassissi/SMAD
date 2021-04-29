@@ -78,13 +78,20 @@ function REP = MOPSO(params,MultiObj)
     % Plotting and verbose
     if(size(POS_fit,2)==2)
         h_fig = figure(1);
-        h_par = plot(POS_fit(:,1),POS_fit(:,2),'or'); hold on;
-        h_rep = plot(REP.pos_fit(:,1),REP.pos_fit(:,2),'ok'); hold on;
+        % Enrico Bassissi, 29/04/2021
+        % changed colors
+        % it was: h_par = plot(POS_fit(:,1),POS_fit(:,2),'or');
+        % and: h_rep = plot(REP.pos_fit(:,1),REP.pos_fit(:,2),'ok');
+        h_par = plot(POS_fit(:,1),POS_fit(:,2),'o','Color',[207 29 57]./255); hold on; % red
+        h_rep = plot(REP.pos_fit(:,1),REP.pos_fit(:,2),'o','Color',[0 50 71]./255); hold on; % black
         try
             set(gca,'xtick',REP.hypercube_limits(:,1)','ytick',REP.hypercube_limits(:,2)');
             axis([min(REP.hypercube_limits(:,1)) max(REP.hypercube_limits(:,1)) ...
                   min(REP.hypercube_limits(:,2)) max(REP.hypercube_limits(:,2))]);
-            grid on; xlabel('f1'); ylabel('f2');
+              % Enrico Bassissi, 29/04/2021
+              % modified the label names
+              % here it was: xlabel('f1'); ylabel('f2');
+            grid on; xlabel('$\Delta V$ [km/s]','Interpreter','latex'); ylabel('$TOF$ [d]','Interpreter','latex');
         end
         drawnow;
     end
@@ -146,8 +153,12 @@ function REP = MOPSO(params,MultiObj)
         % Plotting and verbose
         if(size(POS_fit,2)==2)
             figure(h_fig); delete(h_par); delete(h_rep);
-            h_par = plot(POS_fit(:,1),POS_fit(:,2),'or'); hold on;
-            h_rep = plot(REP.pos_fit(:,1),REP.pos_fit(:,2),'ok'); hold on;
+            % Enrico Bassissi, 29/04/2021
+            % changed colors
+            % it was: h_par = plot(POS_fit(:,1),POS_fit(:,2),'or');
+            % and: h_rep = plot(REP.pos_fit(:,1),REP.pos_fit(:,2),'ok');
+        	h_par = plot(POS_fit(:,1),POS_fit(:,2),'o','Color',[207 29 57]./255); hold on; % red
+            h_rep = plot(REP.pos_fit(:,1),REP.pos_fit(:,2),'o','Color',[0 50 71]./255); hold on; % black
             try
                 set(gca,'xtick',REP.hypercube_limits(:,1)','ytick',REP.hypercube_limits(:,2)');
                 axis([min(REP.hypercube_limits(:,1)) max(REP.hypercube_limits(:,1)) ...
@@ -157,7 +168,10 @@ function REP = MOPSO(params,MultiObj)
                 try delete(h_pf); end
                 h_pf = plot(MultiObj.truePF(:,1),MultiObj.truePF(:,2),'.','color',0.8.*ones(1,3)); hold on;
             end
-            grid on; xlabel('f1'); ylabel('f2');
+            % Enrico Bassissi, 29/04/2021
+            % modified the label names
+            % here it was: xlabel('f1'); ylabel('f2');
+            grid on; xlabel('$\Delta V$ [km/s]','Interpreter','latex'); ylabel('$TOF$ [d]','Interpreter','latex');
             drawnow;
             axis square;
         end

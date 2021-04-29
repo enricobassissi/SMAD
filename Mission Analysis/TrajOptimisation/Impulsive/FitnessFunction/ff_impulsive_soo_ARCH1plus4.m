@@ -34,29 +34,53 @@ asteroid_4 = data.PermutationMatrix(IDP,4);
 [kep_ast_4] = uNEO2(MJDP4,asteroid_4,data);
 [r4, v4] = sv_from_coe(kep_ast_4,ksun); % km, km/s
 
-% Converting mJ2000 in seconds
-t1_sec = MJD01*60*60*24;
-t2_sec = MJDP1*60*60*24;
-t3_sec = MJDP2*60*60*24;
-t4_sec = MJDP3*60*60*24;
-t5_sec = MJDP4*60*60*24;
+% Converting TOFs in seconds for Lambert
+ToF_EAast1_sec = TOF1*60*60*24;
+ToF_ast12_sec = TOF2*60*60*24;
+ToF_ast23_sec = TOF3*60*60*24;
+ToF_ast34_sec = TOF4*60*60*24;
 
 % DV calculation with lambert
-[~,dv1_EA_1,dv2_EA_1]=lambert_solver_flyby(rEA,r1,vEA,v1,t1_sec,t2_sec,ksun);
-if dv1_EA_1 < sqrt(sim.C3_max) % vinf that the launcher can give max 
+% Earth -> asteroid 1
+[~,~,~,~,VI_EAast1,VF_EAast1,~,~] = lambertMR(rEA,r1,ToF_EAast1_sec,ksun,0,0,0,0);
+dv1_EAast1 = sqrt((VI_EAast1(1)-vEA(1))^2+(VI_EAast1(2)-vEA(2))^2+(VI_EAast1(3)-vEA(3))^2);
+if dv1_EAast1 < sqrt(sim.C3_max) % vinf that the launcher can give max 
     dv_extra_launch = 0;
 else
-    dv_extra_launch = dv1_EA_1 - sqrt(sim.C3_max); %actually la differenza la paghi
+    dv_extra_launch = dv1_EAast1 - sqrt(sim.C3_max); %actually la differenza la paghi
 end
+dv2_EAast1 = sqrt((VF_EAast1(1)-v1(1))^2+(VF_EAast1(2)-v1(2))^2+(VF_EAast1(3)-v1(3))^2);
 
 % asteroid 1 -> 2
-[~,dv1_1_2,dv2_1_2]=lambert_solver_flyby(r1,r2,v1,v2,t2_sec,t3_sec,ksun); 
-% asteroid 2 -> 3
-[~,dv1_2_3,dv2_2_3]=lambert_solver_flyby(r2,r3,v2,v3,t3_sec,t4_sec,ksun); 
-% asteroid 3 -> 4
-[~,dv1_3_4,~]=lambert_solver_flyby(r3,r4,v3,v4,t4_sec,t5_sec,ksun);
+[~,~,~,~,VI_ast12,VF_ast12,~,~] = lambertMR(r1,r2,ToF_ast12_sec,ksun,0,0,0,0);
+dv1_ast12 = sqrt((VI_ast12(1)-v1(1))^2+(VI_ast12(2)-v1(2))^2+(VI_ast12(3)-v1(3))^2);
+dv2_ast12 = sqrt((VF_ast12(1)-v2(1))^2+(VF_ast12(2)-v2(2))^2+(VF_ast12(3)-v2(3))^2);
 
-obj_fun = dv_extra_launch + abs(dv2_EA_1-dv1_1_2) + abs(dv2_1_2-dv1_2_3) + abs(dv2_2_3-dv1_3_4); % because the last dv is a flyby it can go wherever it wants
+% dV of flyby passage on asteroid 1
+dv_passage_ast1 = sqrt((VI_ast12(1)-VF_EAast1(1))^2+(VI_ast12(2)-VF_EAast1(2))^2+(VI_ast12(3)-VF_EAast1(3))^2);
+    
+% asteroid 2 -> 3
+[~,~,~,~,VI_ast23,VF_ast23,~,~] = lambertMR(r2,r3,ToF_ast23_sec,ksun,0,0,0,0);
+dv1_ast23 = sqrt((VI_ast23(1)-v2(1))^2+(VI_ast23(2)-v2(2))^2+(VI_ast23(3)-v2(3))^2);
+dv2_ast23 = sqrt((VF_ast23(1)-v3(1))^2+(VF_ast23(2)-v3(2))^2+(VF_ast23(3)-v3(3))^2);
+
+% dV of flyby passage on asteroid 2
+dv_passage_ast2 = sqrt((VI_ast23(1)-VF_ast12(1))^2+(VI_ast23(2)-VF_ast12(2))^2+(VI_ast23(3)-VF_ast12(3))^2);
+
+% asteroid 3 -> 4
+[~,~,~,~,VI_ast34,VF_ast34,~,~] = lambertMR(r3,r4,ToF_ast34_sec,ksun,0,0,0,0);
+dv1_ast34 = sqrt((VI_ast34(1)-v3(1))^2+(VI_ast34(2)-v3(2))^2+(VI_ast34(3)-v3(3))^2);
+dv2_ast34 = sqrt((VF_ast34(1)-v4(1))^2+(VF_ast34(2)-v4(2))^2+(VF_ast34(3)-v4(3))^2);
+
+% dV of flyby passage on asteroid 3
+dv_passage_ast3 = sqrt((VI_ast34(1)-VF_ast23(1))^2+(VI_ast34(2)-VF_ast23(2))^2+(VI_ast34(3)-VF_ast23(3))^2);
+
+% if the last dv is a flyby it can go wherever it wants
+obj_fun = dv_extra_launch + dv_passage_ast1 + dv_passage_ast2 + dv_passage_ast3; 
+
+% else if the last dv is a rendezvous with the last object
+% obj_fun = dv_extra_launch + dv_passage_ast1 + dv_passage_ast2 + dv_passage_ast3 + dv2_ast34; 
+
 % obj_fun = TOF1+TOF2+TOF3+TOF4;
 
 end

@@ -30,6 +30,8 @@ colors = [0    50   71;... % (1) DEEP SPACE
           51   94   111;... % (11) DEEP SPACE -1
           0    0    0]./255; % (12) BLACK
 
+sim.case_name = 'ARCH ID 1: IMPULSIVE DOUBLE RENDEZVOUS ON EACH ASTEROID';
+
 % %% INTRO ADIMENSIONALISATION
 % sim.mu = 1.32712440017987e11; % Sun planetary constant (mu = mass * G) (from DE405) [km^3/s^2]
 % sim.DU = 149597870.691; % Distance Unit = Astronomical Unit (AU) (from DE405) [km]
@@ -181,7 +183,7 @@ Isp = 230; %s
 m_dry = 100; %kg
 m_prop = m_dry*(exp(sol.dV_tot*1e3/(g0*Isp)) - 1); %kg
 %% Plot trajectories
-sol = plot_mission_4neo(sol,asteroid_sequence,data,sim,colors)
+sol = plot_mission_4neo_rendezvous(sol,asteroid_sequence,data,sim,colors)
 
 %% Plot orbit asteroids
 % plot_orbits_asteroids(asteroid_names,colors)
