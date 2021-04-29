@@ -49,11 +49,14 @@ else
     dv_extra_launch = dv1_EA_1 - sqrt(sim.C3_max); %actually la differenza la paghi
 end
 
-[dv_tot12]=lambert_solver_flyby(r1,r2,v1,v2,t2_sec,t3_sec,ksun); 
-[dv_tot23]=lambert_solver_flyby(r2,r3,v2,v3,t3_sec,t4_sec,ksun); 
-[dv_tot34,dv1_3_4,dv2_3_4]=lambert_solver_flyby(r3,r4,v3,v4,t4_sec,t5_sec,ksun);
+% asteroid 1 -> 2
+[~,dv1_1_2,dv2_1_2]=lambert_solver_flyby(r1,r2,v1,v2,t2_sec,t3_sec,ksun); 
+% asteroid 2 -> 3
+[~,dv1_2_3,dv2_2_3]=lambert_solver_flyby(r2,r3,v2,v3,t3_sec,t4_sec,ksun); 
+% asteroid 3 -> 4
+[~,dv1_3_4,~]=lambert_solver_flyby(r3,r4,v3,v4,t4_sec,t5_sec,ksun);
 
-obj_fun = dv_extra_launch + dv2_EA_1 + dv_tot12 + dv_tot23 + dv1_3_4; % because the last dv is a flyby it can go wherever it wants
+obj_fun = dv_extra_launch + abs(dv2_EA_1-dv1_1_2) + abs(dv2_1_2-dv1_2_3) + abs(dv2_2_3-dv1_3_4); % because the last dv is a flyby it can go wherever it wants
 % obj_fun = TOF1+TOF2+TOF3+TOF4;
 
 end

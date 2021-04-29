@@ -117,7 +117,7 @@ options = optimoptions('particleswarm');
 options.HybridFcn = @fmincon;
 options.SwarmSize = 1000; % Default is min(100,10*nvars),
 options.MaxIterations = 200; %  Default is 200*nvars
-options.MaxStallIterations = 50; % Default 20
+options.MaxStallIterations = 70; % Default 20
 options.Display = 'iter';
 options.FunctionTolerance = 1e-6;
 
