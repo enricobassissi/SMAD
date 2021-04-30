@@ -123,6 +123,10 @@ function [sol] = plot_mission_4neo_flyby(sol,asteroid_names_sequence,data,sim,co
     plot3( y78(:,1)./AU, y78(:,2)./AU, y78(:,3)./AU,'Color',colors(1,:),...
         'DisplayName','Leg 4');
     
+    % Extract the Sun-SpaceCraft Distance for all the trajectory [km]
+    sol.SunSpacecraftDistanceNorm = vecnorm([y12;y34;y56;y78],2,2); % 2,2 means norm 2 and by row
+    sol.SpacecraftTrajectory = [y12;y34;y56;y78];
+    
     % Sun Yellow Asterisk
     plot3(0,0,0,'*','Color',colors(4,:),'DisplayName','Sun');
     
@@ -144,5 +148,5 @@ function [sol] = plot_mission_4neo_flyby(sol,asteroid_names_sequence,data,sim,co
     xlabel('AU')
     ylabel('AU')
     zlabel('AU')
-
+    
 end

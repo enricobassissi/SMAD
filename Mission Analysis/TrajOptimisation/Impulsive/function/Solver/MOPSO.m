@@ -58,6 +58,16 @@ function REP = MOPSO(params,MultiObj)
     var_min = MultiObj.var_min(:);
     var_max = MultiObj.var_max(:);
     
+    % Existance of name for labels
+    name_label_existence1 = exist('MultiObj.Obj1', 'var');
+    if ~name_label_existence1
+        error('Error. Input MultiObj.Obj1 to visualise the x label of your quantity')
+    end
+    name_label_existence2 = exist('MultiObj.Obj2', 'var');
+    if ~name_label_existence2
+        error('Error. Input MultiObj.Obj2 to visualise the y label of your quantity')
+    end
+
     % Initialization
     POS = repmat((var_max-var_min)',Np,1).*rand(Np,nVar) + repmat(var_min',Np,1);
     VEL = zeros(Np,nVar);
@@ -91,7 +101,7 @@ function REP = MOPSO(params,MultiObj)
               % Enrico Bassissi, 29/04/2021
               % modified the label names
               % here it was: xlabel('f1'); ylabel('f2');
-            grid on; xlabel('$\Delta V$ [km/s]','Interpreter','latex'); ylabel('$TOF$ [d]','Interpreter','latex');
+            grid on; xlabel(MultiObj.Obj1,'Interpreter','latex'); ylabel(MultiObj.Obj2,'Interpreter','latex');
         end
         drawnow;
     end
@@ -171,7 +181,7 @@ function REP = MOPSO(params,MultiObj)
             % Enrico Bassissi, 29/04/2021
             % modified the label names
             % here it was: xlabel('f1'); ylabel('f2');
-            grid on; xlabel('$\Delta V$ [km/s]','Interpreter','latex'); ylabel('$TOF$ [d]','Interpreter','latex');
+            grid on; xlabel(MultiObj.Obj1,'Interpreter','latex'); ylabel(MultiObj.Obj2,'Interpreter','latex');
             drawnow;
             axis square;
         end

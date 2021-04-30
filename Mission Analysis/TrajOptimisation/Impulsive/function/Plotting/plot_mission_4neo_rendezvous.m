@@ -157,6 +157,9 @@ function [sol] = plot_mission_4neo_rendezvous(sol,asteroid_names_sequence,data,s
     plot3( y78(:,1)./AU, y78(:,2)./AU, y78(:,3)./AU,'Color',colors(1,:),...
         'DisplayName','Leg 4');
     
+    % Extract the Sun-SpaceCraft Distance for all the trajectory [km]
+    sol.SunSpacecraftDistance = vecnorm([y12;y34;y56;y78],2,2); % 2,2 means norm 2 and by row
+    
     % Sun Yellow Asterisk
     plot3(0,0,0,'*','Color',colors(4,:),'DisplayName','Sun');
     
