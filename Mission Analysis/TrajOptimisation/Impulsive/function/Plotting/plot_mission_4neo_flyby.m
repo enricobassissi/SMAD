@@ -80,7 +80,7 @@ function [sol] = plot_mission_4neo_flyby(sol,asteroid_names_sequence,data,sim,co
     plot_earth_orbit(MJD01,colors,8);
     hold on
     % Asteroids
-    years = 6;
+    years = 5;
     plot_asteorid_orbit(MJDP1,years,ast1,colors,2);
     plot_asteorid_orbit(MJDP2,years,ast2,colors,3);
     plot_asteorid_orbit(MJDP3,years,ast3,colors,4);
