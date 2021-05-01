@@ -74,8 +74,12 @@ data.HowMany = factorial(length(data.asteroid_names)) / factorial(length(data.as
 [data.PermutationMatrix, ~] = permnUnique(data.asteroid_names, 4);
 
 %% uNEO
-%     if the asteroid have changed, run the find_eph_neo below, it takes about 1 min
-[data.y_interp_ft, data.t_vector] = find_eph_neo(data.asteroid_names);
+try
+    load('data.mat')
+catch
+    %     if the asteroid have changed, run the find_eph_neo below, it takes about 1 min
+    [data.y_interp_ft, data.t_vector] = find_eph_neo(data.asteroid_names);
+end
 
 %% delete the python file from this directory
 delete('neo_api_function.py');
@@ -189,8 +193,8 @@ delay_time = 730;
 % that now it becomes a fixed variable and not anymore a degree of freedom
 % if i have problem for the launch, if i posticipate the launch is it a
 % problem? meaning how does the costs (dV, TOF) changes?
-number_of_points = 10; % how many points do you want? fine or coarse grid
-lw_vector = linspace(sol.MJD0,sol.MJD0+delay_time,delay_time/number_of_points);
+N_div_points = 5; % how many points do you want? fine or coarse grid
+lw_vector = linspace(sol.MJD0,sol.MJD0+delay_time,delay_time/N_div_points);
 
 %% Permutations among the 4 asteroid fixed
 % Number of possible combination of 4 asteroids among the ones in the list
@@ -232,7 +236,7 @@ options = optimoptions('particleswarm');
 options.SwarmSize = 500; % Default is min(100,10*nvars),
 options.MaxIterations = 100; %  Default is 200*nvars
 options.MaxStallIterations = 50; % Default 20
-options.Display = 'final';
+options.Display = 'none';
 options.FunctionTolerance = 1e-6;
 
 % Parallel pool - Open the parallel pool
@@ -252,6 +256,7 @@ numberOfVariables = length(sim.soo_bound.ub); % Number of decision variables
 % initialize
 dV_flex = zeros(length(lw_vector),1);
 TOF_flex = zeros(length(lw_vector),1);
+idx = 0;
 % loop over MJD0 for sensitivity analysis over departure date
 for i = 1:length(lw_vector)
     sim.MJD0_flexibility = lw_vector(i);
@@ -275,9 +280,12 @@ for i = 1:length(lw_vector)
     flex{i}.TOF2 = x_flex(2);
     flex{i}.TOF3 = x_flex(3);
     flex{i}.TOF4 = x_flex(4);
-
+    
+    idx = idx+1;
+    fprintf('Cycle %d \n',idx);
+        
 end
-clearvars i
+clearvars i idx
 
 %% plot the result
 for i=1:length(lw_vector)
@@ -306,12 +314,16 @@ xlabel('Departure MJD2000')
 data.HowMany_flex = factorial(length(asteroid_sequence)) / factorial(length(asteroid_sequence) - 4);
 [data.PermutationMatrix_flex, ~] = permnUnique(asteroid_sequence, 4);
 
+% find the asteroid not in the selected list to be visited
 TF = contains(data.asteroid_names,asteroid_sequence);
 not_asteroid_sequence = data.asteroid_names(~TF);
 clearvars TF
 
 data.NumberOfOtherAsteroids = length(not_asteroid_sequence);
 
+% Bulding the permutation matrix of the asteroid sequence but changing one
+% at a time the 1st,2nd,3rd,4th, with any of the other 5 asteroids in the
+% list of "not choosen" ones...
 for i=1:data.NumberOfOtherAsteroids % rows
     for j=1:length(asteroid_sequence) % columns
         new_asteroid_sequence = asteroid_sequence;
