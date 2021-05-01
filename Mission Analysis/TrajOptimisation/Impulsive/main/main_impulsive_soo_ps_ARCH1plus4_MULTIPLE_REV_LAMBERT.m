@@ -88,41 +88,73 @@ sim.soo_lim.mjd2000_ed = date2mjd2000(sim.soo_lim.date_ed);
 sim.soo_lim.mjd2000_ld = date2mjd2000(sim.soo_lim.date_ld);
 % TOF1 (2)
 sim.soo_lim.TOF1_min = 100; % days
-sim.soo_lim.TOF1_max = 3*365; % days
+sim.soo_lim.TOF1_max = 5*365; % days
 % TOF2 (3)
 sim.soo_lim.TOF2_min = 50; % days
-sim.soo_lim.TOF2_max = 3*365; % days
+sim.soo_lim.TOF2_max = 5*365; % days
 % TOF3 (4)
 sim.soo_lim.TOF3_min = 50; % days
-sim.soo_lim.TOF3_max = 3*365; % days
+sim.soo_lim.TOF3_max = 5*365; % days
 % TOF4 (5)
 sim.soo_lim.TOF4_min = 50; % days
-sim.soo_lim.TOF4_max = 3*365; % days
+sim.soo_lim.TOF4_max = 5*365; % days
 % Matrix of permutations (6)
 % to use round in the code... so we have same probility to be rounded to
 % the first or to the last element in the matrix as in the middle elements!
-sim.soo_lim.permutations_low = 0.5; 
-sim.soo_lim.permutations_up = data.HowMany + 0.4999;
+sim.soo_lim.permutations_low = 1; 
+sim.soo_lim.permutations_up = data.HowMany;
+
+% TEST - DOF ALSO NUMBER REV AROUND SUN OF LAMBERT, LEG 1 (7)
+sim.soo_lim.L_NREV_L1_min = 0;
+sim.soo_lim.L_NREV_L1_max = 0;
+% N_REV AROUND SUN OF LAMBERT, LEG 2 (8)
+sim.soo_lim.L_NREV_L2_min = 0;
+sim.soo_lim.L_NREV_L2_max = 1;
+% N_REV AROUND SUN OF LAMBERT, LEG 3 (9)
+sim.soo_lim.L_NREV_L3_min = 0;
+sim.soo_lim.L_NREV_L3_max = 1;
+% N_REV AROUND SUN OF LAMBERT, LEG 4 (10)
+sim.soo_lim.L_NREV_L4_min = 0;
+sim.soo_lim.L_NREV_L4_max = 1;
 
 % x = [MJD0,TOF1,TOF2,TOF3,TOF4,ID_permutation]
 sim.soo_bound.lb = [sim.soo_lim.mjd2000_ed, sim.soo_lim.TOF1_min,...
       sim.soo_lim.TOF2_min,sim.soo_lim.TOF3_min,...
-      sim.soo_lim.TOF4_min,sim.soo_lim.permutations_low]; % Lower bound
+      sim.soo_lim.TOF4_min,sim.soo_lim.permutations_low,...
+      sim.soo_lim.L_NREV_L1_min,sim.soo_lim.L_NREV_L2_min,...
+      sim.soo_lim.L_NREV_L3_min, sim.soo_lim.L_NREV_L4_min]; % Lower bound
 sim.soo_bound.ub = [sim.soo_lim.mjd2000_ld, sim.soo_lim.TOF1_max,...
       sim.soo_lim.TOF2_max,sim.soo_lim.TOF3_max,...
-      sim.soo_lim.TOF4_max,sim.soo_lim.permutations_up]; % Upper bound
+      sim.soo_lim.TOF4_max,sim.soo_lim.permutations_up,...
+      sim.soo_lim.L_NREV_L1_max,sim.soo_lim.L_NREV_L2_max,...
+      sim.soo_lim.L_NREV_L3_max, sim.soo_lim.L_NREV_L4_max]; % Upper bound
 
 % Constraint on C3 Launcher
 sim.C3_max = 20; % km^2/s^2
 
+%% Constraints
+sim.soo_constr.A = []; % linear inequality constraints
+sim.soo_constr.b = []; % linear inequality constraints
+sim.soo_constr.Aeq = []; % linear equality constraints
+sim.soo_constr.beq = []; % linear equality constraints
+sim.soo_constr.nonlcon = []; % linear equality constraints
+
+% if you want to restrict x(2) and x(10) to be integers, set IntCon to [2,10].
+% ga(fitnessfcn,nvars,A,b,Aeq,beq,lb,ub,nonlcon,IntCon,options)
+sim.soo_constr.IntCon = [6,7,8,9,10];
+
 %% Options
-options = optimoptions('particleswarm');
-options.HybridFcn = @fmincon;
-options.SwarmSize = 1000; % Default is min(100,10*nvars),
-options.MaxIterations = 200; %  Default is 200*nvars
-options.MaxStallIterations = 70; % Default 20
+options = optimoptions(@ga);
+% options.PlotFcn = {@gaplotbestf};
 options.Display = 'iter';
+% A hybrid function is another minimization function that runs after the 
+% multiobjective genetic algorithm terminates
+% options.HybridFcn = @fmincon;
+
+options.PopulationSize = 2000; 
+options.MaxGenerations = 200; 
 options.FunctionTolerance = 1e-6;
+options.MaxStallGenerations = 50;
 
 % Parallel pool
 % Open the parallel pool
@@ -136,12 +168,13 @@ end
 options.UseParallel = true;
 
 %% Build the soo
-FitnessFunction = @(x) ff_impulsive_soo_ARCH1plus4(x, data, sim); % Function handle to the fitness function
+FitnessFunction = @(x) ff_impulsive_soo_ARCH1plus4_MULTIPLE_REV_LAMBERT(x, data, sim); % Function handle to the fitness function
 numberOfVariables = length(sim.soo_bound.ub); % Number of decision variables
 
 tic
-[x,Fval,exitFlag,Output] = particleswarm(FitnessFunction,numberOfVariables...
-    ,sim.soo_bound.lb,sim.soo_bound.ub,options);
+[x,Fval,exitFlag,Output] = ga(FitnessFunction,numberOfVariables,sim.soo_constr.A, ...
+    sim.soo_constr.b,sim.soo_constr.Aeq,sim.soo_constr.beq,sim.soo_bound.lb,sim.soo_bound.ub,...
+    sim.soo_constr.nonlcon,sim.soo_constr.IntCon,options);
 el_time_min_pp = toc/60;
 
 %% Build solution structure
@@ -156,18 +189,26 @@ sol.dep_date = mjd20002date(sol.MJD0)';
 sol.TOF_tot_D = x(2)+x(3)+x(4)+x(5);
 sol.TOF_tot_Y = sol.TOF_tot_D/365;
 sol.end_of_mission_date = mjd20002date(sol.MJD0+sol.TOF_tot_D)';
-sol.dV_tot = Fval(1);
+% actual total dV, different from Fval because now it enters also
+% penalty in the optimisation function
+% sol.dV_tot = Fval(1);
 sol.TOF1 = x(2);
 sol.TOF2 = x(3);
 sol.TOF3 = x(4);
 sol.TOF4 = x(5);
 
+% stuff about which lambert solution have been chosen
+sol.NREV1 = x(7);
+sol.NREV2 = x(8);
+sol.NREV3 = x(9);
+sol.NREV4 = x(10);
+sol.Ncase = 0; % big a case
 %% Mass Consumption for High Thrust Impulsive Case
-g0 = 9.81; %m/s^2
-% https://www.space-propulsion.com/spacecraft-propulsion/hydrazine-thrusters/20n-hydrazine-thruster.html
-Isp = 230; %s 
-m_dry = 100; %kg
-m_prop = m_dry*(exp(sol.dV_tot*1e3/(g0*Isp)) - 1); %kg
+% g0 = 9.81; %m/s^2
+% % https://www.space-propulsion.com/spacecraft-propulsion/hydrazine-thrusters/20n-hydrazine-thruster.html
+% Isp = 230; %s 
+% m_dry = 100; %kg
+% m_prop = m_dry*(exp(sol.dV_tot*1e3/(g0*Isp)) - 1); %kg
 %% Plot trajectories
 sol = plot_mission_4neo_flyby(sol,asteroid_sequence,data,sim,colors)
 
