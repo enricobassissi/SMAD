@@ -26,7 +26,7 @@ rm = 1./(plan_a + plan_b*lm + plan_c*lm2 + plan_d*lm3 + e*lm4 + f*lm5 + g*lm6) ;
 
 % calculation of dt at each theta
 dTOF  = sqrt( abs( r.^4  .* (1./r  + 2*plan_c + 6*plan_d*l  + 12*e*l2  + 20*f*l3  + 30*g*l4))  ) ;
-dTOFm = sqrt( abs( rm.^4 .* (1./rm + 2*plan_c + 6*plan_d*lm + 12*e*lm2 + 20*f*lm3 + 30*g*lm4)) ) ;
+dTOFm = sqrt( abs( rm.^4 .* (1./rm + 2*plan_c + 6*plan_d*lm + 12*e*lm2 + 20*f*lm3 + 30*g*lm4)) ) ; %% [99 x 1]
 
 % step size
 h = l(2)-l(1);

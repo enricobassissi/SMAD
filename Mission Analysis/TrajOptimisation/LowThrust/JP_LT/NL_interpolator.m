@@ -12,10 +12,11 @@ function [output] = NL_interpolator( RI , RF , VI , VF , Nrev , TOF ,M ,Isp ,sim
    % sim.x = linspace(0,1,sim.n_sol)';   % non dimensional anomaly (varies in
                                          % [0,1])
    % sim.g0 
+   % sim.DU sim.TU
  
 % ----------------------------------------------------------------------- % 
 
-%-- Measurament units definition %%%%%%%%
+%-- Measurament units definition 
  DU = sim.DU ;                    % Distance unit lenght[km]
  TU = sim.TU;                     % Time unit duration [s]
 
@@ -76,8 +77,8 @@ function [output] = NL_interpolator( RI , RF , VI , VF , Nrev , TOF ,M ,Isp ,sim
 
     
  % For more than 1 revolution:
- psi = psi1 + 2*pi*Nrev;   
- 
+   psi = psi1 + 2*pi*Nrev;   
+
 
 %-- theta(t) vector 
 theta = psi*sim.x;  
@@ -90,26 +91,26 @@ theta = psi*sim.x;
 
 % ----------------------------------------------------------------------- %
 %-- Initial modified equinoctial elements MEE1 = [p1 f1 g1 h1 k1 L1]
- [coe1] = coe_from_sv(RI,VI,sim.mu);
+ [coe1] = coe_from_sv(RI*DU,VI*DU/TU,astroConstants(4));
  a1 = coe1(1); e1 = coe1(2); i1 = coe1(3); OM1 = coe1(4); om1 = coe1(5); th1 = coe1(6);
 
- p1 = a1*(1-e1^2);
- f1 = e1*cos(om1) + OM1;
- g1 = e1*sin(om1) + OM1;
+ p1 = a1*(1-e1^2)/DU; %%% controlla /DU
+ f1 = wrapTo2Pi(e1*cos(om1) + OM1); %%%% ho messo il wrap
+ g1 = wrapTo2Pi(e1*sin(om1) + OM1); %%%% ho messo il wrap
  h1 = tanh(i1/2) * cos(OM1);
  k1 = tanh(i1/2) * sin(OM1);
- L1 = th1 + om1 + OM1;
+ L1 = wrapTo2Pi(th1 + om1 + OM1); %%%% ho messo il wrap
 
 %-- Final modified equinoctial elements MEE2 = [p2 f2 g2 h2 k2 L2]
- [coe2] = coe_from_sv(RF,VF,sim.mu)
+ [coe2] = coe_from_sv(RF*DU,VF*DU/TU,astroConstants(4));
  a2 = coe2(1); e2 = coe2(2); i2 = coe2(3); OM2 = coe2(4); om2 = coe2(5); th2 = coe2(6);
 
- p2 = a2*(1-e2^2);
- f2 = e2*cos(om2) + OM2;
- g2 = e2*sin(om2) + OM2;
+ p2 = a2*(1-e2^2)/DU;
+ f2 = wrapTo2Pi(e2*cos(om2) + OM2); %%%% ho messo il wrap
+ g2 = wrapTo2Pi(e2*sin(om2) + OM2); %%%% ho messo il wrap
  h2 = tanh(i2/2) * cos(OM2);
  k2 = tanh(i2/2) * sin(OM2);
- L2 = th2 + om2 + OM2;
+ L2 = wrapTo2Pi(th2 + om2 + OM2);  %%%% ho messo il wrap
 
 % ----------------------------------------------------------------------- %
 %-- Departure orbit
@@ -126,7 +127,6 @@ theta = psi*sim.x;
  
  alpha1 = atan(sin_alpha1/cos_alpha1);
  
- % CONTROLLA I .* E ./
  
  %- Angle beta1(x) and derivatives needed to compute the declination
  beta1     = acos(sin_alpha1*cos(psi*x));
@@ -246,7 +246,7 @@ theta = psi*sim.x;
 %- Interpolationg function coefficient a - fsolve + Cavalieri-Simpson to
 %  solve the integral
 a0  = 0;
-% fun = @(a) find_a(x,psi,TOF, s1,s1_x, s1_xx, s2,s2_x,s2_xx, delta1,delta1_x,delta1_xx,delta2,delta2_x,delta2_xx)
+% fun = @(a) find_a(a,x,psi,TOF, sin_alpha1, cos_alpha1, sin_alpha2, cos_alpha2,p1, f1, g1, L1, p2,f2, g2, L2,sim);
 % options=optimoptions('fsolve', 'TolFun', 1e-13, 'TolX', 1e-13,'Display','off');
 % a = fsolve(fun,a0,options); %% alternative: fzero 
 a = 0;
@@ -258,7 +258,7 @@ a = 0;
 xi     = a*x.^8 - (20 + 4*a)*x.^7 + (70 + 6*a)*x.^6 - (84 + 4*a)*x.^5 + (35 + a)*x.^4;
 xi_x   = 8*a*x.^7 - 7*(20+4*a)*x.^6 + 6*(70 + 6*a)*x.^5 - 5*(84 + 4*a)*x.^4 + 4*(35 + a)*x.^3;
 xi_xx  = 56*a*x.^6 - 42*(20+4*a)*x.^5 + 30*(70 + 6*a)*x.^4 - 20*(84 + 4*a)*x.^3 + 12*(35 + a)*x.^2;
-xi_xxx =  336*a*x.^5 - 210*(20+4*a)*x.^4 + 120*(70 + 6*a)*x.^3 - 60*(84 + 4*a)*x.^2 + 24*(35 + a)*x;
+xi_xxx = 336*a*x.^5 - 210*(20+4*a)*x.^4 + 120*(70 + 6*a)*x.^3 - 60*(84 + 4*a)*x.^2 + 24*(35 + a)*x;
 
 %- Sun distance s(x) and declination delta(x) 
 s     = (s2 - s1).* xi + s1;
@@ -297,7 +297,7 @@ delta_xx  = Ddelta_xx.*xi + xi_xx.*Ddelta + 2*Ddelta_x.*xi_x + delta1_xx;
 delta_xxx = Ddelta_xxx.*xi + xi_xxx.*Ddelta +3*Ddelta_xx.*xi_x + 3*Ddelta_x.*xi_xx + delta1_xxx;
 
 % r_x r_xx r_xxx
-r_x   = - s.*delta_x + s_x .* cos(delta);
+r_x   = - s.*delta_x.*sin(delta) + s_x .* cos(delta);
 r_xx  = - (2*s_x.*delta_x + s_x.*delta_xx).*sin(delta) + (s_xx - s.*delta_x.^2).*cos(delta);
 r_xxx = - (3*(s_xx.*delta_x + s_x.*delta_xx) + s.*(delta_xxx - delta_x.^3)).*sin(delta) + ...
           (s_xxx - 3*delta_x.*(s_x.*delta_x + s.*delta_xx)).*cos(delta);
@@ -311,6 +311,7 @@ z_xx  = (2*s_x.*delta_x + s.*delta_xx).*cos(delta) + (s_xx -s.*delta_x.^2).*sin(
 %-- Parametrized EOM
 
 %- Square of derivative of x wrt time : x_t_2
+x_t_2_real = sim.mu*r./(s.^3.*(r*psi^2 - r_xx + 2*r_x.^2./r));
 x_t_2 = abs(sim.mu*r./(s.^3.*(r*psi^2 - r_xx + 2*r_x.^2./r)));  %%% CONTROLLA -> abs l'ho aggiunto io
 x_t   = sqrt(x_t_2);
 
@@ -374,8 +375,17 @@ for i = 2:n_sol-1
     t(i) = t(i-1) + dtheta6 * (d_time(i-1) + 4*d_time(i) + d_time(i+1) ) ; %% RK4 (?)
 end
 t(n_sol) = t(n_sol-1) + d_time(n_sol-1)*dtheta ;
-    
+
+% Thrust
+Tin = Tin2m.*m * 1000* DU/TU^2;
+Tout = Tout2m.*m * 1000* DU/TU^2;
+
+% Output
 output.m       = m ;
-output.t       = t ;    
+output.t       = t ; 
+output.Thrust  = [Tin,gamma,Tout];
+output.r       = r;
+output.theta   = theta;
+output.z       = z;
 
 end

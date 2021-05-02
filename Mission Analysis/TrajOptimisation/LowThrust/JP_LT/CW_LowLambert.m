@@ -14,10 +14,12 @@ RI_vers = RI/ri;
 RF_vers = RF/rf;
 
 % scalar and dot product between initial and final versors
+%-- cross product between RI_vers and RF_vers
 RIvcRFv = [ RI_vers(2)*RF_vers(3) - RI_vers(3)*RF_vers(2);
     RI_vers(3)*RF_vers(1) - RI_vers(1)*RF_vers(3) ;
     RI_vers(1)*RF_vers(2) - RI_vers(2)*RF_vers(1) ];
 
+%-- scalar product between RI_vers and RF_vers
 rivDrfv = RI_vers(1)*RF_vers(1) + RI_vers(2)*RF_vers(2) + RI_vers(3)*RF_vers(3);
 
 % transfer plane definition (z = 0);
@@ -51,6 +53,7 @@ else
     end
 end
 
+%%%
 % compute final anomaly adding numer of revolution
 L = psy + 2*N_rev*pi ;
 
@@ -104,8 +107,8 @@ l6 = l5.*l;
 % solving for d
 fun = @(plan_d) find_d( plan_d , plan_a , plan_b , plan_c , L , rf , tan_gam_f , rate_theta_f , TOF ,l,l2,l3,l4,l5,l6,sim.n_sol);
 plan_d = 0;
-% opt = optimset('Display','off');
-% plan_d = fzero(fun,plan_d,opt);
+%opt = optimset('Display','off');
+%plan_d = fzero(fun,plan_d,opt);
 plan_d = JP_secant_solver( fun , plan_d , 1e-8 , 1e-6 , 100);
 
 % calculation of e f g
@@ -128,7 +131,7 @@ r2 = r.*r;
 r3 = r.*r2;
 r4 = r.*r3;
 
-% angoular velocity
+% angular velocity
 l_d = sqrt((1./r4)./(1./r + 2*plan_c + 6*plan_d*l + 12*plan_e*l2 + 20*plan_f*l3 + 30*plan_g*l4));
 
 if isreal(l_d)
