@@ -1,4 +1,4 @@
-function obj_fun = ff_impulsive_soo_ARCH1plus4(x, data, sim)
+function obj_fun = ff_impulsive_soo_ARCH1plus4_mass(x, data, sim)
 % setting the input times
 MJD01 = x(1);
 TOF0 = x(2);
@@ -60,7 +60,7 @@ else
     % dv_extra_launch = dv1_EAast1 - sqrt(sim.C3_max); 
     % dv_extra_launch = 20; % very high number, arbitrary
     c1 = 5; % penalty factor for dv_extra_launch
-    dv_extra_launch = c1(dv1_EAGA - sqrt(sim.C3_max))^2; % penalty like, but not discard a priori
+    dv_extra_launch = c1*(dv1_EAGA - sqrt(sim.C3_max))^2; % penalty like, but not discard a priori
 end
 % dv2_EAGA = sqrt((VF_EAGA(1)-vGA(1))^2+(VF_EAGA(2)-vGA(2))^2+(VF_EAGA(3)-vGA(3))^2);
 
@@ -69,10 +69,10 @@ dv2_GAast1 = sqrt((VF_GAast1(1)-v1(1))^2+(VF_GAast1(2)-v1(2))^2+(VF_GAast1(3)-v1
 
 % astroConstants(23) = Radius_Earth, km
 % astroConstants(13) = muEarth, km^3/s^2
-delta_v_p = flyby(astroConstants(23), astroConstants(13), MJDGA, VF_EAGA, VI_GAast1);
+delta_V_p = flyby(astroConstants(23), astroConstants(13), MJDGA, VF_EAGA, VI_GAast1);
 
-if strcmp(string(delta_v_p), 'Not found')
-    delta_v_p = 30;
+if strcmp(string(delta_V_p), 'Not found')
+    delta_V_p = 30;
 end
 
 % asteroid 1 -> 2
@@ -100,7 +100,7 @@ dv2_ast34 = sqrt((VF_ast34(1)-v4(1))^2+(VF_ast34(2)-v4(2))^2+(VF_ast34(3)-v4(3))
 dv_passage_ast3 = sqrt((VI_ast34(1)-VF_ast23(1))^2+(VI_ast34(2)-VF_ast23(2))^2+(VI_ast34(3)-VF_ast23(3))^2);
 
 % if the last dv is a flyby it can go wherever it wants
-obj_fun = dv_extra_launch + dv_passage_ast1 + dv_passage_ast2 + dv_passage_ast3 + delta_v_p; 
+% obj_fun = dv_extra_launch + dv_passage_ast1 + dv_passage_ast2 + dv_passage_ast3 + delta_V_p; 
 
 % else if the last dv is a rendezvous with the last object
 % obj_fun = dv_extra_launch + dv_passage_ast1 + dv_passage_ast2 + dv_passage_ast3 + dv2_ast34; 
@@ -110,6 +110,36 @@ obj_fun = dv_extra_launch + dv_passage_ast1 + dv_passage_ast2 + dv_passage_ast3 
 % % penalty factor on the rel vel?
 % obj_fun = dv_extra_launch + dv_passage_ast1 + dv_passage_ast2 + dv_passage_ast3 + ...
 %     c*dv2_GAast1 + c*dv2_ast12 + c*dv2_ast23 + c*dv2_ast34; 
+
+% Mass Calculations
+g0 = sim.g0; %km/s^2
+Isp_mother=sim.Isp_mother; %s
+Isp_lander=sim.Isp_lander; %s
+dry_mass=sim.dry_mass; %kg
+dry_mass_lander=sim.dry_mass_lander; %kg
+% m_wet/m_dry = exp(dv/(Isp*g0))
+% mass of the lander required to pay to cancel dVrel at each flyby passage
+% dry mass lander and the propellant related to that dV
+mass_lander=[dry_mass_lander*exp(dv2_GAast1/(Isp_lander*g0)), dry_mass_lander*exp(dv2_ast12/(Isp_lander*g0)),...
+             dry_mass_lander*exp(dv2_ast23/(Isp_lander*g0)), dry_mass_lander*exp(dv2_ast34/(Isp_lander*g0))];
+% Back interpolate the mass of the overall spacecraft from end of mission,
+% with an end mass of sim.dry_mass and we build back the initial wet mass
+% at each asteroid encounter, the mothercraft expell a lander
+bef_ast4=dry_mass+mass_lander(4);
+% at each flyby the sc expell mass to perform the impulsive dV
+aft_ast3=bef_ast4*exp((dv_passage_ast3)/(Isp_mother*g0));
+bef_ast3=aft_ast3+mass_lander(3);
+aft_ast2=bef_ast3*exp((dv_passage_ast2)/(Isp_mother*g0));
+bef_ast2=aft_ast2+mass_lander(2);
+aft_ast1=bef_ast2*exp((dv_passage_ast1)/(Isp_mother*g0));
+bef_ast1=aft_ast1+mass_lander(1);
+% mass expelled from powered gravity assist on the earth
+aft_ga = bef_ast1*exp((delta_V_p)/(Isp_mother*g0));
+% mass used due to the assisted insertion in the 1st interplanetary leg,
+% other then the sqrt(C3) of the launcher, if any
+wet_mass=aft_ga*exp((dv_extra_launch)/(Isp_mother*g0));
+
+obj_fun = wet_mass;
 
 end
 

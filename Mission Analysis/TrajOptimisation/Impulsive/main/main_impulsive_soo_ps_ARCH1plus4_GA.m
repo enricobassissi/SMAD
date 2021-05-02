@@ -30,7 +30,7 @@ colors = [0    50   71;... % (1) DEEP SPACE
           51   94   111;... % (11) DEEP SPACE -1
           0    0    0]./255; % (12) BLACK
 
-sim.case_name = 'ARCH ID 2: IMPULSIVE FLYBY ON EVERY ASTEROID';
+sim.case_name = 'ARCH ID 4: IMPULSIVE FLYBY ON EVERY ASTEROID WITH GA ON EARTH BEFORE GOING TO THE ASTEROIDS';
 
 % %% INTRO ADIMENSIONALISATION
 % sim.mu = 1.32712440017987e11; % Sun planetary constant (mu = mass * G) (from DE405) [km^3/s^2]
@@ -59,6 +59,14 @@ catch
     module = py.importlib.import_module('neo_api_function');
 end
 
+%% Spacecraft
+sim.g0=9.81*(10^(-3)); %[km/s]
+sim.Isp_mother=250;%s %Isp of mothercraft
+sim.Isp_lander=230;%s Isp of landers
+sim.dry_mass=40;%kg
+sim.dry_mass_lander=4;%kg
+% so that the starting dry mass is 40+4*4=56 kg
+
 %% Asteroids
 AU = astroConstants(2);
 muSun = astroConstants(4);
@@ -73,10 +81,10 @@ data.HowMany = factorial(length(data.asteroid_names)) / factorial(length(data.as
 
 %% uNEO
 % try 
-%     load('data.mat')
+    load('data.mat')
 % catch
     % if the asteroid have changed, run the find_eph_neo below, it takes about 1 min
-    [data.y_interp_ft, data.t_vector] = find_eph_neo(data.asteroid_names);
+%     [data.y_interp_ft, data.t_vector] = find_eph_neo(data.asteroid_names);
 %     save('data.mat', data);
 % end
 
@@ -87,8 +95,8 @@ sim.soo_lim.date_ld =  [2028, 1, 1, 0, 0, 0];
 sim.soo_lim.mjd2000_ed = date2mjd2000(sim.soo_lim.date_ed);
 sim.soo_lim.mjd2000_ld = date2mjd2000(sim.soo_lim.date_ld);
 % TOF0 (2)
-sim.soo_lim.TOF0_min = 100; % days
-sim.soo_lim.TOF0_max = 800; % days
+sim.soo_lim.TOF0_min = 200; % days more than 1 year, if not it stays on earth orbit
+sim.soo_lim.TOF0_max = 3*365; % days
 % TOF1 (3)
 sim.soo_lim.TOF1_min = 100; % days
 sim.soo_lim.TOF1_max = 3*365; % days
@@ -118,16 +126,7 @@ sim.soo_bound.ub = [sim.soo_lim.mjd2000_ld, sim.soo_lim.TOF0_max, sim.soo_lim.TO
 % Constraint on C3 Launcher
 sim.C3_max = 40; % km^2/s^2
 
-%% Options
-options = optimoptions('particleswarm');
-options.HybridFcn = @fmincon;
-options.SwarmSize = 1000; % Default is min(100,10*nvars),
-options.MaxIterations = 200; %  Default is 200*nvars
-options.MaxStallIterations = 70; % Default 20
-options.Display = 'iter';
-options.FunctionTolerance = 1e-6;
-
-% Parallel pool
+%% Parallel pool
 % Open the parallel pool
 par_pool = gcp; 
 if isempty(par_pool)
@@ -136,12 +135,53 @@ else
     poolsize = par_pool.NumWorkers;
 end
 
-options.UseParallel = true;
-
 %% Build the soo
-FitnessFunction = @(x) ff_impulsive_soo_ARCH1plus4(x, data, sim); % Function handle to the fitness function
+% FitnessFunction = @(x) ff_impulsive_soo_ARCH1plus4(x, data, sim); % Function handle to the fitness function
+FitnessFunction = @(x) ff_impulsive_soo_ARCH1plus4_mass(x, data, sim); % Function handle to the fitness function
 numberOfVariables = length(sim.soo_bound.ub); % Number of decision variables
 
+%% Constraints
+% sim.soo_constr.A = []; % linear inequality constraints
+% sim.soo_constr.b = []; % linear inequality constraints
+% sim.soo_constr.Aeq = []; % linear equality constraints
+% sim.soo_constr.beq = []; % linear equality constraints
+% sim.soo_constr.nonlcon = []; % linear equality constraints
+% 
+% % if you want to restrict x(2) and x(10) to be integers, set IntCon to [2,10].
+% % ga(fitnessfcn,nvars,A,b,Aeq,beq,lb,ub,nonlcon,IntCon,options)
+% sim.soo_constr.IntCon = [7];
+
+% %% Options ga
+% options = optimoptions(@ga);
+% % options.PlotFcn = {@gaplotbestf};
+% options.Display = 'iter';
+% % A hybrid function is another minimization function that runs after the 
+% % multiobjective genetic algorithm terminates
+% % options.HybridFcn = @fmincon;
+% 
+% options.PopulationSize = 1000; 
+% options.MaxGenerations = 200; 
+% options.FunctionTolerance = 1e-6;
+% options.MaxStallGenerations = 50;
+
+%% Options ps
+options = optimoptions('particleswarm');
+options.HybridFcn = @fmincon;
+options.SwarmSize = 1500; % Default is min(100,10*nvars),
+options.MaxIterations = 200; %  Default is 200*nvars
+options.MaxStallIterations = 50; % Default 20
+options.Display = 'iter';
+options.FunctionTolerance = 1e-6;
+options.UseParallel = true;
+
+%% Run Optimisation ga
+% tic
+% [x,Fval,exitFlag,Output] = ga(FitnessFunction,numberOfVariables,sim.soo_constr.A, ...
+%     sim.soo_constr.b,sim.soo_constr.Aeq,sim.soo_constr.beq,sim.soo_bound.lb,sim.soo_bound.ub,...
+%     sim.soo_constr.nonlcon,sim.soo_constr.IntCon,options);
+% el_time_min_pp = toc/60;
+
+%% Run Optimisation ps
 tic
 [x,Fval,exitFlag,Output] = particleswarm(FitnessFunction,numberOfVariables...
     ,sim.soo_bound.lb,sim.soo_bound.ub,options);
@@ -149,30 +189,32 @@ el_time_min_pp = toc/60;
 
 %% Build solution structure
 % set the knee as main solution
-asteroid_sequence = data.PermutationMatrix(round(x(6)),:);
+asteroid_sequence = data.PermutationMatrix(round(x(7)),:);
 sol.ast_1 = asteroid_sequence(1);
 sol.ast_2 = asteroid_sequence(2);
 sol.ast_3 = asteroid_sequence(3);
 sol.ast_4 = asteroid_sequence(4);
 sol.MJD0 = x(1);
 sol.dep_date = mjd20002date(sol.MJD0)';
-sol.TOF_tot_D = x(2)+x(3)+x(4)+x(5);
+sol.TOF_tot_D = x(2)+x(3)+x(4)+x(5)+x(6);
 sol.TOF_tot_Y = sol.TOF_tot_D/365;
 sol.end_of_mission_date = mjd20002date(sol.MJD0+sol.TOF_tot_D)';
-sol.dV_tot = Fval(1);
-sol.TOF1 = x(2);
-sol.TOF2 = x(3);
-sol.TOF3 = x(4);
-sol.TOF4 = x(5);
+% sol.dV_tot = Fval(1);
+sol.m_tot = Fval(1);
+sol.TOF0 = x(2);
+sol.TOF1 = x(3);
+sol.TOF2 = x(4);
+sol.TOF3 = x(5);
+sol.TOF4 = x(6);
 
 %% Mass Consumption for High Thrust Impulsive Case
-g0 = 9.81; %m/s^2
-% https://www.space-propulsion.com/spacecraft-propulsion/hydrazine-thrusters/20n-hydrazine-thruster.html
-Isp = 230; %s 
-m_dry = 100; %kg
-m_prop = m_dry*(exp(sol.dV_tot*1e3/(g0*Isp)) - 1); %kg
+% g0 = 9.81; %m/s^2
+% % https://www.space-propulsion.com/spacecraft-propulsion/hydrazine-thrusters/20n-hydrazine-thruster.html
+% Isp = 230; %s 
+% m_dry = 100; %kg
+% m_prop = m_dry*(exp(sol.dV_tot*1e3/(g0*Isp)) - 1); %kg
 %% Plot trajectories
-sol = plot_mission_4neo_flyby(sol,asteroid_sequence,data,sim,colors)
+sol = plot_mission_4neo_flyby_GA(sol,asteroid_sequence,data,sim,colors)
 
 %% Plot orbit asteroids
 % plot_orbits_asteroids(asteroid_names,colors)
