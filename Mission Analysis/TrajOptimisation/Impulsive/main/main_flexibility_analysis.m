@@ -1,7 +1,7 @@
-%% -------------------------------------------------------- %%
-%% ----------- EA Ast1 Ast2 Ast3 Ast4 Transfer ------------ %%
-%% ---------------- FLEXIBILITY ANALYSIS ------------------ %%
-%% -------------------------------------------------------- %%
+%% --------------------------------------------------------------------- %%
+%% ------------------ EA Ast1 Ast2 Ast3 Ast4 Transfer ------------------ %%
+%% ---------------------- FLEXIBILITY ANALYSIS ------------------------- %%
+%% --------------------------------------------------------------------- %%
 %% Setup for default options
 set(0, 'DefaultTextFontSize', 20)
 set(0, 'DefaultAxesFontSize', 20)
@@ -117,7 +117,7 @@ sim.soo_bound.ub = [sim.soo_lim.mjd2000_ld, sim.soo_lim.TOF1_max,...
       sim.soo_lim.TOF4_max,sim.soo_lim.permutations_up]; % Upper bound
 
 % Constraint on C3 Launcher
-sim.C3_max = 20; % km^2/s^2
+sim.C3_max = 40; % km^2/s^2
 
 %% Options
 options = optimoptions('particleswarm');
@@ -240,7 +240,7 @@ sim.soo_bound.ub = [sim.soo_lim.TOF1_max,sim.soo_lim.TOF2_max,...
     sim.soo_lim.TOF3_max,sim.soo_lim.TOF4_max,sim.soo_lim.permutations_up]; % Upper bound
 
 % Constraint on C3 Launcher
-sim.C3_max = 20; % km^2/s^2
+sim.C3_max = 40; % km^2/s^2
 
 %% PS Options
 options = optimoptions('particleswarm');
@@ -385,7 +385,7 @@ sim.soo_bound.ub = [sim.soo_lim.mjd2000_ld, sim.soo_lim.TOF1_max,...
       sim.soo_lim.TOF2_max,sim.soo_lim.TOF3_max,...
       sim.soo_lim.TOF4_max,sim.soo_lim.permutations_up]; % Upper bound
 % Constraint on C3 Launcher
-sim.C3_max = 20; % km^2/s^2
+sim.C3_max = 40; % km^2/s^2
 
 %% PS Options
 options = optimoptions('particleswarm');

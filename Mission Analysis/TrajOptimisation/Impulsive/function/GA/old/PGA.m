@@ -44,6 +44,7 @@ if r_peri<=rperi_lim
    % disp('error, r_{perigee} not feasable, the s/c will crash');
    dvGA=NaN;
 else
+    
 % Compute the parameters of the flyby hyperbola 
  a_m = -mu_planet/norm(vinf_m)^2;
  a_p = -mu_planet/norm(vinf_p)^2;

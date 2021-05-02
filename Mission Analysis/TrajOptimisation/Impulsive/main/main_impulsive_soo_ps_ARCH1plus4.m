@@ -86,34 +86,37 @@ sim.soo_lim.date_ed = [2022, 1, 1, 0, 0, 0];
 sim.soo_lim.date_ld =  [2028, 1, 1, 0, 0, 0];
 sim.soo_lim.mjd2000_ed = date2mjd2000(sim.soo_lim.date_ed);
 sim.soo_lim.mjd2000_ld = date2mjd2000(sim.soo_lim.date_ld);
-% TOF1 (2)
+% TOF0 (2)
+sim.soo_lim.TOF0_min = 100; % days
+sim.soo_lim.TOF0_max = 800; % days
+% TOF1 (3)
 sim.soo_lim.TOF1_min = 100; % days
 sim.soo_lim.TOF1_max = 3*365; % days
-% TOF2 (3)
+% TOF2 (4)
 sim.soo_lim.TOF2_min = 50; % days
 sim.soo_lim.TOF2_max = 3*365; % days
-% TOF3 (4)
+% TOF3 (5)
 sim.soo_lim.TOF3_min = 50; % days
 sim.soo_lim.TOF3_max = 3*365; % days
-% TOF4 (5)
+% TOF4 (6)
 sim.soo_lim.TOF4_min = 50; % days
 sim.soo_lim.TOF4_max = 3*365; % days
-% Matrix of permutations (6)
+% Matrix of permutations (7)
 % to use round in the code... so we have same probility to be rounded to
 % the first or to the last element in the matrix as in the middle elements!
 sim.soo_lim.permutations_low = 0.5; 
 sim.soo_lim.permutations_up = data.HowMany + 0.4999;
 
-% x = [MJD0,TOF1,TOF2,TOF3,TOF4,ID_permutation]
-sim.soo_bound.lb = [sim.soo_lim.mjd2000_ed, sim.soo_lim.TOF1_min,...
+% x = [MJD0,TOF0,TOF1,TOF2,TOF3,TOF4,ID_permutation]
+sim.soo_bound.lb = [sim.soo_lim.mjd2000_ed, sim.soo_lim.TOF0_min,  sim.soo_lim.TOF1_min,...
       sim.soo_lim.TOF2_min,sim.soo_lim.TOF3_min,...
       sim.soo_lim.TOF4_min,sim.soo_lim.permutations_low]; % Lower bound
-sim.soo_bound.ub = [sim.soo_lim.mjd2000_ld, sim.soo_lim.TOF1_max,...
+sim.soo_bound.ub = [sim.soo_lim.mjd2000_ld, sim.soo_lim.TOF0_max, sim.soo_lim.TOF1_max,...
       sim.soo_lim.TOF2_max,sim.soo_lim.TOF3_max,...
       sim.soo_lim.TOF4_max,sim.soo_lim.permutations_up]; % Upper bound
 
 % Constraint on C3 Launcher
-sim.C3_max = 20; % km^2/s^2
+sim.C3_max = 40; % km^2/s^2
 
 %% Options
 options = optimoptions('particleswarm');
