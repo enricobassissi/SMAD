@@ -62,7 +62,5 @@ Q_pX = (R3_om*R1_i*R3_OM)';
 % final vectors position and velocity (r and v are column vectors):
 r = Q_pX*rp;
 v = Q_pX*vp;
-%...Convert r and v into row vectors:
-r = r';
-v = v';
+
 end

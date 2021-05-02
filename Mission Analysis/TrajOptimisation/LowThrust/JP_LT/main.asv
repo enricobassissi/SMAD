@@ -67,22 +67,17 @@ plot3(RI(1), RI(2), RI(3),'*m')
 plot3(RF(1), RF(2), RF(3),'*b')
 
 %%
-% ksun =  astroConstants(4);
-% 
-% MJD01 = date2mjd2000([2021 1 1 0 0 0]);
-% [kep_EA,ksun] = uplanet(MJD01, 3);
-% [RI, VI] = sv_from_coe(kep_EA,ksun);
-% 
-% RI = RI/sim.DU;
-% VI = VI/sim.DU*sim.TU;
-% 
-% % arrival on mars
-% MJDF1 = date2mjd2000([2023 1 1 0 0 0]);
-% [kep_MA,ksun] = uplanet(MJDF1, 4);
-% [RF, VF] = sv_from_coe(kep_MA,ksun);
-% 
-% RF = RF/sim.DU;
-% VF = VF/sim.DU*sim.TU;
+MJD01 = date2mjd2000([2021 1 1 0 0 0]);
+[kep_EA,ksun] = uplanet(MJD01, 3);
+[r1, v1] = sv_from_coe(kep_EA,ksun);
+
+r1 = r1/sim.DU;
+v1 = v1/sim.DU*sim.TU;
+
+% arrival on mars
+MJD0F = date2mjd2000([2023 1 1 0 0 0]);
+[kep_MA,ksun] = uplanet(MJDF1, 4);
+[r2, v2] = sv_from_coe(kep_MA,ksun);
 
 Isp = 3000/sim.TU; 
 output2 = NL_interpolator( RI , RF , VI , VF , N_rev , TOF ,M ,Isp ,sim );
