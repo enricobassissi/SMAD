@@ -53,66 +53,61 @@ sim.kp = 3; %It is used just for sim.out_shape = 1;
 
 %% Boundaries
 % Departure dates
-sim.moo_lim.date_ed = [2028, 1, 1, 0, 0, 0];
-sim.moo_lim.date_ld =  [2031, 1, 1, 0, 0, 0];
-sim.moo_lim.mjd2000_ed = date2mjd2000(sim.moo_lim.date_ed)*3600*24/sim.TU;
-sim.moo_lim.mjd2000_ld = date2mjd2000(sim.moo_lim.date_ld)*3600*24/sim.TU;
+sim.soo_lim.date_ed = [2028, 1, 1, 0, 0, 0];
+sim.soo_lim.date_ld =  [2031, 1, 1, 0, 0, 0];
+sim.soo_lim.mjd2000_ed = date2mjd2000(sim.soo_lim.date_ed)*3600*24/sim.TU;
+sim.soo_lim.mjd2000_ld = date2mjd2000(sim.soo_lim.date_ld)*3600*24/sim.TU;
 % TOF1
-sim.moo_lim.TOF1_min = 600*3600*24/sim.TU; 
-sim.moo_lim.TOF1_max = 1000*3600*24/sim.TU; 
+sim.soo_lim.TOF1_min = 600*3600*24/sim.TU; 
+sim.soo_lim.TOF1_max = 1000*3600*24/sim.TU; 
 % N REV
-sim.moo_lim.N_REV_min = -0.5;
-sim.moo_lim.N_REV_max = 3.4999;
+sim.soo_lim.N_REV_min = -0.5;
+sim.soo_lim.N_REV_max = 3.4999;
 % sim.hp
-sim.moo_lim.hp_min = 2.5;
-sim.moo_lim.hp_max = 5.4999;
+sim.soo_lim.hp_min = 2.5;
+sim.soo_lim.hp_max = 5.4999;
 % vinf_mag
-sim.moo_lim.vinf_mag_min = 0.75;
-sim.moo_lim.vinf_mag_max = 2;
+sim.soo_lim.vinf_mag_min = 0.75;
+sim.soo_lim.vinf_mag_max = 2;
 % alpha
-sim.moo_lim.alpha_min = -pi;
-sim.moo_lim.alpha_max =  pi;
+sim.soo_lim.alpha_min = -pi;
+sim.soo_lim.alpha_max =  pi;
 % beta
-sim.moo_lim.beta_min = - pi;
-sim.moo_lim.beta_max =  pi;
+sim.soo_lim.beta_min = - pi;
+sim.soo_lim.beta_max =  pi;
 
 
 % % x = [MJD0,TOF,N_REV]
 % sim.moo_bound.lb = [sim.moo_lim.mjd2000_ed, sim.moo_lim.TOF1_min, sim.moo_lim.N_REV_min]; % Lower bound
 % sim.moo_bound.ub = [sim.moo_lim.mjd2000_ld, sim.moo_lim.TOF1_max, sim.moo_lim.N_REV_max]; % Upper bound
 % x = [MJD0,TOF,N_REV,hp,vinf_mag,alpha,beta]
-sim.moo_bound.lb = [sim.moo_lim.mjd2000_ed, sim.moo_lim.TOF1_min, sim.moo_lim.N_REV_min, sim.moo_lim.hp_min,sim.moo_lim.vinf_mag_min,sim.moo_lim.alpha_min,sim.moo_lim.beta_min]; % Lower bound
-sim.moo_bound.ub = [sim.moo_lim.mjd2000_ld, sim.moo_lim.TOF1_max, sim.moo_lim.N_REV_max, sim.moo_lim.hp_max,sim.moo_lim.vinf_mag_max,sim.moo_lim.alpha_max,sim.moo_lim.beta_max]; % Upper bound
+sim.soo_bound.lb = [sim.soo_lim.mjd2000_ed, sim.soo_lim.TOF1_min, sim.soo_lim.N_REV_min, sim.soo_lim.hp_min,sim.soo_lim.vinf_mag_min,sim.soo_lim.alpha_min,sim.soo_lim.beta_min]; % Lower bound
+sim.soo_bound.ub = [sim.soo_lim.mjd2000_ld, sim.soo_lim.TOF1_max, sim.soo_lim.N_REV_max, sim.soo_lim.hp_max,sim.soo_lim.vinf_mag_max,sim.soo_lim.alpha_max,sim.soo_lim.beta_max]; % Upper bound
 
 %% Constraints
-sim.moo_constr.A = []; % linear inequality constraints
-sim.moo_constr.b = []; % linear inequality constraints
-sim.moo_constr.Aeq = []; % linear equality constraints
-sim.moo_constr.beq = []; % linear equality constraints
+sim.soo_constr.A = []; % linear inequality constraints
+sim.soo_constr.b = []; % linear inequality constraints
+sim.soo_constr.Aeq = []; % linear equality constraints
+sim.soo_constr.beq = []; % linear equality constraints
+sim.soo_constr.nonlcon = []; % linear equality constraints
 
 %% Options
-options = optimoptions(@gamultiobj);
+options = optimoptions(@ga);
 % options.PlotFcn = @gaplotpareto;
 options.Display = 'iter';
 % y = score; -> phenotype, Measure the distance in fitness function space; 
 % y = pop; -> genotype, Measure the distance in decision variable space.
-options.DistanceMeasureFcn = {@distancecrowding,'phenotype'};
+%options.DistanceMeasureFcn = {@distancecrowding,'phenotype'};
 % A hybrid function is another minimization function that runs after the 
 % multiobjective genetic algorithm terminates
 % options.HybridFcn = 'fgoalattain';
 
 
 options.PopulationSize = 1000; % ideal 1000
-options.ParetoFraction = 0.5;
-options.MaxGenerations = 15; % ideal 100
-=======
-<<<<<<< HEAD
-options.PopulationSize = 10; % ideal 1000
-options.ParetoFraction = 0.7;
-options.MaxGenerations = 5; % ideal 100
->>>>>>> c77695a3413183c5d6adb1d6d679723b80ca46b7:Mission Analysis/TrajOptimisation/LowThrust/JP_LT/main_moo_LT.m
+%options.ParetoFraction = 0.5;
+options.MaxGenerations = 100; % ideal 100
 
-options.FunctionTolerance = 1e-6;
+options.FunctionTolerance = 1e-9; %1e-6
 options.MaxStallGenerations = 3;
 
 % Parallel pool
@@ -126,32 +121,56 @@ end
 
 options.UseParallel = true;
 
-%% Build the moo
-FitnessFunction = @(x) ff_ea_ma_LT(x,sim); % Function handle to the fitness function
-numberOfVariables = length(sim.moo_bound.ub); % Number of decision variables
+%% Build the soo
+FitnessFunction = @(x) ff_ea_ma_LT_soo(x,sim); % Function handle to the fitness function
+numberOfVariables = length(sim.soo_bound.ub); % Number of decision variables
 
 tic
-[x,Fval,exitFlag,Output] = gamultiobj(FitnessFunction,numberOfVariables,sim.moo_constr.A, ...
-    sim.moo_constr.b,sim.moo_constr.Aeq,sim.moo_constr.beq,sim.moo_bound.lb,sim.moo_bound.ub,options);
+[x,Fval,exitFlag,Output] = ga(FitnessFunction,numberOfVariables,sim.soo_constr.A, ...
+    sim.soo_constr.b,sim.soo_constr.Aeq,sim.soo_constr.beq,sim.soo_bound.lb,sim.soo_bound.ub,sim.soo_constr.nonlcon,options);
 el_time_min_pp = toc/60;
 
-%% Find the knee solution
-Fval(:,1) = Fval(:,1)*sim.TU/(3600*24);
-[knee_idx, d] = find_knee_solution(Fval);
+%% New Boundaries
+% Departure dates
+sim.soo_lim.mjd2000_ed = x(1) - 0.3*x(1);
+sim.soo_lim.mjd2000_ld = x(1) + 0.3*x(1);
+% TOF1
+sim.soo_lim.TOF1_min = x(2) - 0.3*x(2);
+sim.soo_lim.TOF1_max = x(2) + 0.3*x(2);
+% N REV
+sim.soo_lim.N_REV_min = x(3) - 0.3*x(3);
+sim.soo_lim.N_REV_max = x(3) + 0.3*x(3);
+% sim.hp
+sim.soo_lim.hp_min = x(4) - 0.3*x(4);
+sim.soo_lim.hp_max = x(4) + 0.3*x(4);
+% vinf_mag
+sim.soo_lim.vinf_mag_min = 0.75;
+sim.soo_lim.vinf_mag_max = 2;
+% alpha
+sim.soo_lim.alpha_min = -pi;
+sim.soo_lim.alpha_max =  pi;
+% beta
+sim.soo_lim.beta_min = - pi;
+sim.soo_lim.beta_max =  pi;
 
-% Plot Pareto Plot
-figure('Name','GA MO Pareto Plot')
-title('Pareto Points in Parameter Space')
-h_pp = plot(Fval(:,1),Fval(:,2),'o','Color',colors(1,:));
-hold on
-h_kpp = plot(Fval(knee_idx,1),Fval(knee_idx,2),'o','Color',colors(2,:));
-xlabel('$Obj_1: \ TOF$ [d]')
-ylabel('$Obj_2: \ mf frac$ [trattino in mezzo]')
-legend([h_pp,h_kpp],'Sub-Optim Sol','Knee Sol')
-clearvars h_pp h_kpp
+
+% % x = [MJD0,TOF,N_REV]
+% sim.moo_bound.lb = [sim.moo_lim.mjd2000_ed, sim.moo_lim.TOF1_min, sim.moo_lim.N_REV_min]; % Lower bound
+% sim.moo_bound.ub = [sim.moo_lim.mjd2000_ld, sim.moo_lim.TOF1_max, sim.moo_lim.N_REV_max]; % Upper bound
+% x = [MJD0,TOF,N_REV,hp,vinf_mag,alpha,beta]
+sim.soo_bound.lb = [sim.soo_lim.mjd2000_ed, sim.soo_lim.TOF1_min, sim.soo_lim.N_REV_min, sim.soo_lim.hp_min,sim.soo_lim.vinf_mag_min,sim.soo_lim.alpha_min,sim.soo_lim.beta_min]; % Lower bound
+sim.soo_bound.ub = [sim.soo_lim.mjd2000_ld, sim.soo_lim.TOF1_max, sim.soo_lim.N_REV_max, sim.soo_lim.hp_max,sim.soo_lim.vinf_mag_max,sim.soo_lim.alpha_max,sim.soo_lim.beta_max]; % Upper bound
+
+
+%% Build the 2nd soo
+
+tic
+[x2,Fval,exitFlag,Output] = ga(FitnessFunction,numberOfVariables,sim.soo_constr.A, ...
+    sim.soo_constr.b,sim.soo_constr.Aeq,sim.soo_constr.beq,sim.soo_bound.lb,sim.soo_bound.ub,sim.soo_constr.nonlcon,options);
+el_time_min_pp = toc/60;
 
 %% plot
-[output, r1_true, r2_true] = plot_ff_ea_ma_LT(x(knee_idx,:),sim);
+[output, r1_true, r2_true] = plot_ff_ea_ma_LT_soo(x2,sim);
 
 figure()
 subplot(5,1,1)
