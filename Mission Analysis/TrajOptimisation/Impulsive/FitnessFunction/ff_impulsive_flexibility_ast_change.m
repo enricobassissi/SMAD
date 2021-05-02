@@ -1,4 +1,4 @@
-function obj_fun = ff_impulsive_soo_ARCH1plus4(x, data, sim)
+function obj_fun = ff_impulsive_flexibility_ast_change(x, data, sim)
 % setting the input times
 MJD01 = x(1);
 TOF1 = x(2);
@@ -12,10 +12,10 @@ MJDP4 = MJDP3 + TOF4;
 
 % chosing which asteroid to visit
 IDP = round(x(6)); %index of permutation, the column of the Permutation Matrix of the asteroids
-asteroid_1 = data.PermutationMatrix(IDP,1);
-asteroid_2 = data.PermutationMatrix(IDP,2);
-asteroid_3 = data.PermutationMatrix(IDP,3);
-asteroid_4 = data.PermutationMatrix(IDP,4);
+asteroid_1 = data.PermutCycle(IDP,1);
+asteroid_2 = data.PermutCycle(IDP,2);
+asteroid_3 = data.PermutCycle(IDP,3);
+asteroid_4 = data.PermutCycle(IDP,4);
 
 % Computing position and velocity of the planets in that days
 % Departure from Earth
@@ -50,7 +50,7 @@ else
     % actually you would pay the difference, so we put a very big number to
     % let the optimizer to not consider this solution because too expansive
     % dv1_EAast1 - sqrt(sim.C3_max); 
-    dv_extra_launch = 20; % very high number, arbitrary
+    dv_extra_launch = 10; % very high number, arbitrary
 end
 dv2_EAast1 = sqrt((VF_EAast1(1)-v1(1))^2+(VF_EAast1(2)-v1(2))^2+(VF_EAast1(3)-v1(3))^2);
 

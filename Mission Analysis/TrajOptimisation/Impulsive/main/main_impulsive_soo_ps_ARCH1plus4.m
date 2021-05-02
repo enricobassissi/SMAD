@@ -30,11 +30,14 @@ colors = [0    50   71;... % (1) DEEP SPACE
           51   94   111;... % (11) DEEP SPACE -1
           0    0    0]./255; % (12) BLACK
 
+sim.case_name = 'ARCH ID 2: IMPULSIVE FLYBY ON EVERY ASTEROID';
+
 % %% INTRO ADIMENSIONALISATION
 % sim.mu = 1.32712440017987e11; % Sun planetary constant (mu = mass * G) (from DE405) [km^3/s^2]
 % sim.DU = 149597870.691; % Distance Unit = Astronomical Unit (AU) (from DE405) [km]
 % sim.TU = (sim.DU^3/sim.mu)^0.5; % Time Unit
 % sim.mu = 1;
+
 %% add path of functions and python stuff
 str_path=split(pwd, 'TrajOptimisation\Impulsive\main');
 util_path=string(str_path(1))+'Utils';
@@ -84,7 +87,7 @@ sim.soo_lim.date_ld =  [2028, 1, 1, 0, 0, 0];
 sim.soo_lim.mjd2000_ed = date2mjd2000(sim.soo_lim.date_ed);
 sim.soo_lim.mjd2000_ld = date2mjd2000(sim.soo_lim.date_ld);
 % TOF1 (2)
-sim.soo_lim.TOF1_min = 200; % days
+sim.soo_lim.TOF1_min = 100; % days
 sim.soo_lim.TOF1_max = 3*365; % days
 % TOF2 (3)
 sim.soo_lim.TOF2_min = 50; % days
@@ -117,7 +120,7 @@ options = optimoptions('particleswarm');
 options.HybridFcn = @fmincon;
 options.SwarmSize = 1000; % Default is min(100,10*nvars),
 options.MaxIterations = 200; %  Default is 200*nvars
-options.MaxStallIterations = 50; % Default 20
+options.MaxStallIterations = 70; % Default 20
 options.Display = 'iter';
 options.FunctionTolerance = 1e-6;
 

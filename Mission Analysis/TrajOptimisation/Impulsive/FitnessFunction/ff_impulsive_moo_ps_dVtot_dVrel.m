@@ -1,4 +1,10 @@
-function obj_fun = ff_impulsive_soo_ARCH1plus4(x, data, sim)
+function res = ff_impulsive_moo_ps_dVtot_dVrel(x_, data, sim)
+
+size_x_=size(x_);
+res=zeros(size_x_(1),2);
+for i_i=1:size_x_(1)
+x=x_(i_i,:);
+
 % setting the input times
 MJD01 = x(1);
 TOF1 = x(2);
@@ -79,12 +85,16 @@ dv2_ast34 = sqrt((VF_ast34(1)-v4(1))^2+(VF_ast34(2)-v4(2))^2+(VF_ast34(3)-v4(3))
 dv_passage_ast3 = sqrt((VI_ast34(1)-VF_ast23(1))^2+(VI_ast34(2)-VF_ast23(2))^2+(VI_ast34(3)-VF_ast23(3))^2);
 
 % if the last dv is a flyby it can go wherever it wants
-obj_fun = dv_extra_launch + dv_passage_ast1 + dv_passage_ast2 + dv_passage_ast3; 
+obj_fun(1) = dv_extra_launch + dv_passage_ast1 + dv_passage_ast2 + dv_passage_ast3; 
 
 % else if the last dv is a rendezvous with the last object
-% obj_fun = dv_extra_launch + dv_passage_ast1 + dv_passage_ast2 + dv_passage_ast3 + dv2_ast34; 
+% obj_fun(1) = dv_extra_launch + dv_passage_ast1 + dv_passage_ast2 + dv_passage_ast3 + dv2_ast34; 
 
-% obj_fun = TOF1+TOF2+TOF3+TOF4;
+% relative velocity arrival at the asteroid and asteroid itself, for the deployment of the "lander"
+obj_fun(2) = dv2_EAast1 + dv2_ast12 + dv2_ast23 + dv2_ast34;
+
+res(i_i,:)=[obj_fun(1) obj_fun(2)];
+end
 
 end
 

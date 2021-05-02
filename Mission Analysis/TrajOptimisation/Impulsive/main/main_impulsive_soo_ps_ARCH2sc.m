@@ -1,5 +1,6 @@
 %% -------------------------------------------------------- %%
 %% ----------- EA Ast1 Ast2 Ast3 Ast4 Transfer ------------ %%
+%% ------------------- ARCH ID 3: 2 SC -------------------- %%
 %% -------------------------------------------------------- %%
 %% Setup for default options
 set(0, 'DefaultTextFontSize', 20)
@@ -30,13 +31,18 @@ colors = [0    50   71;... % (1) DEEP SPACE
           51   94   111;... % (11) DEEP SPACE -1
           0    0    0]./255; % (12) BLACK
 
-sim.case_name = 'ARCH ID 1: IMPULSIVE DOUBLE RENDEZVOUS ON EACH ASTEROID';
+sim.case_name = 'ARCH ID 3: 2 SC, EACH IMPULSIVE FLYBY ON 2 ASTEROIDS';
+% In this architecture you have all the permutation of 2 asteorids among
+% the list of 9
+% Then the 2nd spacecraft can combine freely the other targets, except from
+% the 2 asteroids that have already been set for the 1st spacecraft
 
 % %% INTRO ADIMENSIONALISATION
 % sim.mu = 1.32712440017987e11; % Sun planetary constant (mu = mass * G) (from DE405) [km^3/s^2]
 % sim.DU = 149597870.691; % Distance Unit = Astronomical Unit (AU) (from DE405) [km]
 % sim.TU = (sim.DU^3/sim.mu)^0.5; % Time Unit
 % sim.mu = 1;
+
 %% add path of functions and python stuff
 str_path=split(pwd, 'TrajOptimisation\Impulsive\main');
 util_path=string(str_path(1))+'Utils';
@@ -66,10 +72,12 @@ muSun = astroConstants(4);
 data.asteroid_names = ["2006HX57";"2008XU2";"2008KN11";"2012SY49";"2012QD8";"2020UE";...
                   "2006SC";"2005WG57";"2012BY1"];
 
-% Number of possible combination of 4 asteroids among the ones in the list
-data.HowMany = factorial(length(data.asteroid_names)) / factorial(length(data.asteroid_names) - 4);
-[data.PermutationMatrix, ~] = permnUnique(data.asteroid_names, 4);
+% Number of possible combination of 2 asteroids among the ones in the list
+data.HowMany = factorial(length(data.asteroid_names)) / factorial(length(data.asteroid_names) - 2);
+[data.PermutationMatrix, ~] = permnUnique(data.asteroid_names, 2);
 
+% the left asteroids permutations
+data.HowMany2 = factorial(length(data.asteroid_names)-2) / factorial((length(data.asteroid_names)-2) - 2);
 %% uNEO
 % try 
 %     load('data.mat')
@@ -80,48 +88,45 @@ data.HowMany = factorial(length(data.asteroid_names)) / factorial(length(data.as
 % end
 
 %% Boundaries
-% Departure dates (1)
+% Nomenclature
+% quantities for SpaceCraft1 will have numbers (1,2,...)
+% quantities for SC 2 will have letters (a,b,...)
+
+% Departure dates (1), departure time for both the sc
 sim.soo_lim.date_ed = [2022, 1, 1, 0, 0, 0];
 sim.soo_lim.date_ld =  [2028, 1, 1, 0, 0, 0];
 sim.soo_lim.mjd2000_ed = date2mjd2000(sim.soo_lim.date_ed);
 sim.soo_lim.mjd2000_ld = date2mjd2000(sim.soo_lim.date_ld);
-% TOF1 (2)
+% TOF1 (2), tof sc1 to 1st asteroid
 sim.soo_lim.TOF1_min = 200; % days
 sim.soo_lim.TOF1_max = 3*365; % days
-% Buffer time 1 (3)
-sim.soo_lim.bt1_min = 30;
-sim.soo_lim.bt1_max = 180;
-% TOF2 (4)
+% TOF2 (3), tof sc1 to 2nd asteroid
 sim.soo_lim.TOF2_min = 50; % days
 sim.soo_lim.TOF2_max = 3*365; % days
-% Matrix of permutations (5)
+% TOFa (4), tof sc2 to 1st asteroid
+sim.soo_lim.TOF3_min = 200; % days
+sim.soo_lim.TOF3_max = 3*365; % days
+% TOFb (5), tof sc2 to 2nd asteroid
+sim.soo_lim.TOF4_min = 50; % days
+sim.soo_lim.TOF4_max = 3*365; % days
+% Matrix of permutations 1 (6)
 % to use round in the code... so we have same probility to be rounded to
 % the first or to the last element in the matrix as in the middle elements!
 sim.soo_lim.permutations_low = 0.5; 
 sim.soo_lim.permutations_up = data.HowMany + 0.4999;
-% Buffer time 2 (6)
-sim.soo_lim.bt2_min = 30;
-sim.soo_lim.bt2_max = 180;
-% TOF3 (7)
-sim.soo_lim.TOF3_min = 50; % days
-sim.soo_lim.TOF3_max = 3*365; % days
-% Buffer time 3 (8)
-sim.soo_lim.bt3_min = 30;
-sim.soo_lim.bt3_max = 180;
-% TOF4 (9)
-sim.soo_lim.TOF4_min = 50; % days
-sim.soo_lim.TOF4_max = 3*365; % days
+% Matrix of permutations 2 (7)
+% to use round in the code... so we have same probility to be rounded to
+% the first or to the last element in the matrix as in the middle elements!
+sim.soo_lim.permutations2_low = 0.5; 
+sim.soo_lim.permutations2_up = data.HowMany2 + 0.4999;
 
-% x = [MJD0,TOF1,buffer_time,TOF2,ID_permutation,...
-%      buffer_time2,TOF3,buffer_time3,TOF4]
+% x = [MJD0,TOF1,TOF2,TOF3,TOF4,ID_permutation1,ID_permutation2]
 sim.soo_bound.lb = [sim.soo_lim.mjd2000_ed, sim.soo_lim.TOF1_min,...
-      sim.soo_lim.bt1_min,...
-      sim.soo_lim.TOF2_min,sim.soo_lim.permutations_low,sim.soo_lim.bt2_min,...
-      sim.soo_lim.TOF3_min,sim.soo_lim.bt3_min,sim.soo_lim.TOF4_min]; % Lower bound
+      sim.soo_lim.TOF2_min,sim.soo_lim.TOF3_min,sim.soo_lim.TOF4_min,...
+      sim.soo_lim.permutations_low,sim.soo_lim.permutations2_low]; % Lower bound
 sim.soo_bound.ub = [sim.soo_lim.mjd2000_ld, sim.soo_lim.TOF1_max,...
-      sim.soo_lim.bt1_max,...
-      sim.soo_lim.TOF2_max,sim.soo_lim.permutations_up,sim.soo_lim.bt2_max,...
-      sim.soo_lim.TOF3_max,sim.soo_lim.bt3_max,sim.soo_lim.TOF4_max]; % Upper bound
+      sim.soo_lim.TOF2_max,sim.soo_lim.TOF3_max,sim.soo_lim.TOF4_max,...
+      sim.soo_lim.permutations_up,sim.soo_lim.permutations2_up]; % Upper bound
 
 % Constraint on C3 Launcher
 sim.C3_max = 20; % km^2/s^2
@@ -131,7 +136,7 @@ options = optimoptions('particleswarm');
 options.HybridFcn = @fmincon;
 options.SwarmSize = 1000; % Default is min(100,10*nvars),
 options.MaxIterations = 200; %  Default is 200*nvars
-options.MaxStallIterations = 50; % Default 20
+options.MaxStallIterations = 70; % Default 20
 options.Display = 'iter';
 options.FunctionTolerance = 1e-6;
 
@@ -147,7 +152,7 @@ end
 options.UseParallel = true;
 
 %% Build the soo
-FitnessFunction = @(x) ff_impulsive_soo(x, data, sim); % Function handle to the fitness function
+FitnessFunction = @(x) ff_impulsive_soo_ARCH2sc(x, data, sim); % Function handle to the fitness function
 numberOfVariables = length(sim.soo_bound.ub); % Number of decision variables
 
 tic
@@ -156,25 +161,34 @@ tic
 el_time_min_pp = toc/60;
 
 %% Build solution structure
-% set the knee as main solution
-asteroid_sequence = data.PermutationMatrix(round(x(5)),:);
-sol.ast_1 = asteroid_sequence(1);
-sol.ast_2 = asteroid_sequence(2);
-sol.ast_3 = asteroid_sequence(3);
-sol.ast_4 = asteroid_sequence(4);
 sol.MJD0 = x(1);
 sol.dep_date = mjd20002date(sol.MJD0)';
-sol.TOF_tot_D = x(2)+x(3)+x(4)+x(6)+x(7)+x(8)+x(9);
-sol.TOF_tot_Y = sol.TOF_tot_D/365;
-sol.end_of_mission_date = mjd20002date(sol.MJD0+sol.TOF_tot_D)';
-sol.dV_tot = Fval(1);
+% 1st sc stuff
+asteroid_sequence = data.PermutationMatrix(round(x(6)),:);
+sol.ast_1 = asteroid_sequence(1);
+sol.ast_2 = asteroid_sequence(2);
 sol.TOF1 = x(2);
-sol.buffer_time1 = x(3);
-sol.TOF2 = x(4);
-sol.buffer_time2 = x(6);
-sol.TOF3 = x(7);
-sol.buffer_time3 = x(8);
-sol.TOF4 = x(9);
+sol.TOF2 = x(3);
+sol.TOF_tot_D_sc1 = sol.TOF1+sol.TOF2;
+sol.TOF_tot_Y_sc1 = sol.TOF_tot_D_sc1/365;
+sol.end_of_mission_date_sc1 = mjd20002date(sol.MJD0+sol.TOF_tot_D_sc1)';
+sol.dV_tot = Fval(1);
+
+% 2nd sc stuff
+TF = contains(data.asteroid_names,asteroid_sequence);
+data.not_asteroid_sequence = data.asteroid_names(~TF);
+clearvars TF
+% HowMany_for2ndSC = factorial(length(not_asteroid_sequence)) / factorial(length(not_asteroid_sequence) - 2);
+[data.PermutationMatrix_SC2, ~] = permnUnique(data.not_asteroid_sequence, 2);
+sol.ast_a = data.PermutationMatrix_SC2(round(x(7)),1);
+sol.ast_b = data.PermutationMatrix_SC2(round(x(7)),2);
+sol.TOFa = x(4);
+sol.TOFb = x(5);
+sol.TOF_tot_D_sc2 = sol.TOFa+sol.TOFb;
+sol.TOF_tot_Y_sc2 = sol.TOF_tot_D_sc2/365;
+sol.end_of_mission_date_sc2 = mjd20002date(sol.MJD0+sol.TOF_tot_D_sc2)';
+
+sol.end_of_mission_date_overall = max(sol.end_of_mission_date_sc1,sol.end_of_mission_date_sc2);
 
 %% Mass Consumption for High Thrust Impulsive Case
 g0 = 9.81; %m/s^2
@@ -182,8 +196,9 @@ g0 = 9.81; %m/s^2
 Isp = 230; %s 
 m_dry = 100; %kg
 m_prop = m_dry*(exp(sol.dV_tot*1e3/(g0*Isp)) - 1); %kg
+
 %% Plot trajectories
-sol = plot_mission_4neo_rendezvous(sol,asteroid_sequence,data,sim,colors)
+sol = plot_mission_4neo_flyby_ARCH2sc(sol,data,sim,colors)
 
 %% Plot orbit asteroids
 % plot_orbits_asteroids(asteroid_names,colors)

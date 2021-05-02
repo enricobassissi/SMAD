@@ -10,7 +10,7 @@ function [R_AST, h] = plot_asteorid_orbit(mjd2000,years,ast_name,colors,color_id
     horizons_data = double(py_data);
     R_AST = horizons_data(:, 1:3); %AU
     
-    h = plot3(R_AST(:,1),R_AST(:,2),R_AST(:,3),'--','Color',colors(color_id,:),...
-        'DisplayName',strcat('Full ',ast_name));
+    h = plot3(R_AST(:,1),R_AST(:,2),R_AST(:,3),'.-','Color',colors(color_id,:),...
+        'DisplayName',strcat('Full ',ast_name),'LineWidth',1);
 
 end

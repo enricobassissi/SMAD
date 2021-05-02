@@ -58,6 +58,16 @@ function REP = MOPSO(params,MultiObj)
     var_min = MultiObj.var_min(:);
     var_max = MultiObj.var_max(:);
     
+    % Existance of name for labels
+    name_label_existence1 = exist('MultiObj.Obj1', 'var');
+    if ~name_label_existence1
+        error('Error. Input MultiObj.Obj1 to visualise the x label of your quantity')
+    end
+    name_label_existence2 = exist('MultiObj.Obj2', 'var');
+    if ~name_label_existence2
+        error('Error. Input MultiObj.Obj2 to visualise the y label of your quantity')
+    end
+
     % Initialization
     POS = repmat((var_max-var_min)',Np,1).*rand(Np,nVar) + repmat(var_min',Np,1);
     VEL = zeros(Np,nVar);
@@ -78,13 +88,20 @@ function REP = MOPSO(params,MultiObj)
     % Plotting and verbose
     if(size(POS_fit,2)==2)
         h_fig = figure(1);
-        h_par = plot(POS_fit(:,1),POS_fit(:,2),'or'); hold on;
-        h_rep = plot(REP.pos_fit(:,1),REP.pos_fit(:,2),'ok'); hold on;
+        % Enrico Bassissi, 29/04/2021
+        % changed colors
+        % it was: h_par = plot(POS_fit(:,1),POS_fit(:,2),'or');
+        % and: h_rep = plot(REP.pos_fit(:,1),REP.pos_fit(:,2),'ok');
+        h_par = plot(POS_fit(:,1),POS_fit(:,2),'o','Color',[207 29 57]./255); hold on; % red
+        h_rep = plot(REP.pos_fit(:,1),REP.pos_fit(:,2),'o','Color',[0 50 71]./255); hold on; % black
         try
             set(gca,'xtick',REP.hypercube_limits(:,1)','ytick',REP.hypercube_limits(:,2)');
             axis([min(REP.hypercube_limits(:,1)) max(REP.hypercube_limits(:,1)) ...
                   min(REP.hypercube_limits(:,2)) max(REP.hypercube_limits(:,2))]);
-            grid on; xlabel('f1'); ylabel('f2');
+              % Enrico Bassissi, 29/04/2021
+              % modified the label names
+              % here it was: xlabel('f1'); ylabel('f2');
+            grid on; xlabel(MultiObj.Obj1,'Interpreter','latex'); ylabel(MultiObj.Obj2,'Interpreter','latex');
         end
         drawnow;
     end
@@ -146,8 +163,12 @@ function REP = MOPSO(params,MultiObj)
         % Plotting and verbose
         if(size(POS_fit,2)==2)
             figure(h_fig); delete(h_par); delete(h_rep);
-            h_par = plot(POS_fit(:,1),POS_fit(:,2),'or'); hold on;
-            h_rep = plot(REP.pos_fit(:,1),REP.pos_fit(:,2),'ok'); hold on;
+            % Enrico Bassissi, 29/04/2021
+            % changed colors
+            % it was: h_par = plot(POS_fit(:,1),POS_fit(:,2),'or');
+            % and: h_rep = plot(REP.pos_fit(:,1),REP.pos_fit(:,2),'ok');
+        	h_par = plot(POS_fit(:,1),POS_fit(:,2),'o','Color',[207 29 57]./255); hold on; % red
+            h_rep = plot(REP.pos_fit(:,1),REP.pos_fit(:,2),'o','Color',[0 50 71]./255); hold on; % black
             try
                 set(gca,'xtick',REP.hypercube_limits(:,1)','ytick',REP.hypercube_limits(:,2)');
                 axis([min(REP.hypercube_limits(:,1)) max(REP.hypercube_limits(:,1)) ...
@@ -157,7 +178,10 @@ function REP = MOPSO(params,MultiObj)
                 try delete(h_pf); end
                 h_pf = plot(MultiObj.truePF(:,1),MultiObj.truePF(:,2),'.','color',0.8.*ones(1,3)); hold on;
             end
-            grid on; xlabel('f1'); ylabel('f2');
+            % Enrico Bassissi, 29/04/2021
+            % modified the label names
+            % here it was: xlabel('f1'); ylabel('f2');
+            grid on; xlabel(MultiObj.Obj1,'Interpreter','latex'); ylabel(MultiObj.Obj2,'Interpreter','latex');
             drawnow;
             axis square;
         end

@@ -30,6 +30,8 @@ colors = [0    50   71;... % (1) DEEP SPACE
           51   94   111;... % (11) DEEP SPACE -1
           0    0    0]./255; % (12) BLACK
 
+sim.case_name = 'ARCH ID 1: IMPULSIVE DOUBLE RENDEZVOUS ON EACH ASTEROID';
+
 %% add path of functions and python stuff
 path_str=split(pwd, 'TrajOptimisation\Impulsive\main');
 path_utils=string(path_str(1))+'Utils';
@@ -216,7 +218,7 @@ Isp = 230; %s
 m_dry = 100; %kg
 m_prop = m_dry*(exp(sol.dV_tot*1e3/(g0*Isp)) - 1); %kg
 %% Plot trajectories
-sol = plot_mission_4neo(sol,asteroid_sequence,data,sim,colors)
+sol = plot_mission_4neo_rendezvous(sol,asteroid_sequence,data,sim,colors)
 
 %% Plot orbit asteroids
 % plot_orbits_asteroids(asteroid_names,colors)

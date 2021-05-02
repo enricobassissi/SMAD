@@ -30,33 +30,35 @@ colors = [0    50   71;... % (1) DEEP SPACE
           51   94   111;... % (11) DEEP SPACE -1
           0    0    0]./255; % (12) BLACK
 
-sim.case_name = 'ARCH ID 1: IMPULSIVE DOUBLE RENDEZVOUS ON EACH ASTEROID';
-% %% INTRO ADIMENSIONALISATION
+sim.case_name = 'ARCH ID 1: IMPULSIVE FLYBY ON EACH ASTEROID';
+
+%% add path of functions and python stuff
+path_str=split(pwd, 'TrajOptimisation\Impulsive\main');
+path_utils=string(path_str(1))+'Utils';
+addpath(genpath(path_utils));
+path_py=string(path_str(1))+'PyInterface\NEO_API_py';
+addpath(genpath(path_py));
+path_neoeph=string(path_str(1))+'NeoEph';
+addpath(genpath(path_neoeph));
+path_str=split(pwd, 'main');
+path_imp=string(path_str(1));
+addpath(genpath(path_imp));
+
+%% INTRO ADIMENSIONALISATION
 % sim.mu = 1.32712440017987e11; % Sun planetary constant (mu = mass * G) (from DE405) [km^3/s^2]
 % sim.DU = 149597870.691; % Distance Unit = Astronomical Unit (AU) (from DE405) [km]
 % sim.TU = (sim.DU^3/sim.mu)^0.5; % Time Unit
 % sim.mu = 1;
-
-%% add path of functions and python stuff
-str_path=split(pwd, 'TrajOptimisation\Impulsive\main');
-util_path=string(str_path(1))+'Utils';
-addpath(genpath(util_path));
-py_path=string(str_path(1))+'PyInterface\NEO_API_py';
-addpath(genpath(py_path));
-neoeph_path=string(str_path(1))+'NeoEph';
-addpath(genpath(neoeph_path));
-str_path=split(pwd, 'main');
-imp_path=string(str_path(1));
-addpath(genpath(imp_path));
 
 %% Call to NASA JPL Horizons to get Asteroid's Ephemerides
 % Import module of Python
 try 
     module = py.importlib.import_module('neo_api_function');
 catch
-    copyfile(py_path+'\neo_api_function.py', pwd, 'f'); 
+    copyfile(path_py+'\neo_api_function.py', pwd, 'f'); 
     module = py.importlib.import_module('neo_api_function');
 end
+
 %% Asteroids
 AU = astroConstants(2);
 muSun = astroConstants(4);
@@ -77,124 +79,122 @@ data.HowMany = factorial(length(data.asteroid_names)) / factorial(length(data.as
     [data.y_interp_ft, data.t_vector] = find_eph_neo(data.asteroid_names);
 %     save('data.mat', data);
 % end
+
 %% Boundaries
-% Departure dates
+% Departure dates (1)
 sim.bound.date_ed = [2022, 1, 1, 0, 0, 0];
 sim.bound.date_ld =  [2028, 1, 1, 0, 0, 0];
 sim.bound.mjd2000_ed = date2mjd2000(sim.bound.date_ed);
 sim.bound.mjd2000_ld = date2mjd2000(sim.bound.date_ld);
-% TOF1
+% TOF1 (2)
 sim.bound.TOF1_min = 200; % days
 sim.bound.TOF1_max = 3*365; % days
-% Buffer time 1
-sim.bound.bt1_min = 30;
-sim.bound.bt1_max = 180;
-% TOF2
+% TOF2 (3)
 sim.bound.TOF2_min = 50; % days
 sim.bound.TOF2_max = 3*365; % days
-% Matrix of permutations
+% TOF3 (4)
+sim.bound.TOF3_min = 50; % days
+sim.bound.TOF3_max = 3*365; % days
+% TOF4 (5)
+sim.bound.TOF4_min = 50; % days
+sim.bound.TOF4_max = 3*365; % days
+% Matrix of permutations (6)
 % to use round in the code... so we have same probility to be rounded to
 % the first or to the last element in the matrix as in the middle elements!
 sim.bound.permutations_low = 0.5; 
 sim.bound.permutations_up = data.HowMany + 0.4999;
-% Buffer time 2
-sim.bound.bt2_min = 30;
-sim.bound.bt2_max = 180;
-% TOF3
-sim.bound.TOF3_min = 50; % days
-sim.bound.TOF3_max = 3*365; % days
-% Buffer time 3 
-sim.bound.bt3_min = 30;
-sim.bound.bt3_max = 180;
-% TOF4
-sim.bound.TOF4_min = 50; % days
-sim.bound.TOF4_max = 3*365; % days
 
-% x = [MJD0,TOF1,buffer_time,TOF2,ID_permutation,...
-%      buffer_time2,TOF3,buffer_time3,TOF4]
-sim.bound.lb = [sim.bound.mjd2000_ed, sim.bound.TOF1_min , sim.bound.bt1_min,...
-      sim.bound.TOF2_min,sim.bound.permutations_low,sim.bound.bt2_min,...
-      sim.bound.TOF3_min,sim.bound.bt3_min,sim.bound.TOF4_min]; % Lower bound
-sim.bound.ub = [sim.bound.mjd2000_ld, sim.bound.TOF1_max, sim.bound.bt1_max,...
-      sim.bound.TOF2_max,sim.bound.permutations_up,sim.bound.bt2_max,...
-      sim.bound.TOF3_max,sim.bound.bt3_max,sim.bound.TOF4_max]; % Upper bound
- % Constraint on C3 Launcher
+% x = [MJD0,TOF1,TOF2,TOF3,TOF4,ID_permutation,]
+sim.bound.lb = [sim.bound.mjd2000_ed, sim.bound.TOF1_min,...
+    sim.bound.TOF2_min,sim.bound.TOF3_min,sim.bound.TOF4_min,...
+    sim.bound.permutations_low]; % Lower bound
+sim.bound.ub = [sim.bound.mjd2000_ld, sim.bound.TOF1_max,...
+    sim.bound.TOF2_max,sim.bound.TOF3_max,...
+    sim.bound.TOF4_max,sim.bound.permutations_up]; % Upper bound
+
+% Constraint on C3 Launcher
 sim.C3_max = 20; % km^2/s^2
+  
+%% Constraints
+sim.constr.A = []; % linear inequality constraints
+sim.constr.b = []; % linear inequality constraints
+sim.constr.Aeq = []; % linear equality constraints
+sim.constr.beq = []; % linear equality constraints
+sim.constr.nonlcon = []; % linear equality constraints
 
 %% Options
+options = optimoptions(@gamultiobj);
+% options.PlotFcn = @gaplotpareto;
+options.Display = 'iter';
+% y = score; -> phenotype, Measure the distance in fitness function space; 
+% y = pop; -> genotype, Measure the distance in decision variable space.
+options.DistanceMeasureFcn = {@distancecrowding,'phenotype'};
+% A hybrid function is another minimization function that runs after the 
+% multiobjective genetic algorithm terminates
+% options.HybridFcn = 'fgoalattain';
+
+options.PopulationSize = 1000; 
+options.ParetoFraction = 0.5;
+options.MaxGenerations = 100; 
+options.FunctionTolerance = 1e-6;
+options.MaxStallGenerations = 30;
 
 % Parallel pool
 % Open the parallel pool
-% par_pool = gcp; 
-% if isempty(par_pool)
-%     poolsize = 0;
-% else
-%     poolsize = par_pool.NumWorkers;
-% end
-% 
-% options.UseParallel = true;
-% 
+par_pool = gcp; 
+if isempty(par_pool)
+    poolsize = 0;
+else
+    poolsize = par_pool.NumWorkers;
+end
+
+options.UseParallel = true;
 % options.UseParallel = false;
 
 %% Build the moo
-FitnessFunction = @(x) ff_impulsive_moo_ps(x, data, sim); % Function handle to the fitness function
+FitnessFunction = @(x) ff_impulsive_moo_ps_dVtot_dVrel(x,data,sim); % Function handle to the fitness function
 numberOfVariables = length(sim.bound.ub); % Number of decision variables
 
-%% Mopso parameter
-params.Np = 1000;        % Population size
-params.Nr = 200;        % Repository size
-params.maxgen = 200;    % Maximum number of generations
-params.W = 0.4;         % Inertia weight
-params.C1 = 2;          % Individual confidence factor
-params.C2 = 2;          % Swarm confidence factor
-params.ngrid = 20;      % Number of grids in each dimension
-params.maxvel = 5;      % Maxmium vel in percentage
-params.u_mut = 0.5;     % Uniform mutation percentage
-
-
-MultiObj.fun = FitnessFunction;
-MultiObj.nVar = length(sim.bound.ub);
-MultiObj.var_min = sim.bound.lb;
-MultiObj.var_max = sim.bound.ub;
-%% MOPSO
-REP = MOPSO(params,MultiObj);
+tic
+[x,Fval,exitFlag,Output] = gamultiobj(FitnessFunction,numberOfVariables,sim.constr.A, ...
+    sim.constr.b,sim.constr.Aeq,sim.constr.beq,sim.bound.lb,sim.bound.ub,...
+    sim.constr.nonlcon,options);
+el_time_min_pp = toc/60;
 
 %% Find the knee solution
-[knee_idx, d] = find_knee_solution(REP.pos_fit);
+[knee_idx, d] = find_knee_solution(Fval);
 
 % Plot Pareto Plot
 figure('Name','GA MO Pareto Plot')
 title('Pareto Points in Parameter Space')
-h_pp = plot(REP.pos_fit(:,1),REP.pos_fit(:,2),'o','Color',colors(1,:));
+h_pp = plot(Fval(:,1),Fval(:,2),'o','Color',colors(1,:));
 hold on
-h_kpp = plot(REP.pos_fit(knee_idx,1),REP.pos_fit(knee_idx,2),'o','Color',colors(2,:));
-xlabel('$Obj_1: \ \Delta V$ [km/s]')
-ylabel('$Obj_2: \ TOF$ [d]')
+h_kpp = plot(Fval(knee_idx,1),Fval(knee_idx,2),'o','Color',colors(2,:));
+xlabel('$Obj_1: \ \Delta V_{tot}$ [km/s]')
+ylabel('$Obj_2: \ \Delta V_{rel passage}$ [km/s]')
 legend([h_pp,h_kpp],'Sub-Optim Sol','Knee Sol')
 clearvars h_pp h_kpp
 
 %% find min deltav sol
-knee_idx = find(min(REP.pos_fit(:,1))==REP.pos_fit(:,1));
+knee_idx = find(min(Fval(:,1))==Fval(:,1));
 
 %% Build solution structure
 % set the knee as main solution
-asteroid_sequence = data.PermutationMatrix(round(REP.pos(knee_idx,5)),:);
+asteroid_sequence = data.PermutationMatrix(round(x(knee_idx,6)),:);
 sol.ast_1 = asteroid_sequence(1);
 sol.ast_2 = asteroid_sequence(2);
 sol.ast_3 = asteroid_sequence(3);
 sol.ast_4 = asteroid_sequence(4);
-sol.MJD0 = REP.pos(knee_idx,1);
+sol.TOF1 = x(knee_idx,2);
+sol.TOF2 = x(knee_idx,3);
+sol.TOF3 = x(knee_idx,4);
+sol.TOF4 = x(knee_idx,5);
+sol.TOF_tot = sol.TOF1+sol.TOF2+sol.TOF3+sol.TOF4;
+sol.MJD0 = x(knee_idx,1);
 sol.dep_date = mjd20002date(sol.MJD0)';
-sol.end_of_mission_date = mjd20002date(sol.MJD0+REP.pos_fit(knee_idx,2))';
-sol.dV_tot = REP.pos_fit(knee_idx,1);
-sol.TOF_tot = REP.pos_fit(knee_idx,2);
-sol.TOF1 = REP.pos(knee_idx,2);
-sol.buffer_time1 = REP.pos(knee_idx,3);
-sol.TOF2 = REP.pos(knee_idx,4);
-sol.buffer_time2 = REP.pos(knee_idx,6);
-sol.TOF3 = REP.pos(knee_idx,7);
-sol.buffer_time3 = REP.pos(knee_idx,8);
-sol.TOF4 = REP.pos(knee_idx,9);
+sol.end_of_mission_date = mjd20002date(sol.MJD0+sol.TOF_tot)';
+sol.dV_tot = Fval(knee_idx,1);
+sol.dV_rel = Fval(knee_idx,2);
 
 %% Mass Consumption for High Thrust Impulsive Case
 g0 = 9.81; %m/s^2
@@ -203,7 +203,7 @@ Isp = 230; %s
 m_dry = 100; %kg
 m_prop = m_dry*(exp(sol.dV_tot*1e3/(g0*Isp)) - 1); %kg
 %% Plot trajectories
-sol = plot_mission_4neo_rendezvous(sol,asteroid_sequence,data,sim,colors)
+sol = plot_mission_4neo_flyby(sol,asteroid_sequence,data,sim,colors)
 
 %% Plot orbit asteroids
 % plot_orbits_asteroids(asteroid_names,colors)
