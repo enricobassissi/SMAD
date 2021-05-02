@@ -1,4 +1,8 @@
-%% --------------- START UP --------------------------------- %%
+%% --------------------------------------------------------------------- %%
+%% -------- VALIDATION CODE FOR EPH MODEL USED FOR ASTEROIDS ----------- %%
+%% --------------- COMPARISON BETWEEN REAL EPH FROM JPL AND ------------ %%
+%% ----------- INTERPOLATED WITH FOURIER SERIES DATA ------------------- %%
+%% --------------------------------------------------------------------- %%
 %% Setup for default options
 set(0, 'DefaultTextFontSize', 22)
 set(0, 'DefaultAxesFontSize', 22)
@@ -81,7 +85,11 @@ clearvars i
 
 TABLE = table(selected_asteroids_names',a_asteroids,e_asteroids,incl_asteroids)
 
-%% ------------------- Analysis on Keplerian Elements --------------------- %%
+%% --------------------------------------------------------------------- %%
+%% ---------------- GET HORIZONS DATA OF THE ASTEROIDS ----------------- %%
+%% ------------------------ FROM 2020 TO 2050 -------------------------- %%
+%% ------------------ Analysis on Keplerian Elements ------------------- %%
+%% --------------------------------------------------------------------- %%
 % Asteroids
 PointOfView = 'Sun';
 epoch_start = '2020-01-01';
@@ -99,8 +107,11 @@ for name = 1:length(selected_asteroids_names)
     horizons_data{name}(:,6) = rad2deg(unwrap(deg2rad(horizons_data{name}(:,6))));
     
 end
+clearvars name
 
-%% ------------------- EXAMPLE TEST -------------------------- %%
+%% --------------------------------------------------------------------- %%
+%% ----------------------- EXAMPLE TEST -------------------------------- %%
+%% --------------------------------------------------------------------- %%
 %% INTERPOLATION
 t_vector = linspace(pystr2mjd2000(epoch_start),pystr2mjd2000(epoch_stop),length(horizons_data{1,1}(:,1)));
 
@@ -145,8 +156,11 @@ max_ft200_err = max(err);
 mean_ft200_err = mean(err);
 std_ft200_err = std(err);
 
-%% ------------------ VALIDATION ------------------------------- %%
-%% ------ COMPARISON WITH REAL EPH AND ERROR COMPARISON WITH UPLANET ------- %%
+%% --------------------------------------------------------------------- %%
+%% ------------------ PARAMETERS VALIDATION ---------------------------- %%
+%% ----------- COMPARISON FT INTERPOLATION WRT REAL EPH ---------------- %%
+%% ---------------- AND ERROR COMPARISON WRT UPLANET ------------------- %%
+%% --------------------------------------------------------------------- %%
 %% Loop with all asteroids and take the worst
 t_vector = linspace(pystr2mjd2000(epoch_start),pystr2mjd2000(epoch_stop),length(horizons_data{1,1}(:,1)));
 
@@ -154,11 +168,15 @@ for name = 1:length(selected_asteroids_names)
     
     % Fourier interpolation
     N = 200; % number of query point, interpolation points
-    V_interp_ft{name,1} = interpft(horizons_data{name},N,1); % 1 by column, 2 by rows
+    V_interp_ft_2{name,1} = interpft(horizons_data{name}(:,1:5),N,1); % 1 by column, 2 by rows
     t_vector2 = linspace(pystr2mjd2000(epoch_start),pystr2mjd2000(epoch_stop),N);
+    N2 = 800; % number of query point, interpolation points
+    V_interp_ft_22{name,1} = interpft(horizons_data{name}(:,6),N2,1); % 1 by column, 2 by rows
+    t_vector22 = linspace(pystr2mjd2000(epoch_start),pystr2mjd2000(epoch_stop),N2);
     
     % interp1 spline of the FT approx, spline as it will be done in uNEO2()
-    V_interp_ft_lin{name,1} = interp1(t_vector2,V_interp_ft{name},t_vector, 'spline');
+    V_interp_ft_lin{name,1}(:,1:5) = interp1(t_vector2,V_interp_ft_2{name},t_vector, 'spline');
+    V_interp_ft_lin{name,1}(:,6) = interp1(t_vector22,V_interp_ft_22{name},t_vector, 'spline');
 
     % error calculation
     V_err{name,1} = horizons_data{name} - V_interp_ft_lin{name};
@@ -169,6 +187,7 @@ for name = 1:length(selected_asteroids_names)
     V_std_ft200_err{name,1} = std(V_err{name});
     
 end
+clearvars name
 
 format long
 % max of each error element among all of the asteroids
@@ -190,6 +209,7 @@ for i = 1:length(V_max_ft200_err{1}) % orb params
         end
     end
 end
+clearvars i j
 
 %% order of magnitude of uplanet earth wrt real horizons earth
 earth_horizons_2020_2050 = read_web_form_of_JPL_Horizons('earth_horizons_2020_2050.txt');
@@ -197,6 +217,7 @@ earth_uplanet = zeros(length(t_vector),6);
 for i = 1:length(t_vector)
     earth_uplanet(i,:) = uplanet(t_vector(i),3);
 end
+clearvars i
 % km, rad -> au, deg
 earth_uplanet(:,1) = earth_uplanet(:,1)/AU;
 earth_uplanet(:,3:6) = rad2deg(earth_uplanet(:,3:6));
@@ -216,7 +237,59 @@ err_ratio_std = VV_std_ft200_err/std_uplanet_err
 fprintf('this fourier transform model interpolation is more precise than the uplanet analytical model \n')
 fprintf('if both compared with the result from JPL Horizons Elements output \n')
 
-%% ---------------------- ORBIT VALIDATION -------------------- %%
+%% PLOT THE ERROR ON EACH PARAM
+% semimajor axis to see if it works
+unit_of_measurments = {'a [AU]','e [-]','i [deg]','OM [deg]','om [deg]','th [deg]'};
+
+for i = 1:size(V_err{1},2) % 6 elements
+    figure('Name','Error on Elements')
+    for j = 1:length(selected_asteroids_names) % 9 asteroids
+        h_fig = plot(t_vector',V_err{j}(:,i),'DisplayName',selected_asteroids_names(j));
+        hold on
+    end
+    txt_ylabel = string({'error ', unit_of_measurments(i)});
+    xlabel('mjd2000'); ylabel(txt_ylabel);
+    legend('show','Location','southeastoutside')
+    title('err = real JPL Horizons - FT interpolation')
+    saveas(h_fig,sprintf('./Figures/valid_err_param%d.png',i));
+end
+clearvars i j h_fig
+
+%% error of uplanet plot
+
+idx_th_grater_180 = earth_horizons_2020_2050(:,6)>=180;
+for i=1:length(idx_th_grater_180)
+    if idx_th_grater_180(i)
+        earth_horizons_2020_2050(i,6) = earth_horizons_2020_2050(i,6)-360;
+    end
+end
+    
+for i = 1:size(err_uplanet,2)
+    figure('Name','Error on Elements of uplanet Earth')
+    plot(t_vector',err_uplanet(:,i));
+    txt_ylabel = string({'error ', unit_of_measurments(i)});
+    xlabel('mjd2000'); ylabel(txt_ylabel);
+    legend('show','Location','southeast')
+    title('err = real JPL Horizons - uplanet analytical ephemerides')
+end
+clearvars i
+
+%% true anomaly
+% interp1 spline
+% V_interp_ft_lin
+figure()
+plot(t_vector,horizons_data{1,1}(:,6))
+hold on
+plot(t_vector,V_interp_ft_lin{1,1}(:,6))
+xlabel('mjd2000'); ylabel('$\theta$ [deg]');
+legend('real','fourier 200')
+title('$\theta$ for',selected_asteroids_names(1))
+
+max(horizons_data{1,1}(:,6) - V_interp_ft_lin{1,1}(:,6))
+min(horizons_data{1,1}(:,6) - V_interp_ft_lin{1,1}(:,6))
+%% --------------------------------------------------------------------- %%
+%% ----------------------- ORBIT VALIDATION ---------------------------- %%
+%% --------------------------------------------------------------------- %%
 % Earth 1 year ephemerides
 epoch_start = '2021-01-01';
 epoch_stop = '2022-01-01';
@@ -244,7 +317,8 @@ for name = 1:length(selected_asteroids_names)
     horizons_data_orbit{name,1} = double(py_data); % [x,y,z] in AU; [vx,vy,vz] in AU/day
     
     % data extraction section of interpolated data
-    V_interp_ft_lin_orbit = interp1(t_vector2,V_interp_ft{name},t_vector_orbit, 'spline');
+    V_interp_ft_lin_orbit(:,1:5) = interp1(t_vector2,V_interp_ft_2{name},t_vector_orbit, 'spline');
+    V_interp_ft_lin_orbit(:,6) = interp1(t_vector22,V_interp_ft_22{name},t_vector_orbit, 'spline');
     % from interp1 they are [a,e,i,OM,om,theta] in [AU,-,deg,deg,deg,deg]
     % but for sv_from_coe I need [a,e,i,OM,om,theta] in [km,-,rad,rad,rad,rad]
     V_interp_ft_lin_orbit(:,1) = V_interp_ft_lin_orbit(:,1)*AU;
@@ -312,6 +386,29 @@ end
 VV_max_orbit_err %AU
 VV_mean_orbit_err %AU
 VV_std_orbit_err %AU
+
+%% PLOT EARTH WITH HORIZONS AND WITH UPLANET
+coe_earth_hor = zeros(size(earth_horizons_2020_2050,1),size(earth_horizons_2020_2050,2));
+coe_earth_hor(:,1) = earth_horizons_2020_2050(:,1)*AU;
+coe_earth_hor(:,2) = earth_horizons_2020_2050(:,2);
+coe_earth_hor(:,3:6) = deg2rad(earth_horizons_2020_2050(:,3:6));
+
+coe_earth_upl = zeros(size(earth_horizons_2020_2050,1),size(earth_horizons_2020_2050,2));
+coe_earth_upl(:,1) = earth_uplanet(:,1)*AU;
+coe_earth_upl(:,2) = earth_uplanet(:,2);
+coe_earth_upl(:,3:6) = deg2rad(earth_uplanet(:,3:6));
+for i=1:size(earth_horizons_2020_2050,1)
+    earth_plot_horizon_2020_2050(i,:) = sv_from_coe(coe_earth_hor(i,:),muSun);
+    earth_plot_uplanet_2020_2050(i,:) = sv_from_coe(coe_earth_upl(i,:),muSun);
+end
+
+h_fig = figure();
+h_EA_hor = plot3(earth_plot_horizon_2020_2050(:,1),earth_plot_horizon_2020_2050(:,2),earth_plot_horizon_2020_2050(:,3),...
+       'LineWidth',2.2,"Color",colors(1,:),'DisplayName','Earth HOR');
+hold on
+h_EA_upl = plot3(earth_plot_uplanet_2020_2050(:,1),earth_plot_uplanet_2020_2050(:,2),earth_plot_uplanet_2020_2050(:,3),...
+       'LineWidth',2.2,"Color",colors(2,:),'DisplayName','Earth uplanet');
+legend('show')
 
 %% delete the python file from this directory
 delete('neo_api_function.py');

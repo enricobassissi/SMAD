@@ -3,24 +3,22 @@ function [sol] = plot_mission_4neo_flyby(sol,asteroid_names_sequence,data,sim,co
     AU = astroConstants(2);
     
     % lambert NREV Stuff
-    % small-a option
-%     Ncase = 0; 
     % Existance of name for labels
     if ~isfield(sol,'NREV1')
         sol.NREV1 = 0;
-        Ncase = 0;
+        sol.Ncase = 0;
     end
     if ~isfield(sol,'NREV2')
         sol.NREV2 = 0;
-        Ncase = 0;
+        sol.Ncase = 0;
     end
     if ~isfield(sol,'NREV3')
         sol.NREV3 = 0;
-        Ncase = 0;
+        sol.Ncase = 0;
     end
     if ~isfield(sol,'NREV4')
         sol.NREV4 = 0;
-        Ncase = 0;
+        sol.Ncase = 0;
     end
     
     % initialise stuff from solution

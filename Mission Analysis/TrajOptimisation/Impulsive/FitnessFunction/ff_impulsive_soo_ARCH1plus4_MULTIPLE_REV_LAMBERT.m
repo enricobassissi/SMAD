@@ -27,7 +27,8 @@ L_NREV_L2 = x(8);
 L_NREV_L3 = x(9);
 L_NREV_L4 = x(10);
 
-% small-a option
+% the solution in case of multi revolutions is undetermined HAVE to select 
+% between semimajor axis small-a option (0) or big-a option (1)
 Ncase = 0; 
 
 % Computing position and velocity of the planets in that days

@@ -1,6 +1,10 @@
-%% -------------------------------------------------------- %%
-%% ----------- EA Ast1 Ast2 Ast3 Ast4 Transfer ------------ %%
-%% -------------------------------------------------------- %%
+%% --------------------------------------------------------------------- %%
+%% ------------------ EA Ast1 Ast2 Ast3 Ast4 Transfer ------------------ %%
+%% --------------------------- ARCH 1+4 -------------------------------- %%
+%% ------------------------ GENETIC ALGORITHM -------------------------- %%
+%% ------------ PENALTY IMPOSED ON dVrel AND dVextra_launcher ---------- %%
+%% --------------------------------------------------------------------- %%
+
 %% Setup for default options
 set(0, 'DefaultTextFontSize', 20)
 set(0, 'DefaultAxesFontSize', 20)
@@ -130,7 +134,7 @@ sim.soo_bound.ub = [sim.soo_lim.mjd2000_ld, sim.soo_lim.TOF1_max,...
       sim.soo_lim.L_NREV_L3_max, sim.soo_lim.L_NREV_L4_max]; % Upper bound
 
 % Constraint on C3 Launcher
-sim.C3_max = 20; % km^2/s^2
+sim.C3_max = 40; % km^2/s^2
 
 %% Constraints
 sim.soo_constr.A = []; % linear inequality constraints
@@ -202,7 +206,8 @@ sol.NREV1 = x(7);
 sol.NREV2 = x(8);
 sol.NREV3 = x(9);
 sol.NREV4 = x(10);
-sol.Ncase = 0; % big a case
+sol.Ncase = 0; % 0 -> small a case, 1 -> big semimajor axis case
+
 %% Mass Consumption for High Thrust Impulsive Case
 % g0 = 9.81; %m/s^2
 % % https://www.space-propulsion.com/spacecraft-propulsion/hydrazine-thrusters/20n-hydrazine-thruster.html
