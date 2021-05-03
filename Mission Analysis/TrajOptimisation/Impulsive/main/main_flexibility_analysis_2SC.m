@@ -1,7 +1,7 @@
-%% -------------------------------------------------------- %%
-%% ----------- EA Ast1 Ast2 Ast3 Ast4 Transfer ------------ %%
-%% ---------------- FLEXIBILITY ANALYSIS ------------------ %%
-%% -------------------------------------------------------- %%
+%% --------------------------------------------------------------------- %%
+%% ------------------ EA Ast1 Ast2 Ast3 Ast4 Transfer ------------------ %%
+%% ----------------------- FLEXIBILITY ANALYSIS ------------------------ %%
+%% --------------------------------------------------------------------- %%
 %% Setup for default options
 set(0, 'DefaultTextFontSize', 20)
 set(0, 'DefaultAxesFontSize', 20)
@@ -175,12 +175,12 @@ m_prop = m_dry*(exp(sol.dV_tot*1e3/(g0*Isp)) - 1); %kg
 %% Plot trajectories
 sol = plot_mission_4neo_flyby(sol,asteroid_sequence,data,sim,colors)
 
-%% ------------------------------------------------ %%
-%% ----------- FLEXIBILITY ANALYSIS --------------- %%
-%% ------------ OVER LAUNCH DATE ------------------ %%
-%% -------- AND COMBINATION OF THE SEQUENCE ------- %%
-%% ------------ BUT SAME ASTEROIDS ---------------- %%
-%% ------------------------------------------------ %%
+%% --------------------------------------------------------------------- %%
+%% ------------------ FLEXIBILITY ANALYSIS ----------------------------- %%
+%% --------------------- OVER LAUNCH DATE ------------------------------ %%
+%% ------------------ AND COMBINATION OF THE SEQUENCE ------------------ %%
+%% ---------------------- BUT SAME ASTEROIDS --------------------------- %%
+%% --------------------------------------------------------------------- %%
 %% Description
 % We have a solution optimised. Now we say, if the launch date is delayed,
 % what happens to the mission? Which is the impact on the cost (dV and TOF)
@@ -317,10 +317,10 @@ ylabel('TOF [d]')
 xlabel('Departure MJD2000')
 % plot(sol.MJD0,sol.dV_tot,'o')
 
-%% ------------------------------------------------ %%
-%% ----------- FLEXIBILITY ANALYSIS --------------- %%
-%% ---------- Let's change one asteroid ----------- %%
-%% ------------------------------------------------ %%
+%% --------------------------------------------------------------------- %%
+%% ---------------------- FLEXIBILITY ANALYSIS ------------------------- %%
+%% --------------------- Let's change one asteroid --------------------- %%
+%% --------------------------------------------------------------------- %%
 %% Description
 % We optimise the solution for a given set of asteroids. But then after
 % some observations of them we understand that one is not suitable for the

@@ -251,7 +251,7 @@ for i = 1:size(V_err{1},2) % 6 elements
     xlabel('mjd2000'); ylabel(txt_ylabel);
     legend('show','Location','southeastoutside')
     title('err = real JPL Horizons - FT interpolation')
-    saveas(h_fig,sprintf('./Figures/valid_err_param%d.png',i));
+    saveas(h_fig,sprintf('./Figures/ValidationOfParams/valid_err_param%d.png',i));
 end
 clearvars i j h_fig
 
@@ -336,14 +336,14 @@ for name = 1:length(selected_asteroids_names)
            'LineWidth',2.2,"Color",colors(1,:),'DisplayName','Earth');
     hold on
     h_asteroid = plot3(horizons_data_orbit{name}(:,1),horizons_data_orbit{name}(:,2),horizons_data_orbit{name}(:,3),...
-                 'LineWidth',2.2,"Color",colors(2,:),'DisplayName',strcat('API ',selected_asteroids_names(name)));
+                 'LineWidth',2.2,"Color",colors(2,:),'DisplayName',strcat('API-',selected_asteroids_names(name)));
     
     h_asteroid_interp = plot3(r_ast_interp_spline_orbit{name}(:,1),r_ast_interp_spline_orbit{name}(:,2),r_ast_interp_spline_orbit{name}(:,3),...
-         'LineWidth',2.2,"Color",colors(3,:),'DisplayName',strcat('INTERP ',selected_asteroids_names(name)));
+         'LineWidth',2.2,"Color",colors(3,:),'DisplayName',strcat('INTERP-',selected_asteroids_names(name)));
     axis equal; grid on;
     xlabel('x [AU]'); ylabel('y [AU]');  zlabel('z [AU]'); 
-    legend('show','Location',"northeast")
-%     saveas(h_fig,sprintf('./Figures/Orbits/orb%d.png',name));
+    legend('show','Location',"southeast")
+    saveas(h_fig,sprintf('./Figures/Orbits/orb%d.png',name));
     %print(h_fig,sprintf('./Figures/Orbits/orb%d.pdf',name),'-dpdf','-bestfit'); 
     %exportgraphics(gca,sprintf('./Figures/Orbits/orb%d.png',name),'ContentType','image');
 end

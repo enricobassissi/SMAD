@@ -752,7 +752,9 @@ def get_horizons_ephemerides(name,pov,epoch_start,epoch_stop,step_size,type_elem
                 adata[row,col] = data[row][idx_col_in_table]
 
     elif type_elements.lower() == 'elements':
-        data = obj.elements()
+        # refsystem = 'J2000', # Element reference system for geometric and astrometric quantities
+        # refplane = 'ecliptic' #ecliptic and mean equinox of reference epoch
+        data = obj.elements(refsystem = 'J2000',refplane = 'ecliptic')
         
         len_rows = len(data)
         len_cols = 6 # (a e i OM om theta)
