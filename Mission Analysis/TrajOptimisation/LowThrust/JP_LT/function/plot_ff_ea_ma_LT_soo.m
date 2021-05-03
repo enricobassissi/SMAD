@@ -24,26 +24,20 @@ v2 = v2/sim.DU*sim.TU;
 % N REV
 N_rev= round(x(3));
 
-% hp
-sim.hp = round(x(4));
-
 % vinf
-vinf_mag = x(5);
-alpha = x(6);
-beta = x(7);
+vinf_mag = x(4);
+alpha = x(5);
+beta = x(6);
 
-%vdep = v1 + vinf_mag*[cos(alpha)*cos(beta) sin(alpha)*cos(beta) sin(beta)] ;  % giusto?
+%vdep = v1 + vinf_mag*[cos(alpha)*cos(beta); sin(alpha)*cos(beta); sin(beta)] ;  % giusto?
 vdep = v1;
 varr = v2; %since we want to rendez-vous
-r11 = r1';
-r22 = r2';
-vdep1 = vdep';
-varr1 = varr';
 
-[output] = CW_LowLambert( r11 , r22 , vdep1 , varr1 , N_rev , TOF1 , sim.M , sim.hp , sim.kp , sim.PS , sim );
+[output] = CW_LowLambert( r1 , r2 , vdep, varr , N_rev , TOF1 , sim.M , sim.hp , sim.kp , sim.PS , sim );
 
    
 obj_fun = (output.m(1) - output.m(end))/output.m(1); % la massa è dimenionale
+
 
 
 end

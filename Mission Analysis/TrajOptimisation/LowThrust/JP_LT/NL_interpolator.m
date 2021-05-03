@@ -52,15 +52,15 @@ function [output] = NL_interpolator( RI , RF , VI , VF , Nrev , TOF ,M ,Isp ,sim
  Href = RIv_cross_RFv/ norm_RIv_cross_RFv;
  
  
-    % Transfer must be counterclockwise: 
+    % Transfer must be counterclockwise: %% enzo no
     if Href(3) < 0 %%% paper usa condizione diversa : dot(RIv_cross_RFv, HI) < 0 
         Href = - Href;
     end
     
     % Singular case:  
     if  norm_RIv_cross_RFv < 1e-10 %%% paper usa condizione diversa : dot(RIv_cross_RFv, HI) = 0 
-        Href = (HI + HF)/norm(HI + HF); %%%% prof la scrive diversa (considera solo HI)
-        
+        Href = 0.5*(HI + HF)/norm(HI + HF); %%%% prof la scrive diversa (considera solo HI)
+      
         if RIv_dot_RFv > 0
             psi1 = 0;
         else
@@ -79,7 +79,6 @@ function [output] = NL_interpolator( RI , RF , VI , VF , Nrev , TOF ,M ,Isp ,sim
  % For more than 1 revolution:
    psi = psi1 + 2*pi*Nrev;   
 
-
 %-- theta(t) vector 
 theta = psi*sim.x;  
 
@@ -95,10 +94,10 @@ theta = psi*sim.x;
  a1 = coe1(1); e1 = coe1(2); i1 = coe1(3); OM1 = coe1(4); om1 = coe1(5); th1 = coe1(6);
 
  p1 = a1*(1-e1^2)/DU; %%% controlla /DU
- f1 = wrapTo2Pi(e1*cos(om1) + OM1); %%%% ho messo il wrap
- g1 = wrapTo2Pi(e1*sin(om1) + OM1); %%%% ho messo il wrap
- h1 = tanh(i1/2) * cos(OM1);
- k1 = tanh(i1/2) * sin(OM1);
+ f1 = e1*cos(om1 + OM1); %%%% ho messo il wrap
+ g1 = e1*sin(om1 + OM1); %%%% ho messo il wrap
+ h1 = tan(i1/2) * cos(OM1);
+ k1 = tan(i1/2) * sin(OM1);
  L1 = wrapTo2Pi(th1 + om1 + OM1); %%%% ho messo il wrap
 
 %-- Final modified equinoctial elements MEE2 = [p2 f2 g2 h2 k2 L2]
@@ -106,10 +105,10 @@ theta = psi*sim.x;
  a2 = coe2(1); e2 = coe2(2); i2 = coe2(3); OM2 = coe2(4); om2 = coe2(5); th2 = coe2(6);
 
  p2 = a2*(1-e2^2)/DU;
- f2 = wrapTo2Pi(e2*cos(om2) + OM2); %%%% ho messo il wrap
- g2 = wrapTo2Pi(e2*sin(om2) + OM2); %%%% ho messo il wrap
- h2 = tanh(i2/2) * cos(OM2);
- k2 = tanh(i2/2) * sin(OM2);
+ f2 = e2*cos(om2 + OM2); %%%% ho messo il wrap
+ g2 = e2*sin(om2 + OM2); %%%% ho messo il wrap
+ h2 = tan(i2/2) * cos(OM2);
+ k2 = tan(i2/2) * sin(OM2);
  L2 = wrapTo2Pi(th2 + om2 + OM2);  %%%% ho messo il wrap
 
 % ----------------------------------------------------------------------- %
@@ -118,18 +117,19 @@ theta = psi*sim.x;
  %- Inclination of the departure orbit above the reference frame (alpha1)
  cos_alpha1 = dot(HI,Href); % dot product 
  
- if dot(VI,Href) > 0 %%% dot product - caso uguale a zero? vi vf sono velocità iniziali e finali? %%%%%%%
+ if dot(VI,Href) >= 0 %%% dot product - caso uguale a zero? vi vf sono velocità iniziali e finali? %%%%%%%
      csi1 = 1;
  elseif dot(VI,Href) < 0
      csi1 = -1;
  end
  sin_alpha1 = csi1*sqrt(1 - cos_alpha1^2);
  
- alpha1 = atan(sin_alpha1/cos_alpha1);
+ %alpha1 = atan(sin_alpha1/cos_alpha1);
+ alpha1 = atan2(sin_alpha1,cos_alpha1);
  
  
  %- Angle beta1(x) and derivatives needed to compute the declination
- beta1     = acos(sin_alpha1*cos(psi*x));
+ beta1     = acos(sin_alpha1*cos(psi*x)); %% vedi con seno
  beta1_x   = psi*sin_alpha1*sin(psi*x)./sin(beta1);
  beta1_xx  = (psi^2*sin_alpha1*cos(psi*x) - cos(beta1).*beta1_x.^2)./sin(beta1);
  beta1_xxx = (-psi^3*sin_alpha1*sin(psi*x) - 3*beta1_x.*beta1_xx.*cos(beta1) + beta1_x.^3.*sin(beta1))./sin(beta1);
@@ -152,7 +152,8 @@ theta = psi*sim.x;
  %- Variation of true longitude DL1(x)
  sin_DL1 = 1/sin_alpha1 * sin(delta1);
  cos_DL1 = cos(psi*x) .* cos(delta1);
- DL1 = atan(sin_DL1./cos_DL1);
+ %DL1 = atan(sin_DL1./cos_DL1);
+ DL1 = atan2(sin_DL1,cos_DL1);
  
  %- Derivatives of DL1(x) wrt x * DL1_x DL1_xx DL1_xxx
  DL1_x    = delta1_x./(sin_alpha1.*cos(psi*x));
@@ -173,7 +174,8 @@ theta = psi*sim.x;
  end
  sin_alpha2 = csi2*sqrt(1 - cos_alpha2^2);
  
- alpha2 = atan(sin_alpha2/cos_alpha2);
+ %alpha2 = atan(sin_alpha2/cos_alpha2);
+ alpha2 = atan2(sin_alpha2,cos_alpha2);
  
  %- Angle beta2(x) and derivatives needed to compute the declination
  beta2     = acos(sin_alpha2*cos(psi*(1 -x)));
@@ -199,7 +201,8 @@ theta = psi*sim.x;
  %- Variation of true longitude DL2(x)
  sin_DL2 = 1/sin_alpha2 * sin(delta2);
  cos_DL2 = cos(psi*(1-x)) .* cos(delta2);
- DL2 = atan(sin_DL2./cos_DL2);
+ %DL2 = atan(sin_DL2./cos_DL2);
+ DL2 = atan2(sin_DL2,cos_DL2);
  
  %- Derivatives of DL2(x) wrt x : DL2_x DL2_xx DL2_xxx
  DL2_x    = delta2_x./(sin_alpha2*cos(psi*(1-x)));
@@ -217,15 +220,21 @@ theta = psi*sim.x;
  l2 = L2 + DL2; %%%% L2 è 1x1 e DL2 è 100x1 ?????
  l2_x = -DL2_x;
  
+ cosl1 = cos(DL1)*cos(L1) - sin(DL1)*sin(L1);
+ cosl2 = cos(DL2)*cos(L2) + sin(DL2)*sin(L2);
+ 
+ sinl1 = sin(DL1)*cos(L1) + cos(DL1)*sin(L1);
+ sinl2 = sin(DL1)*cos(L1) - cos(DL1)*sin(L1);
+ 
  %- Quantity qi(x) i = 1,2 needed to compute de distance from the attractor
 
- q1     = 1 + f1*cos(l1) + g1*sin(l1);
- q1_x   = (- f1*sin(l1) + g1*cos(l1)).*DL1_x;
+ q1     = 1 + f1*cosl1 + g1*sinl1;
+ q1_x   = (- f1*sinl1 + g1*cosl1).*DL1_x;
  q1_xx  = (1 - q1).*DL1_x.^2 + q1_x.*DL1_xx./DL1_x.^2;
  q1_xxx = - q1_x.*DL1_x.^2 + 3*(1-q1).*DL1_x.*DL1_xx + q1_x.*DL1_xxx./DL1_x;
  
- q2     = 1 + f2*cos(l2) + g1*sin(l2);
- q2_x   = (- f2*sin(l2) + g2*cos(l2)).*DL2_x;
+ q2     = 1 + f2*cosl2 + g2*sinl2;
+ q2_x   = (- f2*sinl2 + g2*cosl2).*DL2_x;
  q2_xx  = (1 - q2).*DL2_x.^2 + q2_x.*DL2_xx./DL2_x.^2;
  q2_xxx = - q2_x.*DL2_x.^2 + 3*(1-q2).*DL2_x.*DL2_xx + q2_x.*DL2_xxx./DL2_x;
  
@@ -245,9 +254,10 @@ theta = psi*sim.x;
 % ----------------------------------------------------------------------- %
 %- Interpolationg function coefficient a - fsolve + Cavalieri-Simpson to
 %  solve the integral
-a0  = 0;
-% fun = @(a) find_a(a,x,psi,TOF, sin_alpha1, cos_alpha1, sin_alpha2, cos_alpha2,p1, f1, g1, L1, p2,f2, g2, L2,sim);
-% options=optimoptions('fsolve', 'TolFun', 1e-13, 'TolX', 1e-13,'Display','off');
+% a0  = 0;
+% fun = @(a) find_a(a,x,psi,TOF, sin_alpha1, sin_alpha2,p1, f1, g1, L1, p2,f2, g2, L2,sim);
+% options=optimoptions('fsolve', 'TolFun', 1e-7, 'TolX', 1e-8,'Display','off');
+% %options=optimoptions('fsolve','Display','off');
 % a = fsolve(fun,a0,options); %% alternative: fzero 
 a = 0;
 
@@ -269,7 +279,7 @@ delta = (delta2 - delta1).* xi + delta1;
 r = s.*cos(delta);
 z = s.*sin(delta);
 
-% Ds Ds_x  Ds_xx Ds_xxx %%%% controlla
+% Ds Ds_x  Ds_xx Ds_xxx 
 Ds     = s2 - s1;
 Ds_x   = s2_x - s1_x;
 Ds_xx  = s2_xx - s1_xx;
@@ -310,17 +320,18 @@ z_xx  = (2*s_x.*delta_x + s.*delta_xx).*cos(delta) + (s_xx -s.*delta_x.^2).*sin(
 
 %-- Parametrized EOM
 
-%- Square of derivative of x wrt time : x_t_2
-x_t_2_real = sim.mu*r./(s.^3.*(r*psi^2 - r_xx + 2*r_x.^2./r));
-x_t_2 = abs(sim.mu*r./(s.^3.*(r*psi^2 - r_xx + 2*r_x.^2./r)));  %%% CONTROLLA -> abs l'ho aggiunto io
-x_t   = sqrt(x_t_2);
-
 %- Quantities to compute the second derivative of x wrt time
-Nu = sim.mu*r; %%% controlla
-De = s.^3.*(r*psi^2 - r_xx + 2*r_x.^2./r); %%% controlla
+Nu = sim.mu*r; 
+De = s.^3.*(r*psi^2 - r_xx + 2*r_x.^2./r); 
 
 Nu_x = sim.mu*r_x;
 De_x = 3*s_x./s.*De + s.^3.*(r_x*psi^2 - r_xxx + (2*r.*r_x.*r_xx - r_x.^3)./(r.^2));
+
+%- Square of derivative of x wrt time : x_t_2
+
+x_t_2 = Nu./De;
+x_t   = sqrt(x_t_2);
+
 
 %- Second derivative of x wrt time: x_tt
 x_tt = 0.5*(Nu_x - x_t_2.*De_x)./De;
@@ -331,10 +342,11 @@ x_tt = 0.5*(Nu_x - x_t_2.*De_x)./De;
 %  order to have the in-plane thrust imposed as tangential only. In this way
 %  the x time derivative can be analytically computed removing the dependency
 %  from thrust per unit mass. 
-gamma = atan(r_x./(r*psi));
+%gamma = atan(r_x./(r*psi));
+gamma = atan2(r_x,(r*psi)); %atan
 
 %- In plane thrust per unit mass
-Tin2m  = 1/cos(gamma) * (2*psi*r_x.*x_t_2 + r.*psi.*x_tt);
+Tin2m  = 1./cos(gamma) .* (2*psi*r_x.*x_t_2 + r.*psi.*x_tt);
 
 %- Out of plane thrust per unit mass
 Tout2m = z_xx.*x_t_2 + z_x.*x_tt + sim.mu./(s.^3).*z;
@@ -387,5 +399,6 @@ output.Thrust  = [Tin,gamma,Tout];
 output.r       = r;
 output.theta   = theta;
 output.z       = z;
+output.a       = a;
 
 end

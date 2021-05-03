@@ -48,7 +48,7 @@ sim.vinf = 0;
 sim.PS.Is = 3000/sim.TU;  % non-dimensional specific impulse
 
 sim.M = 1000; % SC mass [kg]
-%sim.hp = 3; 
+sim.hp = 3; 
 sim.kp = 3; %It is used just for sim.out_shape = 1;
 
 %% Boundaries
@@ -63,9 +63,6 @@ sim.soo_lim.TOF1_max = 1000*3600*24/sim.TU;
 % N REV
 sim.soo_lim.N_REV_min = -0.5;
 sim.soo_lim.N_REV_max = 3.4999;
-% sim.hp
-sim.soo_lim.hp_min = 2.5;
-sim.soo_lim.hp_max = 5.4999;
 % vinf_mag
 sim.soo_lim.vinf_mag_min = 0.75;
 sim.soo_lim.vinf_mag_max = 2;
@@ -81,8 +78,8 @@ sim.soo_lim.beta_max =  pi;
 % sim.moo_bound.lb = [sim.moo_lim.mjd2000_ed, sim.moo_lim.TOF1_min, sim.moo_lim.N_REV_min]; % Lower bound
 % sim.moo_bound.ub = [sim.moo_lim.mjd2000_ld, sim.moo_lim.TOF1_max, sim.moo_lim.N_REV_max]; % Upper bound
 % x = [MJD0,TOF,N_REV,hp,vinf_mag,alpha,beta]
-sim.soo_bound.lb = [sim.soo_lim.mjd2000_ed, sim.soo_lim.TOF1_min, sim.soo_lim.N_REV_min, sim.soo_lim.hp_min,sim.soo_lim.vinf_mag_min,sim.soo_lim.alpha_min,sim.soo_lim.beta_min]; % Lower bound
-sim.soo_bound.ub = [sim.soo_lim.mjd2000_ld, sim.soo_lim.TOF1_max, sim.soo_lim.N_REV_max, sim.soo_lim.hp_max,sim.soo_lim.vinf_mag_max,sim.soo_lim.alpha_max,sim.soo_lim.beta_max]; % Upper bound
+sim.soo_bound.lb = [sim.soo_lim.mjd2000_ed, sim.soo_lim.TOF1_min, sim.soo_lim.N_REV_min, sim.soo_lim.vinf_mag_min,sim.soo_lim.alpha_min,sim.soo_lim.beta_min]; % Lower bound
+sim.soo_bound.ub = [sim.soo_lim.mjd2000_ld, sim.soo_lim.TOF1_max, sim.soo_lim.N_REV_max, sim.soo_lim.vinf_mag_max,sim.soo_lim.alpha_max,sim.soo_lim.beta_max]; % Upper bound
 
 %% Constraints
 sim.soo_constr.A = []; % linear inequality constraints
@@ -130,47 +127,9 @@ tic
     sim.soo_constr.b,sim.soo_constr.Aeq,sim.soo_constr.beq,sim.soo_bound.lb,sim.soo_bound.ub,sim.soo_constr.nonlcon,options);
 el_time_min_pp = toc/60;
 
-%% New Boundaries
-% Departure dates
-sim.soo_lim.mjd2000_ed = x(1) - 0.3*x(1);
-sim.soo_lim.mjd2000_ld = x(1) + 0.3*x(1);
-% TOF1
-sim.soo_lim.TOF1_min = x(2) - 0.3*x(2);
-sim.soo_lim.TOF1_max = x(2) + 0.3*x(2);
-% N REV
-sim.soo_lim.N_REV_min = x(3) - 0.3*x(3);
-sim.soo_lim.N_REV_max = x(3) + 0.3*x(3);
-% sim.hp
-sim.soo_lim.hp_min = x(4) - 0.3*x(4);
-sim.soo_lim.hp_max = x(4) + 0.3*x(4);
-% vinf_mag
-sim.soo_lim.vinf_mag_min = 0.75;
-sim.soo_lim.vinf_mag_max = 2;
-% alpha
-sim.soo_lim.alpha_min = -pi;
-sim.soo_lim.alpha_max =  pi;
-% beta
-sim.soo_lim.beta_min = - pi;
-sim.soo_lim.beta_max =  pi;
-
-
-% % x = [MJD0,TOF,N_REV]
-% sim.moo_bound.lb = [sim.moo_lim.mjd2000_ed, sim.moo_lim.TOF1_min, sim.moo_lim.N_REV_min]; % Lower bound
-% sim.moo_bound.ub = [sim.moo_lim.mjd2000_ld, sim.moo_lim.TOF1_max, sim.moo_lim.N_REV_max]; % Upper bound
-% x = [MJD0,TOF,N_REV,hp,vinf_mag,alpha,beta]
-sim.soo_bound.lb = [sim.soo_lim.mjd2000_ed, sim.soo_lim.TOF1_min, sim.soo_lim.N_REV_min, sim.soo_lim.hp_min,sim.soo_lim.vinf_mag_min,sim.soo_lim.alpha_min,sim.soo_lim.beta_min]; % Lower bound
-sim.soo_bound.ub = [sim.soo_lim.mjd2000_ld, sim.soo_lim.TOF1_max, sim.soo_lim.N_REV_max, sim.soo_lim.hp_max,sim.soo_lim.vinf_mag_max,sim.soo_lim.alpha_max,sim.soo_lim.beta_max]; % Upper bound
-
-
-%% Build the 2nd soo
-
-tic
-[x2,Fval,exitFlag,Output] = ga(FitnessFunction,numberOfVariables,sim.soo_constr.A, ...
-    sim.soo_constr.b,sim.soo_constr.Aeq,sim.soo_constr.beq,sim.soo_bound.lb,sim.soo_bound.ub,sim.soo_constr.nonlcon,options);
-el_time_min_pp = toc/60;
 
 %% plot
-[output, r1_true, r2_true] = plot_ff_ea_ma_LT_soo(x2,sim);
+[output, r1_true, r2_true] = plot_ff_ea_ma_LT_soo(x,sim);
 
 figure()
 subplot(5,1,1)

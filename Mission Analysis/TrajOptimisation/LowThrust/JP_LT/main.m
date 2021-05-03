@@ -7,7 +7,7 @@ sim.mu    = 132712440018          ; % actractor parameter [km^3 s^-2] -- sun
 sim.DU    = 149597870.7           ; % distance unit [km]
 sim.TU    = (sim.DU^3/sim.mu )^0.5; % time unit [s]
 sim.mu    = 1;                      % non-dimensional attractor parameter [DU^3/TU^2]
-sim.n_sol = 100;                    % number of computational nodes %% 100 initially
+sim.n_sol = 150;                    % number of computational nodes %% 100 initially
 sim.x = linspace(0,1,sim.n_sol)';   % 
 sim.out_shape = 2;                  % out-of-plane shape (2:CONWAY)
 sim.g0 = 9.81*(sim.TU^2/(1000*sim.DU)); % non-dimensional g0
@@ -28,9 +28,11 @@ M = 1000; % SC mass [kg]
 hp = 3; %3 OUT OF PLANE SHAPE PARAMETERS
 kp = 3; %3
 
+%%
 [output] = CW_LowLambert( RI , RF , VI , VF , N_rev , TOF ,M ,hp , kp , PS ,sim );
 
 output.m(1)
+
 %%
 figure()
 subplot(5,1,1)
