@@ -59,8 +59,8 @@ else
     % let the optimizer to not consider this solution because too expansive
     % dv_extra_launch = dv1_EAast1 - sqrt(sim.C3_max); 
     % dv_extra_launch = 20; % very high number, arbitrary
-    c1 = 5; % penalty factor for dv_extra_launch
-    dv_extra_launch = c1*(dv1_EAGA - sqrt(sim.C3_max))^2; % penalty like, but not discard a priori
+    c_launcher = 30; % penalty factor for dv_extra_launch
+    dv_extra_launch = c_launcher*(dv1_EAGA - sqrt(sim.C3_max))^2; % penalty like, but not discard a priori
 end
 % dv2_EAGA = sqrt((VF_EAGA(1)-vGA(1))^2+(VF_EAGA(2)-vGA(2))^2+(VF_EAGA(3)-vGA(3))^2);
 
@@ -73,7 +73,7 @@ delta_v_p = flyby(astroConstants(23), astroConstants(13), MJDGA, VF_EAGA, VI_GAa
 
 if strcmp(string(delta_v_p), 'Not found')
     % Arbitrarly big barrier number, related to no flyby solution
-    delta_v_p = 30;
+    delta_v_p = 200;
 end
 
 % asteroid 1 -> 2
@@ -106,11 +106,39 @@ dv_passage_ast3 = sqrt((VI_ast34(1)-VF_ast23(1))^2+(VI_ast34(2)-VF_ast23(2))^2+(
 % else if the last dv is a rendezvous with the last object
 % obj_fun = dv_extra_launch + dv_passage_ast1 + dv_passage_ast2 + dv_passage_ast3 + dv2_ast34; 
 
+% % Penalty Factor
+% c=0.05;
+% % penalty factor on the rel vel?
+% obj_fun = dv_extra_launch + dv_passage_ast1 + dv_passage_ast2 + dv_passage_ast3 + delta_v_p + ...
+%     c*dv2_GAast1 + c*dv2_ast12 + c*dv2_ast23 + c*dv2_ast34; 
+
+% Check of feasibility
+CHECK_TERM = 0;
+tot_TOF = TOF1+TOF2+TOF3+TOF4;
+if tot_TOF > 12*365
+    CHECK_TERM = 100;
+end
+if dv2_GAast1 > 8
+    CHECK_TERM = 40;
+end
+if dv2_ast12 > 8
+    CHECK_TERM = 40;
+end
+if dv2_ast23 > 8
+    CHECK_TERM = 40;
+end
+if dv2_ast34 > 8
+    CHECK_TERM = 40;
+end
+
 % Penalty Factor
-c=0.05;
-% penalty factor on the rel vel?
-obj_fun = dv_extra_launch + dv_passage_ast1 + dv_passage_ast2 + dv_passage_ast3 + delta_v_p + ...
-    c*dv2_GAast1 + c*dv2_ast12 + c*dv2_ast23 + c*dv2_ast34; 
+c_dVpass_1 = 20; c_dVpass_2 = 18; c_dVpass_3 = 16; c_dVdeltavp = 20;
+c_dVrel_1 = 0.1; c_dVrel_2 = 0.08; c_dVrel_3 = 0.06; c_dVrel_4 = 0.04;
+avg_dVrel = mean([dv2_GAast1, dv2_ast12, dv2_ast23, dv2_ast34]);
+obj_fun = dv_extra_launch + c_dVpass_1*dv_passage_ast1 + delta_v_p + ...
+    c_dVpass_2*dv_passage_ast2 + c_dVpass_3*dv_passage_ast3 + ...
+    c_dVrel_1*(dv2_GAast1-avg_dVrel)^2 + c_dVrel_2*(dv2_ast12-avg_dVrel)^2 +...
+    c_dVrel_3*(dv2_ast23-avg_dVrel)^2 + c_dVrel_4*(dv2_ast34-avg_dVrel)^2 + CHECK_TERM; 
 
 end
 

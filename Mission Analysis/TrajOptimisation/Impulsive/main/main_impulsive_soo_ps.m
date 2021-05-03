@@ -1,6 +1,7 @@
-%% -------------------------------------------------------- %%
-%% ----------- EA Ast1 Ast2 Ast3 Ast4 Transfer ------------ %%
-%% -------------------------------------------------------- %%
+%% --------------------------------------------------------------------- %%
+%% ------------------ EA Ast1 Ast2 Ast3 Ast4 Transfer ------------------ %%
+%% ------------- ARCH 1: DOUBLE RENDEZVOUS WITH EACH ASTEROID ---------- %%
+%% --------------------------------------------------------------------- %%
 %% Setup for default options
 set(0, 'DefaultTextFontSize', 20)
 set(0, 'DefaultAxesFontSize', 20)
@@ -72,10 +73,10 @@ data.HowMany = factorial(length(data.asteroid_names)) / factorial(length(data.as
 
 %% uNEO
 % try 
-%     load('data.mat')
+    load('data.mat')
 % catch
     % if the asteroid have changed, run the find_eph_neo below, it takes about 1 min
-    [data.y_interp_ft, data.t_vector] = find_eph_neo(data.asteroid_names);
+%     [data.y_interp_ft, data.t_vector] = find_eph_neo(data.asteroid_names);
 %     save('data.mat', data);
 % end
 
@@ -124,7 +125,7 @@ sim.soo_bound.ub = [sim.soo_lim.mjd2000_ld, sim.soo_lim.TOF1_max,...
       sim.soo_lim.TOF3_max,sim.soo_lim.bt3_max,sim.soo_lim.TOF4_max]; % Upper bound
 
 % Constraint on C3 Launcher
-sim.C3_max = 20; % km^2/s^2
+sim.C3_max = 30; % km^2/s^2
 
 %% Options
 options = optimoptions('particleswarm');
@@ -150,6 +151,7 @@ options.UseParallel = true;
 FitnessFunction = @(x) ff_impulsive_soo(x, data, sim); % Function handle to the fitness function
 numberOfVariables = length(sim.soo_bound.ub); % Number of decision variables
 
+%% Run the Optimisation
 tic
 [x,Fval,exitFlag,Output] = particleswarm(FitnessFunction,numberOfVariables...
     ,sim.soo_bound.lb,sim.soo_bound.ub,options);
@@ -167,7 +169,7 @@ sol.dep_date = mjd20002date(sol.MJD0)';
 sol.TOF_tot_D = x(2)+x(3)+x(4)+x(6)+x(7)+x(8)+x(9);
 sol.TOF_tot_Y = sol.TOF_tot_D/365;
 sol.end_of_mission_date = mjd20002date(sol.MJD0+sol.TOF_tot_D)';
-sol.dV_tot = Fval(1);
+% sol.dV_tot = Fval(1);
 sol.TOF1 = x(2);
 sol.buffer_time1 = x(3);
 sol.TOF2 = x(4);
@@ -177,11 +179,11 @@ sol.buffer_time3 = x(8);
 sol.TOF4 = x(9);
 
 %% Mass Consumption for High Thrust Impulsive Case
-g0 = 9.81; %m/s^2
-% https://www.space-propulsion.com/spacecraft-propulsion/hydrazine-thrusters/20n-hydrazine-thruster.html
-Isp = 230; %s 
-m_dry = 100; %kg
-m_prop = m_dry*(exp(sol.dV_tot*1e3/(g0*Isp)) - 1); %kg
+% g0 = 9.81; %m/s^2
+% % https://www.space-propulsion.com/spacecraft-propulsion/hydrazine-thrusters/20n-hydrazine-thruster.html
+% Isp = 230; %s 
+% m_dry = 100; %kg
+% m_prop = m_dry*(exp(sol.dV_tot*1e3/(g0*Isp)) - 1); %kg
 %% Plot trajectories
 sol = plot_mission_4neo_rendezvous(sol,asteroid_sequence,data,sim,colors)
 

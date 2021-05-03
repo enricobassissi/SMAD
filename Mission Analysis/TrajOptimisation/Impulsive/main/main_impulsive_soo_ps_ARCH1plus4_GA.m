@@ -113,8 +113,10 @@ sim.soo_lim.TOF4_max = 3*365; % days
 % Matrix of permutations (7)
 % to use round in the code... so we have same probility to be rounded to
 % the first or to the last element in the matrix as in the middle elements!
-sim.soo_lim.permutations_low = 0.5; 
+sim.soo_lim.permutations_low = 0.5; % ps case
 sim.soo_lim.permutations_up = data.HowMany + 0.4999;
+% sim.soo_lim.permutations_low = 1; % ga case
+% sim.soo_lim.permutations_up = data.HowMany;
 
 % x = [MJD0,TOF0,TOF1,TOF2,TOF3,TOF4,ID_permutation]
 sim.soo_bound.lb = [sim.soo_lim.mjd2000_ed, sim.soo_lim.TOF0_min,  sim.soo_lim.TOF1_min,...
@@ -125,7 +127,7 @@ sim.soo_bound.ub = [sim.soo_lim.mjd2000_ld, sim.soo_lim.TOF0_max, sim.soo_lim.TO
       sim.soo_lim.TOF4_max,sim.soo_lim.permutations_up]; % Upper bound
 
 % Constraint on C3 Launcher
-sim.C3_max = 40; % km^2/s^2
+sim.C3_max = 30; % km^2/s^2
 
 %% Parallel pool
 % Open the parallel pool
@@ -142,8 +144,12 @@ FitnessFunction = @(x) ff_impulsive_soo_ARCH1plus4_GA(x, data, sim); % Function 
 numberOfVariables = length(sim.soo_bound.ub); % Number of decision variables
 
 %% Constraints
-% sim.soo_constr.A = []; % linear inequality constraints
-% sim.soo_constr.b = []; % linear inequality constraints
+% % x = [MJD0,TOF0,TOF1,TOF2,TOF3,TOF4,ID_permutation]
+% % A*x <= b
+% % constraint that the mission must finish before 12 years
+% % sum of TOFs < 12 years
+% sim.soo_constr.A = [0 1 1 1 1 1 0]; % linear inequality constraints
+% sim.soo_constr.b = [12*365]; % linear inequality constraints
 % sim.soo_constr.Aeq = []; % linear equality constraints
 % sim.soo_constr.beq = []; % linear equality constraints
 % sim.soo_constr.nonlcon = []; % linear equality constraints
@@ -152,23 +158,24 @@ numberOfVariables = length(sim.soo_bound.ub); % Number of decision variables
 % % ga(fitnessfcn,nvars,A,b,Aeq,beq,lb,ub,nonlcon,IntCon,options)
 % sim.soo_constr.IntCon = [7];
 
-% %% Options ga
+%% Options ga
 % options = optimoptions(@ga);
 % % options.PlotFcn = {@gaplotbestf};
 % options.Display = 'iter';
 % % A hybrid function is another minimization function that runs after the 
 % % multiobjective genetic algorithm terminates
-% % options.HybridFcn = @fmincon;
+% options.HybridFcn = @fmincon;
 % 
-% options.PopulationSize = 1000; 
+% options.PopulationSize = 2000; 
 % options.MaxGenerations = 200; 
 % options.FunctionTolerance = 1e-6;
 % options.MaxStallGenerations = 50;
+% % options.UseParallel = true;
 
 %% Options ps
 options = optimoptions('particleswarm');
 options.HybridFcn = @fmincon;
-options.SwarmSize = 1000; % Default is min(100,10*nvars),
+options.SwarmSize = 2000; % Default is min(100,10*nvars),
 options.MaxIterations = 200; %  Default is 200*nvars
 options.MaxStallIterations = 50; % Default 20
 options.Display = 'iter';
@@ -215,9 +222,9 @@ sol.TOF4 = x(6);
 % m_dry = 100; %kg
 % m_prop = m_dry*(exp(sol.dV_tot*1e3/(g0*Isp)) - 1); %kg
 %% Plot trajectories
-% sol = plot_mission_4neo_flyby_GA(sol,asteroid_sequence,data,sim,colors)
+sol = plot_mission_4neo_flyby_GA(sol,asteroid_sequence,data,sim,colors)
 
-sol = plot_mission_4neo_flyby(sol,asteroid_sequence,data,sim,colors)
+% sol = plot_mission_4neo_flyby(sol,asteroid_sequence,data,sim,colors)
 
 %% Plot Angles
 figure()

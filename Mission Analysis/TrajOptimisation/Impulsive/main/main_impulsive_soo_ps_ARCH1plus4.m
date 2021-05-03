@@ -1,6 +1,6 @@
 %% --------------------------------------------------------------------- %%
 %% -------------------- EA Ast1 Ast2 Ast3 Ast4 Transfer ---------------- %%
-%% --------------------------- ARCH 1+4, FLYBY, GA --------------------- %%
+%% --------------------------- ARCH 1+4, FLYBY ------------------------- %%
 %% --------------------------------------------------------------------- %%
 %% Setup for default options
 set(0, 'DefaultTextFontSize', 20)
@@ -122,7 +122,7 @@ sim.soo_bound.ub = [sim.soo_lim.mjd2000_ld, sim.soo_lim.TOF1_max,...
       sim.soo_lim.TOF4_max,sim.soo_lim.permutations_up]; % Upper bound
 
 % Constraint on C3 Launcher
-sim.C3_max = 40; % km^2/s^2
+sim.C3_max = 30; % km^2/s^2
 
 %% Parallel pool
 % Open the parallel pool
@@ -165,7 +165,7 @@ numberOfVariables = length(sim.soo_bound.ub); % Number of decision variables
 %% Options ps
 options = optimoptions('particleswarm');
 options.HybridFcn = @fmincon;
-options.SwarmSize = 1500; % Default is min(100,10*nvars),
+options.SwarmSize = 2000; % Default is min(100,10*nvars),
 options.MaxIterations = 200; %  Default is 200*nvars
 options.MaxStallIterations = 50; % Default 20
 options.Display = 'iter';

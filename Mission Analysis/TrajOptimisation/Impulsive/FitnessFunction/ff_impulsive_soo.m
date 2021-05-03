@@ -67,14 +67,37 @@ t8_sec = MJDF4*60*60*24;
 if dv1_12 < sqrt(sim.C3_max) % vinf that the launcher can give max 
     dv_extra_launch = 0;
 else
-    dv_extra_launch = dv1_12 - sqrt(sim.C3_max); %actually la differenza la paghi
+%     dv_extra_launch = dv1_12 - sqrt(sim.C3_max); %actually la differenza la paghi
+    c_launcher = 30; % penalty factor for dv_extra_launch
+    dv_extra_launch = c_launcher*(dv1_12 - sqrt(sim.C3_max))^2; % penalty like, but not discard a priori
 end
 
 [dv_tot34]=lambert_solver_rendezvous(r3,r4,v3,v4,t3_sec,t4_sec,ksun); 
 [dv_tot56]=lambert_solver_rendezvous(r5,r6,v5,v6,t5_sec,t6_sec,ksun); 
 [dv_tot78]=lambert_solver_rendezvous(r7,r8,v7,v8,t7_sec,t8_sec,ksun);
 
-obj_fun(1) = dv_extra_launch + dv2_12 + dv_tot34 + dv_tot56 + dv_tot78;
+% Check of feasibility
+CHECK_TERM = 0;
+tot_TOF = TOF1+TOF2+TOF3+TOF4;
+if tot_TOF > 12*365
+    CHECK_TERM = 100;
+end
+if dv_tot34 > 6
+    CHECK_TERM = 100;
+end
+if dv_tot78 > 6
+    CHECK_TERM = 100;
+end
+if dv_tot56 > 6
+    CHECK_TERM = 100;
+end
+
+pen_212 = 2;
+pen_34 = 1.5;
+pen_56 = 1;
+pen_78 = 0.8;
+obj_fun = dv_extra_launch + pen_212*dv2_12 + pen_34*dv_tot34 + ...
+    pen_56*dv_tot56 + pen_78*dv_tot78 + CHECK_TERM;
 
 end
 

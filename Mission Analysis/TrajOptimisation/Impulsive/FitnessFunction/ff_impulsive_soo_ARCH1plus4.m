@@ -51,7 +51,7 @@ else
     % let the optimizer to not consider this solution because too expansive
     % dv1_EAast1 - sqrt(sim.C3_max); 
     % dv_extra_launch = 20; % very high number, arbitrary
-    c_launcher = 10; % penalty factor for dv_extra_launch
+    c_launcher = 30; % penalty factor for dv_extra_launch
     dv_extra_launch = c_launcher*(dv1_EAast1 - sqrt(sim.C3_max))^2; % penalty like, but not discard a priori
 end
 dv2_EAast1 = sqrt((VF_EAast1(1)-v1(1))^2+(VF_EAast1(2)-v1(2))^2+(VF_EAast1(3)-v1(3))^2);
@@ -92,19 +92,19 @@ dv_passage_ast3 = sqrt((VI_ast34(1)-VF_ast23(1))^2+(VI_ast34(2)-VF_ast23(2))^2+(
 CHECK_TERM = 0;
 tot_TOF = TOF1+TOF2+TOF3+TOF4;
 if tot_TOF > 12*365
-    CHECK_TERM = 30;
+    CHECK_TERM = 100;
 end
 if dv2_EAast1 > 7
-    CHECK_TERM = 30;
+    CHECK_TERM = 40;
 end
 if dv2_ast12 > 7
-    CHECK_TERM = 30;
+    CHECK_TERM = 40;
 end
 if dv2_ast23 > 7
-    CHECK_TERM = 30;
+    CHECK_TERM = 40;
 end
 if dv2_ast34 > 7
-    CHECK_TERM = 30;
+    CHECK_TERM = 40;
 end
     
 % Penalty Factor

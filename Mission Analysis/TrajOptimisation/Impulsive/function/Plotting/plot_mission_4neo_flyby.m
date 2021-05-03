@@ -46,7 +46,8 @@ function [sol] = plot_mission_4neo_flyby(sol,asteroid_names_sequence,data,sim,co
     end
 %     sol.dV_tot_leg1 = sol.dV_single.dV2 + sol.dV_single.dV_extra_launch;
     % relative velocity arrival at the asteroid and asteroid itself, for the deployment of the "lander"
-    sol.Vrel_passage_ast1 = sqrt((VF_EAast1(1)-v_ast1(1))^2+(VF_EAast1(2)-v_ast1(2))^2+(VF_EAast1(3)-v_ast1(3))^2);
+    sol.Vrel_passage_ast1 = sqrt((VF_EAast1(1)-v_ast1(1))^2+(VF_EAast1(2)-v_ast1(2))^2+...
+                        (VF_EAast1(3)-v_ast1(3))^2);
     
     ToF_ast12_sec = t3_sec - t2_sec;
     [~,~,~,~,VI_ast12,VF_ast12,~,~] = lambertMR(r_ast1,r_ast2,ToF_ast12_sec,ksun,0,0,0,0);
@@ -149,6 +150,7 @@ function [sol] = plot_mission_4neo_flyby(sol,asteroid_names_sequence,data,sim,co
     hp1 = plot3(rEA(1)./AU,rEA(2)./AU,rEA(3)./AU,'o','Color',colors(8,:),'MarkerSize',6,...
     'DisplayName','Earth Departure');
 %     hp1.Annotation.LegendInformation.IconDisplayStyle = 'off';
+    
     hp2 = plot3(r_ast1(1)./AU,r_ast1(2)./AU,r_ast1(3)./AU,'^','Color',colors(2,:),'MarkerSize',6,...
         'DisplayName',ast1);
 %     hp2.Annotation.LegendInformation.IconDisplayStyle = 'off';
