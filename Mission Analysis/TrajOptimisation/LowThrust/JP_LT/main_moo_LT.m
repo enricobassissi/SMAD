@@ -31,6 +31,10 @@ set(0, 'DefaultTextInterpreter', 'latex')
 set(0, 'DefaultLineLineWidth', 1.8)
 format short
 
+str_path=split(pwd, 'TrajOptimisation\LowThrust\JP_LT');
+util_path=string(str_path(1))+'Utils';
+addpath(genpath(util_path));
+
 %% simulation parameters
 sim.mu    = 132712440018          ; % actractor parameter [km^3 s^-2]
 sim.DU    = 149597870.7           ; % distance unit [km]
@@ -48,7 +52,7 @@ sim.vinf = 0;
 sim.PS.Is = 3000/sim.TU;  % non-dimensional specific impulse
 
 sim.M = 1000; % SC mass [kg]
-%sim.hp = 3; 
+sim.hp = 3; 
 sim.kp = 3; %It is used just for sim.out_shape = 1;
 
 %% Boundaries
@@ -63,12 +67,9 @@ sim.moo_lim.TOF1_max = 1000*3600*24/sim.TU;
 % N REV
 sim.moo_lim.N_REV_min = -0.5;
 sim.moo_lim.N_REV_max = 3.4999;
-% sim.hp
-sim.moo_lim.hp_min = 2.5;
-sim.moo_lim.hp_max = 5.4999;
 % vinf_mag
-sim.moo_lim.vinf_mag_min = 0.75;
-sim.moo_lim.vinf_mag_max = 2;
+sim.moo_lim.vinf_mag_min = 0.75/sim.DU*sim.TU;
+sim.moo_lim.vinf_mag_max = 2/sim.DU*sim.TU;
 % alpha
 sim.moo_lim.alpha_min = -pi;
 sim.moo_lim.alpha_max =  pi;
@@ -77,12 +78,9 @@ sim.moo_lim.beta_min = - pi;
 sim.moo_lim.beta_max =  pi;
 
 
-% % x = [MJD0,TOF,N_REV]
-% sim.moo_bound.lb = [sim.moo_lim.mjd2000_ed, sim.moo_lim.TOF1_min, sim.moo_lim.N_REV_min]; % Lower bound
-% sim.moo_bound.ub = [sim.moo_lim.mjd2000_ld, sim.moo_lim.TOF1_max, sim.moo_lim.N_REV_max]; % Upper bound
-% x = [MJD0,TOF,N_REV,hp,vinf_mag,alpha,beta]
-sim.moo_bound.lb = [sim.moo_lim.mjd2000_ed, sim.moo_lim.TOF1_min, sim.moo_lim.N_REV_min, sim.moo_lim.hp_min,sim.moo_lim.vinf_mag_min,sim.moo_lim.alpha_min,sim.moo_lim.beta_min]; % Lower bound
-sim.moo_bound.ub = [sim.moo_lim.mjd2000_ld, sim.moo_lim.TOF1_max, sim.moo_lim.N_REV_max, sim.moo_lim.hp_max,sim.moo_lim.vinf_mag_max,sim.moo_lim.alpha_max,sim.moo_lim.beta_max]; % Upper bound
+% x = [MJD0,TOF,N_REV,vinf_mag,alpha,beta]
+sim.moo_bound.lb = [sim.moo_lim.mjd2000_ed, sim.moo_lim.TOF1_min, sim.moo_lim.N_REV_min, sim.moo_lim.vinf_mag_min,sim.moo_lim.alpha_min,sim.moo_lim.beta_min]; % Lower bound
+sim.moo_bound.ub = [sim.moo_lim.mjd2000_ld, sim.moo_lim.TOF1_max, sim.moo_lim.N_REV_max, sim.moo_lim.vinf_mag_max,sim.moo_lim.alpha_max,sim.moo_lim.beta_max]; % Upper bound
 
 %% Constraints
 sim.moo_constr.A = []; % linear inequality constraints
@@ -104,7 +102,7 @@ options.DistanceMeasureFcn = {@distancecrowding,'phenotype'};
 
 options.PopulationSize = 1000; % ideal 1000
 options.ParetoFraction = 0.5;
-options.MaxGenerations = 15; % ideal 100
+options.MaxGenerations = 30; % ideal 100
 
 options.FunctionTolerance = 1e-6;
 options.MaxStallGenerations = 3;
@@ -129,21 +127,67 @@ tic
     sim.moo_constr.b,sim.moo_constr.Aeq,sim.moo_constr.beq,sim.moo_bound.lb,sim.moo_bound.ub,options);
 el_time_min_pp = toc/60;
 
+
 %% Find the knee solution
 Fval(:,1) = Fval(:,1)*sim.TU/(3600*24);
 [knee_idx, d] = find_knee_solution(Fval);
 
-% Plot Pareto Plot
-figure('Name','GA MO Pareto Plot')
-title('Pareto Points in Parameter Space')
-h_pp = plot(Fval(:,1),Fval(:,2),'o','Color',colors(1,:));
-hold on
-h_kpp = plot(Fval(knee_idx,1),Fval(knee_idx,2),'o','Color',colors(2,:));
-xlabel('$Obj_1: \ TOF$ [d]')
-ylabel('$Obj_2: \ mf frac$ [trattino in mezzo]')
-legend([h_pp,h_kpp],'Sub-Optim Sol','Knee Sol')
-clearvars h_pp h_kpp
+% %% find min deltav sol
+% knee_idx = find(min(REP.pos_fit(:,1))==REP.pos_fit(:,1));
 
+
+% % Plot Pareto Plot
+% figure('Name','GA MO Pareto Plot')
+% title('Pareto Points in Parameter Space')
+% h_pp = plot(Fval(:,1),Fval(:,2),'o','Color',colors(1,:));
+% hold on
+% h_kpp = plot(Fval(knee_idx,1),Fval(knee_idx,2),'o','Color',colors(2,:));
+% xlabel('$Obj_1: \ TOF$ [d]')
+% ylabel('$Obj_2: \ mf frac$ [trattino in mezzo]')
+% legend([h_pp,h_kpp],'Sub-Optim Sol','Knee Sol')
+% clearvars h_pp h_kpp
+
+% %% Build the moo
+% FitnessFunction = @(x) ff_ea_ma_LT(x, sim); % Function handle to the fitness function
+% numberOfVariables = length(sim.moo_bound.ub); % Number of decision variables
+% 
+% %% Mopso parameter
+% params.Np = 1000;        % Population size
+% params.Nr = 200;        % Repository size
+% params.maxgen = 200;    % Maximum number of generations
+% params.W = 0.4;         % Inertia weight
+% params.C1 = 2;          % Individual confidence factor
+% params.C2 = 2;          % Swarm confidence factor
+% params.ngrid = 20;      % Number of grids in each dimension
+% params.maxvel = 5;      % Maxmium vel in percentage
+% params.u_mut = 0.5;     % Uniform mutation percentage
+% 
+% 
+% MultiObj.fun = FitnessFunction;
+% MultiObj.nVar = length(sim.moo_bound.ub);
+% MultiObj.var_min = sim.moo_bound.lb;
+% MultiObj.var_max = sim.moo_bound.ub;
+% MultiObj.Obj1 = 'm frac [-]';
+% MultiObj.Obj2 = 'TOF [d]';
+% 
+% %% MOPSO
+% REP = MOPSO(params,MultiObj);
+% 
+% %% Find the knee solution
+% [knee_idx, d] = find_knee_solution(REP.pos_fit);
+% 
+% % Plot Pareto Plot
+% figure('Name','GA MO Pareto Plot')
+% title('Pareto Points in Parameter Space')
+% h_pp = plot(REP.pos_fit(:,1),REP.pos_fit(:,2),'o','Color',colors(1,:));
+% hold on
+% h_kpp = plot(REP.pos_fit(knee_idx,1),REP.pos_fit(knee_idx,2),'o','Color',colors(2,:));
+% xlabel('$Obj_1: \ \Delta V$ [km/s]')
+% ylabel('$Obj_2: \ TOF$ [d]')
+% legend([h_pp,h_kpp],'Sub-Optim Sol','Knee Sol')
+% clearvars h_pp h_kpp
+% 
+% 
 %% plot
 [output, r1_true, r2_true] = plot_ff_ea_ma_LT(x(knee_idx,:),sim);
 
@@ -211,3 +255,96 @@ plot3(r1(:,1),r1(:,2),r1(:,3),'--g'); % geocentric equatorial frame
 hold on
 plot3(r2(:,1),r2(:,2),r2(:,3),'--r');
 
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% NON LINEAR INTERPOLATOR
+clearvars x Fval Output output knee_idx r3
+%% Build the moo
+FitnessFunction2 = @(x) ff_ea_ma_LT_NL(x,sim); % Function handle to the fitness function
+numberOfVariables = length(sim.moo_bound.ub); % Number of decision variables
+
+tic
+[x,Fval,exitFlag,Output] = gamultiobj(FitnessFunction,numberOfVariables,sim.moo_constr.A, ...
+    sim.moo_constr.b,sim.moo_constr.Aeq,sim.moo_constr.beq,sim.moo_bound.lb,sim.moo_bound.ub,options);
+el_time_min_pp = toc/60;
+
+%% Find the knee solution
+Fval(:,1) = Fval(:,1)*sim.TU/(3600*24);
+[knee_idx, d] = find_knee_solution(Fval);
+
+% Plot Pareto Plot
+figure('Name','GA MO Pareto Plot')
+title('Pareto Points in Parameter Space')
+h_pp = plot(Fval(:,1),Fval(:,2),'o','Color',colors(1,:));
+hold on
+h_kpp = plot(Fval(knee_idx,1),Fval(knee_idx,2),'o','Color',colors(2,:));
+xlabel('$Obj_1: \ TOF$ [d]')
+ylabel('$Obj_2: \ mf frac$ [trattino in mezzo]')
+legend([h_pp,h_kpp],'Sub-Optim Sol','Knee Sol')
+clearvars h_pp h_kpp
+
+% MultiObj.fun = FitnessFunction2;
+% REP = MOPSO(params,MultiObj);
+% 
+% %% Find the knee solution
+% [knee_idx, d] = find_knee_solution(REP.pos_fit);
+% 
+% % Plot Pareto Plot
+% figure('Name','GA MO Pareto Plot')
+% title('Pareto Points in Parameter Space')
+% h_pp = plot(REP.pos_fit(:,1),REP.pos_fit(:,2),'o','Color',colors(1,:));
+% hold on
+% h_kpp = plot(REP.pos_fit(knee_idx,1),REP.pos_fit(knee_idx,2),'o','Color',colors(2,:));
+% xlabel('$Obj_1: \ \Delta V$ [km/s]')
+% ylabel('$Obj_2: \ TOF$ [d]')
+% legend([h_pp,h_kpp],'Sub-Optim Sol','Knee Sol')
+% clearvars h_pp h_kpp
+
+%% plot
+[output, r1_true, r2_true] = plot_ff_ea_ma_LT_NL(x(knee_idx,:),sim);
+output.u = output.Thrust;
+output.l = output.theta;
+
+figure()
+subplot(5,1,1)
+plot(output.t*sim.TU/86400,output.u(:,1));
+xlabel('Time [days]')
+ylabel('In-plane Thrust [N]')
+
+subplot(5,1,2)
+plot(output.t*sim.TU/86400,180/pi*output.u(:,2));
+xlabel('Time [days]')
+ylabel('In-plane Thrust angle [deg]')
+
+subplot(5,1,3)
+plot(output.t*sim.TU/86400,output.u(:,3));
+xlabel('Time [days]')
+ylabel('out-of-plane Thrust [N]')
+
+subplot(5,1,4)
+plot(output.t*sim.TU/86400,sqrt(output.u(:,1).^2 + output.u(:,3).^2));
+xlabel('Time [days]')
+ylabel('Thrust [N]')
+
+subplot(5,1,5)
+plot(output.t*sim.TU/86400,output.m);
+xlabel('Time [days]')
+ylabel('Mass [kg]')
+
+
+%%
+
+r3 = [output.r.*cos(output.l) output.r.*sin(output.l) output.z]; 
+
+
+figure()
+plot3(r3(:,1),r3(:,2),r3(:,3))
+axis equal
+grid on
+hold on
+% Earth
+hold on
+plot3(r1(:,1),r1(:,2),r1(:,3),'--g'); % geocentric equatorial frame 
+% Mars
+hold on
+plot3(r2(:,1),r2(:,2),r2(:,3),'--r');

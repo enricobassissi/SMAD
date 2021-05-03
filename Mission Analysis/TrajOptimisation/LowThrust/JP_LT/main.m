@@ -22,8 +22,19 @@ RI = [ 1  0 0.1]'; % initial position [DU]  %% ORIGINALE: [1 0 0.1]
 RF = [-1 -1 0]'; % final position [DU]
 VI = [ 0  1 0]'; % initial velocity [DU/TU]
 VF = [ 0.7  -0.7 0]'; % final velocity [DU/TU]
+% RI = [ -0.0367; -1.0154; 0];
+% RF = [   -0.0232
+%    -0.9137
+%     0.0012];
+% VI = [0.9832
+%    -0.0400
+%          0];
+% VF = [1.2788
+%    -0.0124
+%    -0.0041];
+
 N_rev = 2; % number of revolution
-TOF = 25.4; % TOF [TU]
+TOF = 25.4; % TOF [TU] %25.4
 M = 1000; % SC mass [kg]
 hp = 3; %3 OUT OF PLANE SHAPE PARAMETERS
 kp = 3; %3
@@ -69,22 +80,6 @@ plot3(RI(1), RI(2), RI(3),'*m')
 plot3(RF(1), RF(2), RF(3),'*b')
 
 %%
-% ksun =  astroConstants(4);
-% 
-% MJD01 = date2mjd2000([2021 1 1 0 0 0]);
-% [kep_EA,ksun] = uplanet(MJD01, 3);
-% [RI, VI] = sv_from_coe(kep_EA,ksun);
-% 
-% RI = RI/sim.DU;
-% VI = VI/sim.DU*sim.TU;
-% 
-% % arrival on mars
-% MJDF1 = date2mjd2000([2023 1 1 0 0 0]);
-% [kep_MA,ksun] = uplanet(MJDF1, 4);
-% [RF, VF] = sv_from_coe(kep_MA,ksun);
-% 
-% RF = RF/sim.DU;
-% VF = VF/sim.DU*sim.TU;
 
 Isp = 3000/sim.TU; 
 output2 = NL_interpolator( RI , RF , VI , VF , N_rev , TOF ,M ,Isp ,sim );
