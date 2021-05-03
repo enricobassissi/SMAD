@@ -48,7 +48,7 @@ sim.vinf = 0;
 sim.PS.Is = 3000/sim.TU;  % non-dimensional specific impulse
 
 sim.M = 1000; % SC mass [kg]
-%sim.hp = 3; 
+sim.hp = 3; 
 sim.kp = 3; %It is used just for sim.out_shape = 1;
 
 %% Boundaries
@@ -63,9 +63,6 @@ sim.moo_lim.TOF1_max = 1000*3600*24/sim.TU;
 % N REV
 sim.moo_lim.N_REV_min = -0.5;
 sim.moo_lim.N_REV_max = 3.4999;
-% sim.hp
-sim.moo_lim.hp_min = 2.5;
-sim.moo_lim.hp_max = 5.4999;
 % vinf_mag
 sim.moo_lim.vinf_mag_min = 0.75;
 sim.moo_lim.vinf_mag_max = 2;
@@ -77,12 +74,9 @@ sim.moo_lim.beta_min = - pi;
 sim.moo_lim.beta_max =  pi;
 
 
-% % x = [MJD0,TOF,N_REV]
-% sim.moo_bound.lb = [sim.moo_lim.mjd2000_ed, sim.moo_lim.TOF1_min, sim.moo_lim.N_REV_min]; % Lower bound
-% sim.moo_bound.ub = [sim.moo_lim.mjd2000_ld, sim.moo_lim.TOF1_max, sim.moo_lim.N_REV_max]; % Upper bound
-% x = [MJD0,TOF,N_REV,hp,vinf_mag,alpha,beta]
-sim.moo_bound.lb = [sim.moo_lim.mjd2000_ed, sim.moo_lim.TOF1_min, sim.moo_lim.N_REV_min, sim.moo_lim.hp_min,sim.moo_lim.vinf_mag_min,sim.moo_lim.alpha_min,sim.moo_lim.beta_min]; % Lower bound
-sim.moo_bound.ub = [sim.moo_lim.mjd2000_ld, sim.moo_lim.TOF1_max, sim.moo_lim.N_REV_max, sim.moo_lim.hp_max,sim.moo_lim.vinf_mag_max,sim.moo_lim.alpha_max,sim.moo_lim.beta_max]; % Upper bound
+% x = [MJD0,TOF,N_REV,vinf_mag,alpha,beta]
+sim.moo_bound.lb = [sim.moo_lim.mjd2000_ed, sim.moo_lim.TOF1_min, sim.moo_lim.N_REV_min, sim.moo_lim.vinf_mag_min,sim.moo_lim.alpha_min,sim.moo_lim.beta_min]; % Lower bound
+sim.moo_bound.ub = [sim.moo_lim.mjd2000_ld, sim.moo_lim.TOF1_max, sim.moo_lim.N_REV_max, sim.moo_lim.vinf_mag_max,sim.moo_lim.alpha_max,sim.moo_lim.beta_max]; % Upper bound
 
 %% Constraints
 sim.moo_constr.A = []; % linear inequality constraints
@@ -104,7 +98,7 @@ options.DistanceMeasureFcn = {@distancecrowding,'phenotype'};
 
 options.PopulationSize = 1000; % ideal 1000
 options.ParetoFraction = 0.5;
-options.MaxGenerations = 15; % ideal 100
+options.MaxGenerations = 100; % ideal 100
 
 options.FunctionTolerance = 1e-6;
 options.MaxStallGenerations = 3;
