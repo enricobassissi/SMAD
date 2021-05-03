@@ -101,7 +101,7 @@ function [sol] = plot_mission_4neo_flyby(sol,asteroid_names_sequence,data,sim,co
     
     % actual total dV, different from Fval because now it enters also
     % penalty in the optimisation function
-    sol.dV_tot = sol.dV_extra_launch + sol.dVast3 + sol.dVast2 + sol.dVast3;
+    sol.dV_tot2 = sol.dV_extra_launch + sol.dVast1 + sol.dVast2 + sol.dVast3;
     
     % PLOT FULL ORBITS AND BEST LAMBERT TRANSFER 
     figure('Name','Mission Orbits and Phases')
@@ -110,10 +110,10 @@ function [sol] = plot_mission_4neo_flyby(sol,asteroid_names_sequence,data,sim,co
     hold on
     % Asteroids
     years = 5;
-    plot_asteorid_orbit(MJDP1,years,ast1,colors,2);
-    plot_asteorid_orbit(MJDP2,years,ast2,colors,3);
-    plot_asteorid_orbit(MJDP3,years,ast3,colors,4);
-    plot_asteorid_orbit(MJDP4,years,ast4,colors,5);
+%     plot_asteorid_orbit(MJDP1,years,ast1,colors,2);
+%     plot_asteorid_orbit(MJDP2,years,ast2,colors,3);
+%     plot_asteorid_orbit(MJDP3,years,ast3,colors,4);
+%     plot_asteorid_orbit(MJDP4,years,ast4,colors,5);
     
     % Mission Arcs
     % First leg: Earth -> Ast 1

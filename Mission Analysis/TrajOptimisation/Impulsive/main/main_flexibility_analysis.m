@@ -117,13 +117,13 @@ sim.soo_bound.ub = [sim.soo_lim.mjd2000_ld, sim.soo_lim.TOF1_max,...
       sim.soo_lim.TOF4_max,sim.soo_lim.permutations_up]; % Upper bound
 
 % Constraint on C3 Launcher
-sim.C3_max = 20; % km^2/s^2
+sim.C3_max = 40; % km^2/s^2
 
 %% Options
 options = optimoptions('particleswarm');
 options.HybridFcn = @fmincon;
 options.SwarmSize = 1000; % Default is min(100,10*nvars),
-options.MaxIterations = 200; %  Default is 200*nvars
+options.MaxIterations = 500; %  Default is 200*nvars
 options.MaxStallIterations = 70; % Default 20
 options.Display = 'iter';
 options.FunctionTolerance = 1e-6;
@@ -173,10 +173,10 @@ Isp = 230; %s
 m_dry = 100; %kg
 m_prop = m_dry*(exp(sol.dV_tot*1e3/(g0*Isp)) - 1); %kg
 %% Plot trajectories
-sol = plot_mission_4neo_flyby(sol,asteroid_sequence,data,sim,colors)
-
+sol = plot_mission_4neo_flyby(sol,asteroid_sequence,data,sim,colors);
+return
 %% ------------------------------------------------ %%
-%% ----------- FLEXIBILITY ANALYSIS --------------- %%
+%% ----------- FLEXIBILITY ANALYSIS 1--------------- %%
 %% ------------ OVER LAUNCH DATE ------------------ %%
 %% -------- AND COMBINATION OF THE SEQUENCE ------- %%
 %% ------------ BUT SAME ASTEROIDS ---------------- %%
@@ -192,20 +192,20 @@ sol = plot_mission_4neo_flyby(sol,asteroid_sequence,data,sim,colors)
 % is better off if switched in a different way.
 
 %% Synodic period Earth - Asteroid 1
-% it loose of sense if the asteroid sequence changes
+% it looses of sense if the asteroid sequence changes
 % [kep_EA,ksun] = uplanet(sol.MJD0, 3);
 % [kep_ast_1] = uNEO2(sol.MJD0+x(2),sol.ast_1,data);
 % syn_periods_EA_ast1 = synodic_period(kep_EA(1),kep_ast_1(1))/(3600*24); % days
 
 % let's make arbitrary that the max delay time is the one of Rosetta
 % mission, one of the most delayed mission
-delay_time = 730;
+delay_time = 2*365; %730
 
 %% launch windows vector
 % that now it becomes a fixed variable and not anymore a degree of freedom
 % if i have problem for the launch, if i posticipate the launch is it a
 % problem? meaning how does the costs (dV, TOF) changes?
-N_div_points = 5; % how many points do you want? fine or coarse grid
+N_div_points = 2; % how many points do you want? fine or coarse grid %5
 lw_vector = linspace(sol.MJD0,sol.MJD0+delay_time,delay_time/N_div_points);
 
 %% Permutations among the 4 asteroid fixed
@@ -240,7 +240,7 @@ sim.soo_bound.ub = [sim.soo_lim.TOF1_max,sim.soo_lim.TOF2_max,...
     sim.soo_lim.TOF3_max,sim.soo_lim.TOF4_max,sim.soo_lim.permutations_up]; % Upper bound
 
 % Constraint on C3 Launcher
-sim.C3_max = 20; % km^2/s^2
+sim.C3_max = 40; % km^2/s^2
 
 %% PS Options
 options = optimoptions('particleswarm');
@@ -308,7 +308,7 @@ clearvars i
 
 figure('Name','Flexibility over Departure Time and Asteroids Sequence Order')
 yyaxis left
-plot(lw_vector',dV_flex)
+plot(lw_vector',dV_flex,'*')
 ylabel('$\Delta V$ [km/s]')
 hold on
 yyaxis right
@@ -318,11 +318,11 @@ xlabel('Departure MJD2000')
 % plot(sol.MJD0,sol.dV_tot,'o')
 
 %% ------------------------------------------------ %%
-%% ----------- FLEXIBILITY ANALYSIS --------------- %%
+%% ----------- FLEXIBILITY ANALYSIS 2--------------- %%
 %% ---------- Let's change one asteroid ----------- %%
 %% ------------------------------------------------ %%
 %% Description
-% We optimise the solution for a given set of asteroids. But then after
+% We optimised the solution for a given set of asteroids. But then after
 % some observations of them we understand that one is not suitable for the
 % mission at all. so we want to change it with one of the remaining
 % asteroids in the list. How this changing affect the mission? We change
@@ -385,7 +385,7 @@ sim.soo_bound.ub = [sim.soo_lim.mjd2000_ld, sim.soo_lim.TOF1_max,...
       sim.soo_lim.TOF2_max,sim.soo_lim.TOF3_max,...
       sim.soo_lim.TOF4_max,sim.soo_lim.permutations_up]; % Upper bound
 % Constraint on C3 Launcher
-sim.C3_max = 20; % km^2/s^2
+sim.C3_max = 40; % km^2/s^2
 
 %% PS Options
 options = optimoptions('particleswarm');

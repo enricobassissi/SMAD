@@ -1,9 +1,7 @@
-function [ error_TOF ] = find_a(a,x,psi,TOF, sin_alpha1, cos_alpha1, sin_alpha2, cos_alpha2,p1, f1, g1, L1,p2, f2, g2, L2,sim)
+function [ error_TOF ] = find_a(a,x,psi,TOF, sin_alpha1, sin_alpha2, p1, f1, g1, L1,p2, f2, g2, L2,sim)
 
 
 xm   = 0.5*(x(1:end-1) + x(2:end));
-
-psim = psi;
 
 n_sol = sim.n_sol;
 
@@ -41,11 +39,11 @@ n_sol = sim.n_sol;
  %- Variation of true longitude DL1(x)
  sin_DL1 = 1/sin_alpha1 * sin(delta1);
  cos_DL1 = cos(psi*x) .* cos(delta1);
- DL1 = atan(sin_DL1./cos_DL1);
+ DL1 = atan2(sin_DL1,cos_DL1);
  
  sin_DL1m = 1/sin_alpha1 * sin(delta1m);
  cos_DL1m = cos(psi*xm) .* cos(delta1m);
- DL1m = atan(sin_DL1m./cos_DL1m);
+ DL1m = atan2(sin_DL1m,cos_DL1m);
  
  %- Derivatives of DL1(x) wrt x * DL1_x DL1_xx DL1_xxx
  DL1_x    = delta1_x./(sin_alpha1.*cos(psi*x));
@@ -88,11 +86,11 @@ n_sol = sim.n_sol;
  %- Variation of true longitude DL2(x)
  sin_DL2 = 1/sin_alpha2 * sin(delta2);
  cos_DL2 = cos(psi*(1-x)) .* cos(delta2);
- DL2 = atan(sin_DL2./cos_DL2);
+ DL2 = atan2(sin_DL2,cos_DL2);
  
  sin_DL2m = 1/sin_alpha2 * sin(delta2m);
  cos_DL2m = cos(psi*(1-xm)) .* cos(delta2m);
- DL2m = atan(sin_DL2m./cos_DL2m);
+ DL2m = atan2(sin_DL2m,cos_DL2m);
  
  %- Derivatives of DL2(x) wrt x : DL2_x DL2_xx DL2_xxx
  DL2_x    = delta2_x./(sin_alpha2*cos(psi*(1-x)));
@@ -105,29 +103,42 @@ n_sol = sim.n_sol;
 %-------------------------------------------------------------------------%
 % ATTRACTOR DISTANCE
  %- True long on the initial and final orbit: l1(x) l1_x(x) l2(x) l2_x(x)
- l1 = L1 + DL1; %%%% L1 è 1x1 e DL1 è 100x1 ?????
- l1m = L1 + DL1m; 
+%  l1 = L1 + DL1; 
+%  l1m = L1 + DL1m; 
+%  
+%  l2 = L2 + DL2;
+%  l2m = L2 + DL2m;
  
- l2 = L2 + DL2; %%%% L2 è 1x1 e DL2 è 100x1 ?????
- l2m = L2 + DL2m;
+ cosl1 = cos(DL1)*cos(L1) - sin(DL1)*sin(L1);
+ cosl2 = cos(DL2)*cos(L2) + sin(DL2)*sin(L2);
+ 
+ cosl1m = cos(DL1m)*cos(L1) - sin(DL1m)*sin(L1);
+ cosl2m = cos(DL2m)*cos(L2) + sin(DL2m)*sin(L2);
+ 
+ sinl1 = sin(DL1)*cos(L1) + cos(DL1)*sin(L1);
+ sinl2 = sin(DL1)*cos(L1) - cos(DL1)*sin(L1);
+ 
+ sinl1m = sin(DL1m)*cos(L1) + cos(DL1m)*sin(L1);
+ sinl2m = sin(DL1m)*cos(L1) - cos(DL1m)*sin(L1);
+ 
  
  %- Quantity qi(x) i = 1,2 needed to compute de distance from the attractor
 
- q1     = 1 + f1*cos(l1) + g1*sin(l1);
- q1_x   = (- f1*sin(l1) + g1*cos(l1)).*DL1_x;
+ q1     = 1 + f1*cosl1 + g1*sinl1;
+ q1_x   = (- f1*sinl1 + g1*cosl1).*DL1_x;
  q1_xx  = (1 - q1).*DL1_x.^2 + q1_x.*DL1_xx./DL1_x.^2;
  
- q1m     = 1 + f1*cos(l1m) + g1*sin(l1m);
- q1m_x   = (- f1*sin(l1m) + g1*cos(l1m)).*DL1m_x;
+ q1m     = 1 + f1*cosl1m + g1*sinl1m;
+ q1m_x   = (- f1*sinl1m + g1*cosl1m).*DL1m_x;
  q1m_xx  = (1 - q1m).*DL1m_x.^2 + q1m_x.*DL1m_xx./DL1m_x.^2;
 
  
- q2     = 1 + f2*cos(l2) + g1*sin(l2);
- q2_x   = (- f2*sin(l2) + g2*cos(l2)).*DL2_x;
+ q2     = 1 + f2*cosl2 + g2*sinl2;
+ q2_x   = (- f2*sinl2 + g2*cosl2).*DL2_x;
  q2_xx  = (1 - q2).*DL2_x.^2 + q2_x.*DL2_xx./DL2_x.^2;
 
- q2m     = 1 + f2*cos(l2m) + g1*sin(l2m);
- q2m_x   = (- f2*sin(l2m) + g2*cos(l2m)).*DL2m_x;
+ q2m     = 1 + f2*cosl2m + g2*sinl2m;
+ q2m_x   = (- f2*sinl2m + g2*cosl2m).*DL2m_x;
  q2m_xx  = (1 - q2m).*DL2m_x.^2 + q2m_x.*DL2m_xx./DL2m_x.^2;
  
  %- Distance s/c from the attractor (through MEE definition) : si(x) and
@@ -159,7 +170,7 @@ xim     =  a*xm.^8 - (20 + 4*a)*xm.^7 + (70 + 6*a)*xm.^6 - (84 + 4*a)*xm.^5 + (3
 xim_x   =  8*a*xm.^7 - 7*(20+4*a)*xm.^6 + 6*(70 + 6*a)*xm.^5 - 5*(84 + 4*a)*xm.^4 + 4*(35 + a)*xm.^3;
 xim_xx  =  56*a*xm.^6 - 42*(20+4*a)*xm.^5 + 30*(70 + 6*a)*xm.^4 - 20*(84 + 4*a)*xm.^3 + 12*(35 + a)*xm.^2;
 
-% Ds Ds_x  Ds_xx %%%% controlla
+% Ds Ds_x  Ds_xx 
 Ds     = s2 - s1;
 Ds_x   = s2_x - s1_x;
 Ds_xx  = s2_xx - s1_xx;
@@ -168,7 +179,7 @@ Dsm     = s2m - s1m;
 Dsm_x   = s2m_x - s1m_x;
 Dsm_xx  = s2m_xx - s1m_xx;
 
-% Ddelta Ddelta_x Ddelta_xx Ddelta_xxx %%%% controlla
+% Ddelta Ddelta_x Ddelta_xx Ddelta_xxx 
 Ddelta     = delta2 - delta1 ;
 Ddelta_x   = delta2_x - delta1_x;
 Ddelta_xx  = delta2_xx - delta1_xx;
@@ -206,10 +217,10 @@ rm_x   = - sm.*deltam_x.*sin(deltam) + sm_x .* cos(deltam);
 rm_xx  = - (2*sm_x.*deltam_x + sm_x.*deltam_xx).*sin(deltam) + (sm_xx - sm.*deltam_x.^2).*cos(deltam);
 
 % Derivative of x
-x_t_2 = abs(sim.mu*r./(s.^3.*(r*psi^2 - r_xx + 2*r_x.^2./r)));  %%% CONTROLLA -> abs l'ho aggiunto io
+x_t_2 = sim.mu*r./(s.^3.*(r*psi^2 - r_xx + 2*r_x.^2./r));  
 x_t   = sqrt(x_t_2);
 
-xm_t_2 = abs(sim.mu*rm./(sm.^3.*(rm*psi^2 - rm_xx + 2*rm_x.^2./rm)));  %%% CONTROLLA -> abs l'ho aggiunto io
+xm_t_2 = abs(sim.mu*rm./(sm.^3.*(rm*psi^2 - rm_xx + 2*rm_x.^2./rm)));  
 xm_t   = sqrt(xm_t_2);
 
 % ----------------------------------------------------------------------- %
@@ -229,7 +240,7 @@ end
 I = I*h/6;
 
 % Computation of TOF error (residual)
-error_TOF =TOF-I;
+error_TOF = abs(TOF-I); %% abs l'ho aggiunto io
 
 
 end
