@@ -2,26 +2,7 @@ function [sol] = plot_mission_4neo_flyby_GA(sol,asteroid_names_sequence,data,sim
     
     AU = astroConstants(2);
     
-%     % lambert NREV Stuff
-%     % Existance of name for labels
-%     if ~isfield(sol,'NREV1')
-%         sol.NREV1 = 0;
-%         sol.Ncase = 0;
-%     end
-%     if ~isfield(sol,'NREV2')
-%         sol.NREV2 = 0;
-%         sol.Ncase = 0;
-%     end
-%     if ~isfield(sol,'NREV3')
-%         sol.NREV3 = 0;
-%         sol.Ncase = 0;
-%     end
-%     if ~isfield(sol,'NREV4')
-%         sol.NREV4 = 0;
-%         sol.Ncase = 0;
-%     end
-    
-    % initialise stuff from solution
+    %% Initialise stuff from solution
     MJD01 = sol.MJD0;
     MJDGA = MJD01 + sol.TOF0;
     MJDP1 = MJDGA + sol.TOF1;
@@ -34,7 +15,7 @@ function [sol] = plot_mission_4neo_flyby_GA(sol,asteroid_names_sequence,data,sim
     ast3 = asteroid_names_sequence(3);
     ast4 = asteroid_names_sequence(4);
     
-    % Position of planet at solutions moments
+    %% Position of planet at solutions moments
     [kep_EA, ksun] = uplanet(MJD01, 3); % Earth Departure
     [rEA, vEA] = sv_from_coe(kep_EA,ksun); %km, km/s
     [kep_GA, ksun] = uplanet(MJDGA, 3); % Earth Departure
@@ -55,7 +36,7 @@ function [sol] = plot_mission_4neo_flyby_GA(sol,asteroid_names_sequence,data,sim
     ToF_ast23_sec = sol.TOF3*60*60*24;
     ToF_ast34_sec = sol.TOF4*60*60*24;
     
-    % Lamberts and deltaVs
+    %% Lamberts and deltaVs
     [~,~,~,~,VI_EAGA,VF_EAGA,~,~] = lambertMR(rEA,rGA,ToF_EAGA_sec,ksun,0,0,0,0);
     dv1 = sqrt((VI_EAGA(1)-vEA(1))^2+(VI_EAGA(2)-vEA(2))^2+(VI_EAGA(3)-vEA(3))^2);
     if dv1 < sqrt(sim.C3_max)
@@ -109,6 +90,7 @@ function [sol] = plot_mission_4neo_flyby_GA(sol,asteroid_names_sequence,data,sim
     % penalty in the optimisation function
     sol.dV_tot = sol.dV_extra_launch + sol.dVast1 + sol.dVast2 + sol.dVast3 + sol.delta_V_p;
     
+    %% Plots
     % PLOT FULL ORBITS AND BEST LAMBERT TRANSFER 
     figure('Name','Mission Orbits and Phases')
     % Earth
@@ -131,44 +113,47 @@ function [sol] = plot_mission_4neo_flyby_GA(sol,asteroid_names_sequence,data,sim
     t4_sec = MJDP4*60*60*24;
     
     % First leg: Earth -> Ast 1
-    y012 = [rEA; VI_EAGA']; %km, km/s; velocity from lambert arc transfer orbit injection
+    y0EAGA = [rEA; VI_EAGA']; %km, km/s; velocity from lambert arc transfer orbit injection
     options = odeset ('RelTol', 1e-13, 'AbsTol', 1e-14); 
-    [~,y12] = ode113(@rates, [tEA_sec tGA_sec], y012,options,'sun');
-    plot3( y12(:,1)./AU, y12(:,2)./AU, y12(:,3)./AU,'Color',colors(1,:),...
+    [tEAGA,yEAGA] = ode113(@rates, [tEA_sec tGA_sec], y0EAGA,options,'sun');
+    plot3( yEAGA(:,1)./AU, yEAGA(:,2)./AU, yEAGA(:,3)./AU,'Color',colors(1,:),...
         'DisplayName','Trajectory');
     
     % second leg: Earth -> Ast 1
-    y012 = [rGA; VI_GAast1']; %km, km/s; velocity from lambert arc transfer orbit injection
+    y0GAast1 = [rGA; VI_GAast1']; %km, km/s; velocity from lambert arc transfer orbit injection
     options = odeset ('RelTol', 1e-13, 'AbsTol', 1e-14); 
-    [~,y12] = ode113(@rates, [tGA_sec t1_sec], y012,options,'sun');
-    ht1 = plot3( y12(:,1)./AU, y12(:,2)./AU, y12(:,3)./AU,'Color',colors(1,:));
+    [tEAast1,yGAast1] = ode113(@rates, [tGA_sec t1_sec], y0GAast1,options,'sun');
+    ht1 = plot3( yGAast1(:,1)./AU, yGAast1(:,2)./AU, yGAast1(:,3)./AU,'Color',colors(1,:));
     ht1.Annotation.LegendInformation.IconDisplayStyle = 'off';
 
     % 3rd leg: Ast 1 -> Ast 2
     y034 = [r1; VI_ast12']; %km, km/s
     options = odeset ('RelTol', 1e-13, 'AbsTol', 1e-14); 
-    [~,y34] = ode113(@rates, [t1_sec t2_sec], y034,options,'sun');
+    [t34,y34] = ode113(@rates, [t1_sec t2_sec], y034,options,'sun');
     ht2 = plot3( y34(:,1)./AU, y34(:,2)./AU, y34(:,3)./AU,'Color',colors(1,:));
     ht2.Annotation.LegendInformation.IconDisplayStyle = 'off';
 
     % 4th leg: Ast 2 -> Ast 3
     y056 = [r2; VI_ast23']; %km, km/s
     options = odeset ('RelTol', 1e-13, 'AbsTol', 1e-14); 
-    [~,y56] = ode113(@rates, [t2_sec t3_sec], y056,options,'sun');
+    [t56,y56] = ode113(@rates, [t2_sec t3_sec], y056,options,'sun');
     ht3 = plot3( y56(:,1)./AU, y56(:,2)./AU, y56(:,3)./AU,'Color',colors(1,:));
     ht3.Annotation.LegendInformation.IconDisplayStyle = 'off';
 
     % 5th leg: Ast 3 -> Ast 4
     y078 = [r3; VI_ast34']; %km, km/s
     options = odeset ('RelTol', 1e-13, 'AbsTol', 1e-14); 
-    [~,y78] = ode113(@rates, [t3_sec t4_sec], y078,options,'sun');
+    [t78,y78] = ode113(@rates, [t3_sec t4_sec], y078,options,'sun');
     ht4 = plot3( y78(:,1)./AU, y78(:,2)./AU, y78(:,3)./AU,'Color',colors(1,:));
     ht4.Annotation.LegendInformation.IconDisplayStyle = 'off';
     
-    % Extract the Sun-SpaceCraft Distance for all the trajectory [km]
-    sol.SunSpacecraftDistanceNorm = vecnorm([y12;y34;y56;y78],2,2); % 2,2 means norm 2 and by row
-    sol.SpacecraftTrajectory = [y12;y34;y56;y78];
+    %% Extract the Sun-SpaceCraft Distance for all the trajectory [km]
+    sol.SunSpacecraftDistanceNorm = vecnorm([yEAGA;yGAast1;y34;y56;y78],2,2); % 2,2 means norm 2 and by row
+    sol.SpacecraftTrajectory = [yEAGA;yGAast1;y34;y56;y78];
+    sol.SCtime = [tEAGA;tEAast1;t34;t56;t78];
+    [sol.angles.SAA,sol.angles.EVA,sol.angles.SCA,sol.angles.SolarConjunction] = aspect_angles(sol);
     
+    %% Naming
     % Sun Yellow Asterisk
     plot3(0,0,0,'*','Color',colors(4,:),'DisplayName','Sun');
     

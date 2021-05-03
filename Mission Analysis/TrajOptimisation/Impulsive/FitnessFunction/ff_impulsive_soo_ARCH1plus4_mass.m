@@ -120,7 +120,11 @@ dry_mass_lander=sim.dry_mass_lander; %kg
 % m_wet/m_dry = exp(dv/(Isp*g0))
 % mass of the lander required to pay to cancel dVrel at each flyby passage
 % dry mass lander and the propellant related to that dV
-mass_lander=[dry_mass_lander*exp(dv2_GAast1/(Isp_lander*g0)), dry_mass_lander*exp(dv2_ast12/(Isp_lander*g0)),...
+
+% if i reduce the effect of lander masses, i optimise the more the primary propulsion mass <-> dV
+penalty_dV_rel = 1e-1;
+
+mass_lander=penalty_dV_rel.*[dry_mass_lander*exp(dv2_GAast1/(Isp_lander*g0)), dry_mass_lander*exp(dv2_ast12/(Isp_lander*g0)),...
              dry_mass_lander*exp(dv2_ast23/(Isp_lander*g0)), dry_mass_lander*exp(dv2_ast34/(Isp_lander*g0))];
 % Back interpolate the mass of the overall spacecraft from end of mission,
 % with an end mass of sim.dry_mass and we build back the initial wet mass
