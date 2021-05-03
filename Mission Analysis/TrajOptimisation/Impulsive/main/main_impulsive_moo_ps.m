@@ -156,6 +156,9 @@ MultiObj.fun = FitnessFunction;
 MultiObj.nVar = length(sim.bound.ub);
 MultiObj.var_min = sim.bound.lb;
 MultiObj.var_max = sim.bound.ub;
+MultiObj.Obj1 = '$\Delta V_{tot}$ [km/s]';
+MultiObj.Obj2 = '$$TOF$ [d]';
+
 %% MOPSO
 REP = MOPSO(params,MultiObj);
 

@@ -30,11 +30,12 @@ vinf_mag = x(4);
 alpha = x(5);
 beta = x(6);
 
-vdep = v1 + vinf_mag*[cos(alpha)*cos(beta) sin(alpha)*cos(beta) sin(beta)] ;  % giusto?
-%vdep = v1;
+%vdep = v1 + vinf_mag*[cos(alpha)*cos(beta); sin(alpha)*cos(beta); sin(beta)] ;  % giusto?
+vdep = v1;
 varr = v2; %since we want to rendez-vous
 
 [output] = CW_LowLambert( r1 , r2 , vdep , varr, N_rev , TOF1 , sim.M , sim.hp , sim.kp , sim.PS , sim );
+
 
 obj_fun(1) = TOF1;
    
