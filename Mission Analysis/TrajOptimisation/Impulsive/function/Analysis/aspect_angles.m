@@ -50,8 +50,11 @@ function [SAA,EVA,SCA,SolarConjunction] = aspect_angles(sol)
                 dot(position_wrt_sun(i,:),(position_wrt_sun(i,:)-SunRadius)));
 %         SC_EA_norm = DistSpacecraftEarth./norm(DistSpacecraftEarth);
         
-        SCA(i,1) = abs(atan2(norm(cross(SC_EA_vers,pos_vers)),dot(SC_EA_vers,pos_vers)));
-        if SCA(i,1) < tol
+        SCA(i,1) = atan2(norm(cross(SC_EA_vers,pos_vers)),dot(SC_EA_vers,pos_vers));
+        % when does the conjunction happens?
+        % if the angle between sc-earth/sc-sun is less than tol
+        % and the distance sc-earth > sc-sun, meaning that's behind
+        if abs(SCA(i,1)) < tol && norm(DistSpacecraftEarth) > norm(position_wrt_sun(i,:))
             SolarConjunction(i,1) = 1;
         end
 

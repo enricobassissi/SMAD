@@ -74,6 +74,7 @@ function [sol] = plot_mission_4neo_rendezvous(sol,asteroid_names_sequence,data,s
     sol.dV_tot_leg4 = sol.dV7 + sol.dV8;
 
     sol.dV_tot = sol.dV_tot_leg1+sol.dV_tot_leg2+sol.dV_tot_leg3+sol.dV_tot_leg4;
+    
     %% Plotting
     % PLOT FULL ORBITS AND BEST LAMBERT TRANSFER 
     figure('Name','Mission Orbits and Phases')

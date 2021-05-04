@@ -86,8 +86,6 @@ dv_passage_ast3 = sqrt((VI_ast34(1)-VF_ast23(1))^2+(VI_ast34(2)-VF_ast23(2))^2+(
 % else if the last dv is a rendezvous with the last object
 % obj_fun = dv_extra_launch + dv_passage_ast1 + dv_passage_ast2 + dv_passage_ast3 + dv2_ast34; 
 
-
-
 % Check of feasibility
 CHECK_TERM = 0;
 tot_TOF = TOF1+TOF2+TOF3+TOF4;

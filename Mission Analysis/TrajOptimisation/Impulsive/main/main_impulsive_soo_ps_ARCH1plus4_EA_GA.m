@@ -1,6 +1,6 @@
 %% --------------------------------------------------------------------- %%
 %% -------------------- EA Ast1 Ast2 Ast3 Ast4 Transfer ---------------- %%
-%% --------------------------- ARCH 1+4, FLYBY ------------------------- %%
+%% --------------------- ARCH 1+4, FLYBY, EARTH GA --------------------- %%
 %% --------------------------------------------------------------------- %%
 %% Setup for default options
 set(0, 'DefaultTextFontSize', 20)
@@ -95,29 +95,34 @@ sim.soo_lim.date_ed = [2022, 1, 1, 0, 0, 0];
 sim.soo_lim.date_ld =  [2028, 1, 1, 0, 0, 0];
 sim.soo_lim.mjd2000_ed = date2mjd2000(sim.soo_lim.date_ed);
 sim.soo_lim.mjd2000_ld = date2mjd2000(sim.soo_lim.date_ld);
-% TOF1 (2)
+% TOF0 (2)
+sim.soo_lim.TOF0_min = 400; % days more than 1 year, if not it stays on earth orbit
+sim.soo_lim.TOF0_max = 3*365; % days
+% TOF1 (3)
 sim.soo_lim.TOF1_min = 100; % days
 sim.soo_lim.TOF1_max = 3*365; % days
-% TOF2 (3)
+% TOF2 (4)
 sim.soo_lim.TOF2_min = 50; % days
 sim.soo_lim.TOF2_max = 3*365; % days
-% TOF3 (4)
+% TOF3 (5)
 sim.soo_lim.TOF3_min = 50; % days
 sim.soo_lim.TOF3_max = 3*365; % days
-% TOF4 (5)
+% TOF4 (6)
 sim.soo_lim.TOF4_min = 50; % days
 sim.soo_lim.TOF4_max = 3*365; % days
-% Matrix of permutations (6)
+% Matrix of permutations (7)
 % to use round in the code... so we have same probility to be rounded to
 % the first or to the last element in the matrix as in the middle elements!
-sim.soo_lim.permutations_low = 0.5; 
+sim.soo_lim.permutations_low = 0.5; % ps case
 sim.soo_lim.permutations_up = data.HowMany + 0.4999;
+% sim.soo_lim.permutations_low = 1; % ga case
+% sim.soo_lim.permutations_up = data.HowMany;
 
-% x = [MJD0,TOF1,TOF2,TOF3,TOF4,ID_permutation]
-sim.soo_bound.lb = [sim.soo_lim.mjd2000_ed,  sim.soo_lim.TOF1_min,...
+% x = [MJD0,TOF0,TOF1,TOF2,TOF3,TOF4,ID_permutation]
+sim.soo_bound.lb = [sim.soo_lim.mjd2000_ed, sim.soo_lim.TOF0_min,  sim.soo_lim.TOF1_min,...
       sim.soo_lim.TOF2_min,sim.soo_lim.TOF3_min,...
       sim.soo_lim.TOF4_min,sim.soo_lim.permutations_low]; % Lower bound
-sim.soo_bound.ub = [sim.soo_lim.mjd2000_ld, sim.soo_lim.TOF1_max,...
+sim.soo_bound.ub = [sim.soo_lim.mjd2000_ld, sim.soo_lim.TOF0_max, sim.soo_lim.TOF1_max,...
       sim.soo_lim.TOF2_max,sim.soo_lim.TOF3_max,...
       sim.soo_lim.TOF4_max,sim.soo_lim.permutations_up]; % Upper bound
 
@@ -134,13 +139,17 @@ else
 end
 
 %% Build the soo
-FitnessFunction = @(x) ff_impulsive_soo_ARCH1plus4(x, data, sim); % Function handle to the fitness function
+FitnessFunction = @(x) ff_impulsive_soo_ARCH1plus4_GA(x, data, sim); % Function handle to the fitness function
 % FitnessFunction = @(x) ff_impulsive_soo_ARCH1plus4_mass(x, data, sim); % Function handle to the fitness function
 numberOfVariables = length(sim.soo_bound.ub); % Number of decision variables
 
 %% Constraints
-% sim.soo_constr.A = []; % linear inequality constraints
-% sim.soo_constr.b = []; % linear inequality constraints
+% % x = [MJD0,TOF0,TOF1,TOF2,TOF3,TOF4,ID_permutation]
+% % A*x <= b
+% % constraint that the mission must finish before 12 years
+% % sum of TOFs < 12 years
+% sim.soo_constr.A = [0 1 1 1 1 1 0]; % linear inequality constraints
+% sim.soo_constr.b = [12*365]; % linear inequality constraints
 % sim.soo_constr.Aeq = []; % linear equality constraints
 % sim.soo_constr.beq = []; % linear equality constraints
 % sim.soo_constr.nonlcon = []; % linear equality constraints
@@ -149,18 +158,19 @@ numberOfVariables = length(sim.soo_bound.ub); % Number of decision variables
 % % ga(fitnessfcn,nvars,A,b,Aeq,beq,lb,ub,nonlcon,IntCon,options)
 % sim.soo_constr.IntCon = [7];
 
-% %% Options ga
+%% Options ga
 % options = optimoptions(@ga);
 % % options.PlotFcn = {@gaplotbestf};
 % options.Display = 'iter';
 % % A hybrid function is another minimization function that runs after the 
 % % multiobjective genetic algorithm terminates
-% % options.HybridFcn = @fmincon;
+% options.HybridFcn = @fmincon;
 % 
-% options.PopulationSize = 1000; 
+% options.PopulationSize = 2000; 
 % options.MaxGenerations = 200; 
 % options.FunctionTolerance = 1e-6;
 % options.MaxStallGenerations = 50;
+% % options.UseParallel = true;
 
 %% Options ps
 options = optimoptions('particleswarm');
@@ -187,22 +197,23 @@ el_time_min_pp = toc/60;
 
 %% Build solution structure
 % set the knee as main solution
-asteroid_sequence = data.PermutationMatrix(round(x(6)),:);
+asteroid_sequence = data.PermutationMatrix(round(x(7)),:);
 sol.ast_1 = asteroid_sequence(1);
 sol.ast_2 = asteroid_sequence(2);
 sol.ast_3 = asteroid_sequence(3);
 sol.ast_4 = asteroid_sequence(4);
 sol.MJD0 = x(1);
 sol.dep_date = mjd20002date(sol.MJD0)';
-sol.TOF_tot_D = x(2)+x(3)+x(4)+x(5);
+sol.TOF_tot_D = x(2)+x(3)+x(4)+x(5)+x(6);
 sol.TOF_tot_Y = sol.TOF_tot_D/365;
 sol.end_of_mission_date = mjd20002date(sol.MJD0+sol.TOF_tot_D)';
 % sol.dV_tot = Fval(1); % case of dv optimisation without penalty
 % sol.m_tot = Fval(1); % case of mass optimisation
-sol.TOF1 = x(2);
-sol.TOF2 = x(3);
-sol.TOF3 = x(4);
-sol.TOF4 = x(5);
+sol.TOF0 = x(2);
+sol.TOF1 = x(3);
+sol.TOF2 = x(4);
+sol.TOF3 = x(5);
+sol.TOF4 = x(6);
 
 %% Mass Consumption for High Thrust Impulsive Case
 % g0 = 9.81; %m/s^2
@@ -211,9 +222,9 @@ sol.TOF4 = x(5);
 % m_dry = 100; %kg
 % m_prop = m_dry*(exp(sol.dV_tot*1e3/(g0*Isp)) - 1); %kg
 %% Plot trajectories
-% sol = plot_mission_4neo_flyby_GA(sol,asteroid_sequence,data,sim,colors)
+sol = plot_mission_4neo_flyby_GA(sol,asteroid_sequence,data,sim,colors)
 
-sol = plot_mission_4neo_flyby(sol,asteroid_sequence,data,sim,colors)
+% sol = plot_mission_4neo_flyby(sol,asteroid_sequence,data,sim,colors)
 
 %% Plot Angles
 figure()

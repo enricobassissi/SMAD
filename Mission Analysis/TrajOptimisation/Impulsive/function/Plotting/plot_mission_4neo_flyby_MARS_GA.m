@@ -1,4 +1,4 @@
-function [sol] = plot_mission_4neo_flyby_GA(sol,asteroid_names_sequence,data,sim,colors)
+function [sol] = plot_mission_4neo_flyby_MARS_GA(sol,asteroid_names_sequence,data,sim,colors)
     
     AU = astroConstants(2);
     
@@ -18,7 +18,7 @@ function [sol] = plot_mission_4neo_flyby_GA(sol,asteroid_names_sequence,data,sim
     %% Position of planet at solutions moments
     [kep_EA, ksun] = uplanet(MJD01, 3); % Earth Departure
     [rEA, vEA] = sv_from_coe(kep_EA,ksun); %km, km/s
-    [kep_GA, ksun] = uplanet(MJDGA, 3); % Earth Departure
+    [kep_GA, ksun] = uplanet(MJDGA,4); % Mars Gravity Assist
     [rGA, vGA] = sv_from_coe(kep_GA,ksun); %km, km/s
     [kep_ast_1] = uNEO2(MJDP1,ast1,data);
     [r1,v1] = sv_from_coe(kep_ast_1,ksun); % km, km/s
@@ -52,10 +52,10 @@ function [sol] = plot_mission_4neo_flyby_GA(sol,asteroid_names_sequence,data,sim
     [~,~,~,~,VI_GAast1,VF_GAast1,~,~] = lambertMR(rGA,r1,ToF_GAast1_sec,ksun,0,0,0,0);
     dv2_GAast1 = sqrt((VF_GAast1(1)-v1(1))^2+(VF_GAast1(2)-v1(2))^2+(VF_GAast1(3)-v1(3))^2);
     
-    % astroConstants(23) = Radius_Earth, km
-    % astroConstants(13) = muEarth, km^3/s^2
-    R_lim_from_planet = 440; %km, ok for earth to avoid atmosphere
-    sol.delta_V_p = flyby(astroConstants(23), astroConstants(13),R_lim_from_planet, MJDGA, VF_EAGA, VI_GAast1);
+    % astroConstants(24) = Radius_Mars, km
+    % astroConstants(14) = muMars, km^3/s^2
+    R_lim_from_planet = 200; %km, ok for marso to avoid atmosphere
+    sol.delta_V_p = flyby(astroConstants(24), astroConstants(14),R_lim_from_planet, MJDGA, VF_EAGA, VI_GAast1);
 
     % Velocity gained with flyby
     sol.dV_gained_flyby = sqrt((VI_GAast1(1)-VF_EAGA(1))^2+(VI_GAast1(2)-VF_EAGA(2))^2+(VI_GAast1(3)-VF_EAGA(3))^2) - sol.delta_V_p;
@@ -94,15 +94,16 @@ function [sol] = plot_mission_4neo_flyby_GA(sol,asteroid_names_sequence,data,sim
     %% Plots
     % PLOT FULL ORBITS AND BEST LAMBERT TRANSFER 
     figure('Name','Mission Orbits and Phases')
-    % Earth
-    plot_earth_orbit(MJD01,colors,8);
+    % Planets
+    plot_earth_orbit(MJD01,3,colors,8); % Earth
     hold on
+    plot_earth_orbit(MJDGA,4,colors,6); % Mars
     % Asteroids
-    years = 5;
-%     plot_asteorid_orbit(MJDP1,years,ast1,colors,2);
-%     plot_asteorid_orbit(MJDP2,years,ast2,colors,3);
-%     plot_asteorid_orbit(MJDP3,years,ast3,colors,4);
-%     plot_asteorid_orbit(MJDP4,years,ast4,colors,5);
+    Orbit_Fraction = 1/4;
+    plot_asteorid_orbit(MJDP1,Orbit_Fraction,ast1,colors,2);
+    plot_asteorid_orbit(MJDP2,Orbit_Fraction,ast2,colors,3);
+    plot_asteorid_orbit(MJDP3,Orbit_Fraction,ast3,colors,4);
+    plot_asteorid_orbit(MJDP4,Orbit_Fraction,ast4,colors,5);
     
     % Mission Arcs
     % Converting mJD2000 passage time in seconds
@@ -113,14 +114,14 @@ function [sol] = plot_mission_4neo_flyby_GA(sol,asteroid_names_sequence,data,sim
     t3_sec = MJDP3*60*60*24;
     t4_sec = MJDP4*60*60*24;
     
-    % First leg: Earth -> Ast 1
+    % First leg: Earth -> Mars GA
     y0EAGA = [rEA; VI_EAGA']; %km, km/s; velocity from lambert arc transfer orbit injection
     options = odeset ('RelTol', 1e-13, 'AbsTol', 1e-14); 
     [tEAGA,yEAGA] = ode113(@rates, [tEA_sec tGA_sec], y0EAGA,options,'sun');
     plot3( yEAGA(:,1)./AU, yEAGA(:,2)./AU, yEAGA(:,3)./AU,'Color',colors(1,:),...
         'DisplayName','Trajectory');
     
-    % second leg: Earth -> Ast 1
+    % second leg: Mars -> Ast 1
     y0GAast1 = [rGA; VI_GAast1']; %km, km/s; velocity from lambert arc transfer orbit injection
     options = odeset ('RelTol', 1e-13, 'AbsTol', 1e-14); 
     [tEAast1,yGAast1] = ode113(@rates, [tGA_sec t1_sec], y0GAast1,options,'sun');
@@ -164,7 +165,7 @@ function [sol] = plot_mission_4neo_flyby_GA(sol,asteroid_names_sequence,data,sim
         'DisplayName','Earth Departure');
 %     hp1.Annotation.LegendInformation.IconDisplayStyle = 'off';
     hp1 = plot3(rGA(1)./AU,rGA(2)./AU,rGA(3)./AU,'^','Color',colors(8,:),'MarkerSize',6,...
-        'DisplayName','Earth GA');
+        'DisplayName','Mars GA');
 %     hp1.Annotation.LegendInformation.IconDisplayStyle = 'off';
     hp2 = plot3(r1(1)./AU,r1(2)./AU,r1(3)./AU,'^','Color',colors(2,:),'MarkerSize',6,...
         'DisplayName',ast1);

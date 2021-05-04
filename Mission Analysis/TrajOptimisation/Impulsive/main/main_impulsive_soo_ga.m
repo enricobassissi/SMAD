@@ -1,7 +1,7 @@
-%% -------------------------------------------------------- %%
-%% ----------- EA Ast1 Ast2 Ast3 Ast4 Transfer ------------ %%
-%% ------------ Impulsive SOO Particle Swarm -------------- %%
-%% -------------------------------------------------------- %%
+%% --------------------------------------------------------------------- %%
+%% ------------------ EA Ast1 Ast2 Ast3 Ast4 Transfer ------------------ %%
+%% --------------- Impulsive SOO Genetic Algorithm --------------------- %%
+%% --------------------------------------------------------------------- %%
 %% Setup for default options
 set(0, 'DefaultTextFontSize', 20)
 set(0, 'DefaultAxesFontSize', 20)
@@ -74,10 +74,10 @@ data.HowMany = factorial(length(data.asteroid_names)) / factorial(length(data.as
 
 %% uNEO
 % try 
-%     load('data.mat')
+    load('data.mat')
 % catch
     % if the asteroid have changed, run the find_eph_neo below, it takes about 1 min
-    [data.y_interp_ft, data.t_vector] = find_eph_neo(data.asteroid_names);
+%     [data.y_interp_ft, data.t_vector] = find_eph_neo(data.asteroid_names);
 %     save('data.mat', data);
 % end
 
@@ -99,7 +99,7 @@ sim.soo_lim.TOF2_max = 3*365; % days
 % Matrix of permutations (5)
 % to use round in the code... so we have same probility to be rounded to
 % the first or to the last element in the matrix as in the middle elements!
-sim.soo_lim.permutations_low = 0.5; 
+sim.soo_lim.permutations_low = -0.5; 
 sim.soo_lim.permutations_up = data.HowMany + 0.4999;
 % Buffer time 2 (6)
 sim.soo_lim.bt2_min = 30;
@@ -126,7 +126,7 @@ sim.soo_bound.ub = [sim.soo_lim.mjd2000_ld, sim.soo_lim.TOF1_max,...
       sim.soo_lim.TOF3_max,sim.soo_lim.bt3_max,sim.soo_lim.TOF4_max]; % Upper bound
 
 % Constraint on C3 Launcher
-sim.C3_max = 20; % km^2/s^2
+sim.C3_max = 30; % km^2/s^2
 
 %% Constraints
 sim.soo_constr.A = []; % linear inequality constraints
@@ -134,6 +134,8 @@ sim.soo_constr.b = []; % linear inequality constraints
 sim.soo_constr.Aeq = []; % linear equality constraints
 sim.soo_constr.beq = []; % linear equality constraints
 sim.soo_constr.nonlcon = []; % linear equality constraints
+% sim.soo_constr.IntCon = [5];
+
 %% Options
 options = optimoptions(@ga);
 % options.PlotFcn = {@gaplotbestf};
@@ -146,7 +148,7 @@ options.Display = 'iter';
 % options.HybridFcn = @fmincon;
 
 options.PopulationSize = 1000; 
-options.MaxGenerations = 100; 
+options.MaxGenerations = 200; 
 options.FunctionTolerance = 1e-6;
 options.MaxStallGenerations = 30;
 

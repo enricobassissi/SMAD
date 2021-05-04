@@ -89,49 +89,53 @@ function [sol] = plot_mission_4neo_flyby(sol,asteroid_names_sequence,data,sim,co
     % PLOT FULL ORBITS AND BEST LAMBERT TRANSFER 
     figure('Name','Mission Orbits and Phases')
     % Earth
-    plot_earth_orbit(MJD01,colors,8);
+    plot_earth_orbit(MJD01,3,colors,8);
     hold on
     % Asteroids
-    years = 5;
-%     plot_asteorid_orbit(MJDP1,years,ast1,colors,2);
-%     plot_asteorid_orbit(MJDP2,years,ast2,colors,3);
-%     plot_asteorid_orbit(MJDP3,years,ast3,colors,4);
-%     plot_asteorid_orbit(MJDP4,years,ast4,colors,5);
+    Frac_Orbit = 1/4;
+    plot_asteorid_orbit(MJDP1,Frac_Orbit,ast1,colors,2);
+    plot_asteorid_orbit(MJDP2,Frac_Orbit,ast2,colors,3);
+    plot_asteorid_orbit(MJDP3,Frac_Orbit,ast3,colors,4);
+    plot_asteorid_orbit(MJDP4,Frac_Orbit,ast4,colors,5);
     
     % Mission Arcs
     % First leg: Earth -> Ast 1
     t012 = t1_sec;
     tf12 = t2_sec;
+    time_eval_12 = linspace(t012,tf12,sol.TOF1);
     y012 = [rEA; VI_EAast1']; %km, km/s; velocity from lambert arc transfer orbit injection
     options = odeset ('RelTol', 1e-13, 'AbsTol', 1e-14); 
-    [t12,y12] = ode113(@rates, [t012 tf12], y012,options,'sun');
+    [t12,y12] = ode113(@rates, time_eval_12, y012,options,'sun');
     plot3( y12(:,1)./AU, y12(:,2)./AU, y12(:,3)./AU,'Color',colors(1,:),...
         'DisplayName','Trajectory');
 
     % Second leg: Ast 1 -> Ast 2
     t034 = t2_sec;
     tf34 = t3_sec;
+    time_eval_34 = linspace(t034,tf34,sol.TOF2);
     y034 = [r_ast1; VI_ast12']; %km, km/s
     options = odeset ('RelTol', 1e-13, 'AbsTol', 1e-14); 
-    [t34,y34] = ode113(@rates, [t034 tf34], y034,options,'sun');
+    [t34,y34] = ode113(@rates, time_eval_34, y034,options,'sun');
     ht2 = plot3( y34(:,1)./AU, y34(:,2)./AU, y34(:,3)./AU,'Color',colors(1,:));
     ht2.Annotation.LegendInformation.IconDisplayStyle = 'off';
 
     % Third leg: Ast 2 -> Ast 3
     t056 = t3_sec;
     tf56 = t4_sec;
+    time_eval_56 = linspace(t056,tf56,sol.TOF3);
     y056 = [r_ast2; VI_ast23']; %km, km/s
     options = odeset ('RelTol', 1e-13, 'AbsTol', 1e-14); 
-    [t56,y56] = ode113(@rates, [t056 tf56], y056,options,'sun');
+    [t56,y56] = ode113(@rates, time_eval_56, y056,options,'sun');
     ht3 = plot3( y56(:,1)./AU, y56(:,2)./AU, y56(:,3)./AU,'Color',colors(1,:));
     ht3.Annotation.LegendInformation.IconDisplayStyle = 'off';
 
     % Fourth leg: Ast 3 -> Ast 4
     t078 = t4_sec;
     tf78 = t5_sec;
+    time_eval_78 = linspace(t078,tf78,sol.TOF4);
     y078 = [r_ast3; VI_ast34']; %km, km/s
     options = odeset ('RelTol', 1e-13, 'AbsTol', 1e-14); 
-    [t78,y78] = ode113(@rates, [t078 tf78], y078,options,'sun');
+    [t78,y78] = ode113(@rates, time_eval_78, y078,options,'sun');
     ht4 =plot3( y78(:,1)./AU, y78(:,2)./AU, y78(:,3)./AU,'Color',colors(1,:));
     ht4.Annotation.LegendInformation.IconDisplayStyle = 'off';
     

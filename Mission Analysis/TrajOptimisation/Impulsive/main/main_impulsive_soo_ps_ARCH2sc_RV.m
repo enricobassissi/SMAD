@@ -1,7 +1,8 @@
-%% -------------------------------------------------------- %%
-%% ----------- EA Ast1 Ast2 Ast3 Ast4 Transfer ------------ %%
-%% ------------------- ARCH ID 3: 2 SC -------------------- %%
-%% -------------------------------------------------------- %%
+%% --------------------------------------------------------------------- %%
+%% ----------------- EA Ast1 Ast2 Ast3 Ast4 Transfer ------------------- %%
+%% -------------------------- ARCH ID 3: 2 SC -------------------------- %%
+%% --------------------------- RENDEZVOUS ------------------------------ %%
+%% --------------------------------------------------------------------- %%
 %% Setup for default options
 set(0, 'DefaultTextFontSize', 20)
 set(0, 'DefaultAxesFontSize', 20)
@@ -31,7 +32,7 @@ colors = [0    50   71;... % (1) DEEP SPACE
           51   94   111;... % (11) DEEP SPACE -1
           0    0    0]./255; % (12) BLACK
 
-sim.case_name = 'ARCH ID 3: 2 SC, EACH IMPULSIVE FLYBY ON 2 ASTEROIDS';
+sim.case_name = 'ARCH ID 3: 2 SC, EACH IMPULSIVE RENDEZVOUS ON 2 ASTEROIDS';
 % In this architecture you have all the permutation of 2 asteorids among
 % the list of 9
 % Then the 2nd spacecraft can combine freely the other targets, except from
@@ -99,34 +100,45 @@ sim.soo_lim.date_ld =  [2028, 1, 1, 0, 0, 0];
 sim.soo_lim.mjd2000_ed = date2mjd2000(sim.soo_lim.date_ed);
 sim.soo_lim.mjd2000_ld = date2mjd2000(sim.soo_lim.date_ld);
 % TOF1 (2), tof sc1 to 1st asteroid
-sim.soo_lim.TOF1_min = 200; % days
+sim.soo_lim.TOF1_min = 100; % days
 sim.soo_lim.TOF1_max = 3*365; % days
-% TOF2 (3), tof sc1 to 2nd asteroid
+% Buffer time 1 (3)
+sim.soo_lim.bt1_min = 30;
+sim.soo_lim.bt1_max = 180;
+% TOF2 (4), tof sc1 to 2nd asteroid
 sim.soo_lim.TOF2_min = 50; % days
 sim.soo_lim.TOF2_max = 3*365; % days
-% TOFa (4), tof sc2 to 1st asteroid
-sim.soo_lim.TOF3_min = 200; % days
-sim.soo_lim.TOF3_max = 3*365; % days
-% TOFb (5), tof sc2 to 2nd asteroid
-sim.soo_lim.TOF4_min = 50; % days
-sim.soo_lim.TOF4_max = 3*365; % days
-% Matrix of permutations 1 (6)
+
+% TOFa (5), tof sc2 to 1st asteroid
+sim.soo_lim.TOFa_min = 100; % days
+sim.soo_lim.TOFa_max = 3*365; % days
+% Buffer time 2 (6)
+sim.soo_lim.bt2_min = 30;
+sim.soo_lim.bt2_max = 180;
+% TOFb (7), tof sc2 to 2nd asteroid
+sim.soo_lim.TOFb_min = 50; % days
+sim.soo_lim.TOFb_max = 3*365; % days
+
+% Matrix of permutations 1 (8)
 % to use round in the code... so we have same probility to be rounded to
 % the first or to the last element in the matrix as in the middle elements!
 sim.soo_lim.permutations_low = 0.5; 
 sim.soo_lim.permutations_up = data.HowMany + 0.4999;
-% Matrix of permutations 2 (7)
+% Matrix of permutations 2 (9)
 % to use round in the code... so we have same probility to be rounded to
 % the first or to the last element in the matrix as in the middle elements!
 sim.soo_lim.permutations2_low = 0.5; 
 sim.soo_lim.permutations2_up = data.HowMany2 + 0.4999;
 
-% x = [MJD0,TOF1,TOF2,TOF3,TOF4,ID_permutation1,ID_permutation2]
+% x = [MJD0,TOF1,buffer_time1,TOF2,TOFa,buffer_time2,TOFb,...
+%      ID_permutation1,ID_permutation2]
 sim.soo_bound.lb = [sim.soo_lim.mjd2000_ed, sim.soo_lim.TOF1_min,...
-      sim.soo_lim.TOF2_min,sim.soo_lim.TOF3_min,sim.soo_lim.TOF4_min,...
+      sim.soo_lim.bt1_min,sim.soo_lim.TOF2_min,sim.soo_lim.TOFa_min,...
+      sim.soo_lim.bt2_min,sim.soo_lim.TOFb_min,...
       sim.soo_lim.permutations_low,sim.soo_lim.permutations2_low]; % Lower bound
 sim.soo_bound.ub = [sim.soo_lim.mjd2000_ld, sim.soo_lim.TOF1_max,...
-      sim.soo_lim.TOF2_max,sim.soo_lim.TOF3_max,sim.soo_lim.TOF4_max,...
+      sim.soo_lim.bt1_max,sim.soo_lim.TOF2_max,sim.soo_lim.TOFa_max,...
+      sim.soo_lim.bt2_max,sim.soo_lim.TOFb_max,...
       sim.soo_lim.permutations_up,sim.soo_lim.permutations2_up]; % Upper bound
 
 % Constraint on C3 Launcher
@@ -153,7 +165,7 @@ end
 options.UseParallel = true;
 
 %% Build the soo
-FitnessFunction = @(x) ff_impulsive_soo_ARCH2sc(x, data, sim); % Function handle to the fitness function
+FitnessFunction = @(x) ff_impulsive_soo_ARCH2sc_RV(x, data, sim); % Function handle to the fitness function
 numberOfVariables = length(sim.soo_bound.ub); % Number of decision variables
 
 %% Run the soo
@@ -166,12 +178,13 @@ el_time_min_pp = toc/60;
 sol.MJD0 = x(1);
 sol.dep_date = mjd20002date(sol.MJD0)';
 % 1st sc stuff
-asteroid_sequence = data.PermutationMatrix(round(x(6)),:);
+asteroid_sequence = data.PermutationMatrix(round(x(8)),:);
 sol.ast_1 = asteroid_sequence(1);
 sol.ast_2 = asteroid_sequence(2);
 sol.TOF1 = x(2);
-sol.TOF2 = x(3);
-sol.TOF_tot_D_sc1 = sol.TOF1+sol.TOF2;
+sol.buffer_time1 = x(3);
+sol.TOF2 = x(4);
+sol.TOF_tot_D_sc1 = sol.TOF1+sol.buffer_time1+sol.TOF2;
 sol.TOF_tot_Y_sc1 = sol.TOF_tot_D_sc1/365;
 sol.end_of_mission_date_sc1 = mjd20002date(sol.MJD0+sol.TOF_tot_D_sc1)';
 % sol.dV_tot = Fval(1);
@@ -182,11 +195,12 @@ data.not_asteroid_sequence = data.asteroid_names(~TF);
 clearvars TF
 % HowMany_for2ndSC = factorial(length(not_asteroid_sequence)) / factorial(length(not_asteroid_sequence) - 2);
 [data.PermutationMatrix_SC2, ~] = permnUnique(data.not_asteroid_sequence, 2);
-sol.ast_a = data.PermutationMatrix_SC2(round(x(7)),1);
-sol.ast_b = data.PermutationMatrix_SC2(round(x(7)),2);
-sol.TOFa = x(4);
-sol.TOFb = x(5);
-sol.TOF_tot_D_sc2 = sol.TOFa+sol.TOFb;
+sol.ast_a = data.PermutationMatrix_SC2(round(x(9)),1);
+sol.ast_b = data.PermutationMatrix_SC2(round(x(9)),2);
+sol.TOFa = x(5);
+sol.buffer_time2 = x(6);
+sol.TOFb = x(7);
+sol.TOF_tot_D_sc2 = sol.TOFa+sol.buffer_time2+sol.TOFb;
 sol.TOF_tot_Y_sc2 = sol.TOF_tot_D_sc2/365;
 sol.end_of_mission_date_sc2 = mjd20002date(sol.MJD0+sol.TOF_tot_D_sc2)';
 
@@ -200,7 +214,7 @@ sol.end_of_mission_date_overall = max(sol.end_of_mission_date_sc1,sol.end_of_mis
 % m_prop = m_dry*(exp(sol.dV_tot*1e3/(g0*Isp)) - 1); %kg
 
 %% Plot trajectories
-sol = plot_mission_4neo_flyby_ARCH2sc(sol,data,sim,colors)
+sol = plot_mission_4neo_RV_ARCH2sc(sol,data,sim,colors)
 
 %% Plot orbit asteroids
 % plot_orbits_asteroids(asteroid_names,colors)
