@@ -102,10 +102,10 @@ function [sol] = plot_mission_4neo_RV_ARCH2sc(sol,data,sim,colors)
     % PLOT FULL ORBITS AND BEST LAMBERT TRANSFER 
     figure('Name','Mission Orbits and Phases')
     % Earth
-    plot_earth_orbit(MJD01,colors,8);
+    plot_earth_orbit(MJD01,3,colors,8);
     hold on
     % Asteroids
-    frac_orbit = 1/4;
+    frac_orbit = 1/6;
     plot_asteorid_orbit(MJDF1,frac_orbit,ast1,colors,2); % ast1
     plot_asteorid_orbit(MJDF2-500,frac_orbit,ast2,colors,3); % ast2
     
@@ -211,8 +211,8 @@ function [sol] = plot_mission_4neo_RV_ARCH2sc(sol,data,sim,colors)
 
     axis equal; grid on
     title(sim.case_name)
-    xlabel('AU')
-    ylabel('AU')
-    zlabel('AU')
+    xlabel('x [AU]')
+    ylabel('y [AU]')
+    zlabel('z [AU]')
     
 end

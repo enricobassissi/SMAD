@@ -96,7 +96,7 @@ function [sol] = plot_mission_4neo_flyby(sol,asteroid_names_sequence,data,sim,co
     plot_asteorid_orbit(MJDP1,Frac_Orbit,ast1,colors,2);
     plot_asteorid_orbit(MJDP2,Frac_Orbit,ast2,colors,3);
     plot_asteorid_orbit(MJDP3,Frac_Orbit,ast3,colors,4);
-    plot_asteorid_orbit(MJDP4,Frac_Orbit,ast4,colors,5);
+    plot_asteorid_orbit(MJDP4+200,Frac_Orbit,ast4,colors,5);
     
     % Mission Arcs
     % First leg: Earth -> Ast 1
@@ -143,7 +143,8 @@ function [sol] = plot_mission_4neo_flyby(sol,asteroid_names_sequence,data,sim,co
     sol.SunSpacecraftDistanceNorm = vecnorm([y12;y34;y56;y78],2,2); % 2,2 means norm 2 and by row
     sol.SpacecraftTrajectory = [y12;y34;y56;y78];
     sol.SCtime = [t12;t34;t56;t78];
-    [sol.angles.SAA,sol.angles.EVA,sol.angles.SCA,sol.angles.SolarConjunction] = aspect_angles(sol);
+    [sol.angles.SAA,sol.angles.EVA,sol.angles.SCA,sol.angles.SolarConjunction,...
+        sol.SC_Earth_Distance] = aspect_angles(sol);
     
     %% Naming
     % Sun Yellow Asterisk
@@ -170,8 +171,8 @@ function [sol] = plot_mission_4neo_flyby(sol,asteroid_names_sequence,data,sim,co
 
     axis equal; grid on
     title(sim.case_name)
-    xlabel('AU')
-    ylabel('AU')
-    zlabel('AU')
+    xlabel('x [AU]')
+    ylabel('y [AU]')
+    zlabel('z [AU]')
     
 end

@@ -59,6 +59,7 @@ function [sol] = plot_mission_4neo_flyby_MARS_GA(sol,asteroid_names_sequence,dat
 
     % Velocity gained with flyby
     sol.dV_gained_flyby = sqrt((VI_GAast1(1)-VF_EAGA(1))^2+(VI_GAast1(2)-VF_EAGA(2))^2+(VI_GAast1(3)-VF_EAGA(3))^2) - sol.delta_V_p;
+    sol.Vrel_passage_ast1 = sqrt((VF_GAast1(1)-v1(1))^2+(VF_GAast1(2)-v1(2))^2+(VF_GAast1(3)-v1(3))^2);
     
     % asteroid 1 -> 2
     [~,~,~,~,VI_ast12,VF_ast12,~,~] = lambertMR(r1,r2,ToF_ast12_sec,ksun,0,0,0,0);
@@ -99,10 +100,10 @@ function [sol] = plot_mission_4neo_flyby_MARS_GA(sol,asteroid_names_sequence,dat
     hold on
     plot_earth_orbit(MJDGA,4,colors,6); % Mars
     % Asteroids
-    Orbit_Fraction = 1/4;
+    Orbit_Fraction = 1/6;
     plot_asteorid_orbit(MJDP1,Orbit_Fraction,ast1,colors,2);
     plot_asteorid_orbit(MJDP2,Orbit_Fraction,ast2,colors,3);
-    plot_asteorid_orbit(MJDP3,Orbit_Fraction,ast3,colors,4);
+    plot_asteorid_orbit(MJDP3+200,Orbit_Fraction,ast3,colors,4);
     plot_asteorid_orbit(MJDP4,Orbit_Fraction,ast4,colors,5);
     
     % Mission Arcs
@@ -164,7 +165,7 @@ function [sol] = plot_mission_4neo_flyby_MARS_GA(sol,asteroid_names_sequence,dat
     hp1 = plot3(rEA(1)./AU,rEA(2)./AU,rEA(3)./AU,'o','Color',colors(8,:),'MarkerSize',6,...
         'DisplayName','Earth Departure');
 %     hp1.Annotation.LegendInformation.IconDisplayStyle = 'off';
-    hp1 = plot3(rGA(1)./AU,rGA(2)./AU,rGA(3)./AU,'^','Color',colors(8,:),'MarkerSize',6,...
+    hp1 = plot3(rGA(1)./AU,rGA(2)./AU,rGA(3)./AU,'^','Color',colors(6,:),'MarkerSize',6,...
         'DisplayName','Mars GA');
 %     hp1.Annotation.LegendInformation.IconDisplayStyle = 'off';
     hp2 = plot3(r1(1)./AU,r1(2)./AU,r1(3)./AU,'^','Color',colors(2,:),'MarkerSize',6,...
@@ -181,7 +182,7 @@ function [sol] = plot_mission_4neo_flyby_MARS_GA(sol,asteroid_names_sequence,dat
 %     hp8.Annotation.LegendInformation.IconDisplayStyle = 'off';
 
     axis equal; grid on
-    title(sim.case_name)
+%     title(sim.case_name)
     xlabel('x [AU]')
     ylabel('y [AU]')
     zlabel('z [AU]')

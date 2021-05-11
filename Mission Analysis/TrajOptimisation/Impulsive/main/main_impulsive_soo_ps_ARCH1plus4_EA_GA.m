@@ -223,6 +223,7 @@ sol.TOF4 = x(6);
 % m_prop = m_dry*(exp(sol.dV_tot*1e3/(g0*Isp)) - 1); %kg
 %% Plot trajectories
 sol = plot_mission_4neo_flyby_GA(sol,asteroid_sequence,data,sim,colors)
+[sol_dates] = sol_to_dates_of_mission(sol,'ga')
 
 % sol = plot_mission_4neo_flyby(sol,asteroid_sequence,data,sim,colors)
 

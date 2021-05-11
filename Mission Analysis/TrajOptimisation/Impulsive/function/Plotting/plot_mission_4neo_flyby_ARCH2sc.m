@@ -92,14 +92,14 @@ function [sol] = plot_mission_4neo_flyby_ARCH2sc(sol,data,sim,colors)
     % PLOT FULL ORBITS AND BEST LAMBERT TRANSFER 
     figure('Name','Mission Orbits and Phases')
     % Earth
-    plot_earth_orbit(MJD01,colors,8);
+    plot_earth_orbit(MJD01,3,colors,8);
     hold on
     % Asteroids
-    years = 5;
-%     plot_asteorid_orbit(MJDP1,years,ast1,colors,2);
-%     plot_asteorid_orbit(MJDP2,years,ast2,colors,3);
-%     plot_asteorid_orbit(MJDPa,years,ast_a,colors,4);
-%     plot_asteorid_orbit(MJDPb,years,ast_b,colors,5);
+    Frac_Orb = 1/6;
+    plot_asteorid_orbit(MJDP1,Frac_Orb,ast1,colors,2);
+    plot_asteorid_orbit(MJDP2+100,Frac_Orb,ast2,colors,3);
+    plot_asteorid_orbit(MJDPa-50,Frac_Orb,ast_a,colors,4);
+    plot_asteorid_orbit(MJDPb+50,Frac_Orb,ast_b,colors,5);
     
     % Mission Arcs
     % SC 1-First leg: Earth -> Ast 1
@@ -167,9 +167,9 @@ function [sol] = plot_mission_4neo_flyby_ARCH2sc(sol,data,sim,colors)
 %     hp8.Annotation.LegendInformation.IconDisplayStyle = 'off';
 
     axis equal; grid on
-    title(sim.case_name)
-    xlabel('AU')
-    ylabel('AU')
-    zlabel('AU')
+%     title(sim.case_name)
+    xlabel('x [AU]')
+    ylabel('y [AU]')
+    zlabel('z [AU]')
     
 end

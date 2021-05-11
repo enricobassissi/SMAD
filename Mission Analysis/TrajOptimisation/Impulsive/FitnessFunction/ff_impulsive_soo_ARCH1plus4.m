@@ -51,7 +51,7 @@ else
     % let the optimizer to not consider this solution because too expansive
     % dv1_EAast1 - sqrt(sim.C3_max); 
     % dv_extra_launch = 20; % very high number, arbitrary
-    c_launcher = 30; % penalty factor for dv_extra_launch
+    c_launcher = 40; % penalty factor for dv_extra_launch
     dv_extra_launch = c_launcher*(dv1_EAast1 - sqrt(sim.C3_max))^2; % penalty like, but not discard a priori
 end
 dv2_EAast1 = sqrt((VF_EAast1(1)-v1(1))^2+(VF_EAast1(2)-v1(2))^2+(VF_EAast1(3)-v1(3))^2);
@@ -87,38 +87,44 @@ dv_passage_ast3 = sqrt((VI_ast34(1)-VF_ast23(1))^2+(VI_ast34(2)-VF_ast23(2))^2+(
 % obj_fun = dv_extra_launch + dv_passage_ast1 + dv_passage_ast2 + dv_passage_ast3 + dv2_ast34; 
 
 % Check of feasibility
-CHECK_TERM = 0;
+CHECK_TERM_TOF=0; CHECK_TERM_A=0; CHECK_TERM_B=0; CHECK_TERM_C=0; CHECK_TERM_D=0;
 tot_TOF = TOF1+TOF2+TOF3+TOF4;
 if tot_TOF > 12*365
-    CHECK_TERM = 100;
+    CHECK_TERM_TOF = 100;
 end
 if dv2_EAast1 > 7
-    CHECK_TERM = 40;
+    CHECK_TERM_A = 0.8*dv2_EAast1^2;
 end
 if dv2_ast12 > 7
-    CHECK_TERM = 40;
+    CHECK_TERM_B = 0.8*dv2_ast12^2;
 end
 if dv2_ast23 > 7
-    CHECK_TERM = 40;
+    CHECK_TERM_C = 0.8*dv2_ast23^2;
 end
 if dv2_ast34 > 7
-    CHECK_TERM = 40;
+    CHECK_TERM_D = 0.8*dv2_ast34^2;
 end
-    
+CHECK_TERM = CHECK_TERM_TOF+CHECK_TERM_A+CHECK_TERM_B+CHECK_TERM_C+CHECK_TERM_D;
+
 % Penalty Factor
 % c_dVpass_1 = 1.2; c_dVpass_2 = 1; c_dVpass_3 = 0.8;
-c_dVpass_1 = 10; c_dVpass_2 = 8; c_dVpass_3 = 6;
-c_dVrel_1 = 0.1; c_dVrel_2 = 0.08; c_dVrel_3 = 0.06; c_dVrel_4 = 0.04;
+c_dVpass_1 = 20; c_dVpass_2 = 18; c_dVpass_3 = 16;
+c_dVrel = 0.1; c_dVrel_2 = 0.08; c_dVrel_3 = 0.06; c_dVrel_4 = 0.04;
 % penalty factor on the rel vel?
 % obj_fun = dv_extra_launch + c_dVpass_1*dv_passage_ast1 + ...
 %     c_dVpass_2*dv_passage_ast2 + c_dVpass_3*dv_passage_ast3 + ...
 %     c_dVrel_1*dv2_EAast1 + c_dVrel_2*dv2_ast12 + c_dVrel_3*dv2_ast23 + ...
 %     c_dVrel_4*dv2_ast34; 
 avg_dVrel = mean([dv2_EAast1, dv2_ast12, dv2_ast23, dv2_ast34]);
-obj_fun = dv_extra_launch + c_dVpass_1*dv_passage_ast1 + ...
-    c_dVpass_2*dv_passage_ast2 + c_dVpass_3*dv_passage_ast3 + ...
-    c_dVrel_1*(dv2_EAast1-avg_dVrel)^2 + c_dVrel_2*(dv2_ast12-avg_dVrel)^2 +...
-    c_dVrel_3*(dv2_ast23-avg_dVrel)^2 + c_dVrel_4*(dv2_ast34-avg_dVrel)^2 + CHECK_TERM; 
+% obj_fun = dv_extra_launch + c_dVpass_1*dv_passage_ast1 + ...
+%     c_dVpass_2*dv_passage_ast2 + c_dVpass_3*dv_passage_ast3 + ...
+%     c_dVrel_1*(dv2_EAast1-avg_dVrel)^2 + c_dVrel_2*(dv2_ast12-avg_dVrel)^2 +...
+%     c_dVrel_3*(dv2_ast23-avg_dVrel)^2 + c_dVrel_4*(dv2_ast34-avg_dVrel)^2 + CHECK_TERM; 
+
+obj_fun = dv_extra_launch + 15*(dv_passage_ast1 + ...
+    dv_passage_ast2 + dv_passage_ast3) + ...
+    c_dVrel*(dv2_EAast1-avg_dVrel)^2 + c_dVrel*(dv2_ast12-avg_dVrel)^2 +...
+    c_dVrel*(dv2_ast23-avg_dVrel)^2 + c_dVrel*(dv2_ast34-avg_dVrel)^2 + CHECK_TERM; 
 
 end
 

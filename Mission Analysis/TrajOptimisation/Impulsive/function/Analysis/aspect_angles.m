@@ -1,4 +1,4 @@
-function [SAA,EVA,SCA,SolarConjunction] = aspect_angles(sol)
+function [SAA,EVA,SCA,SolarConjunction,y_sc_EA] = aspect_angles(sol)
 
     % SAA: Sun Aspect Angle
     % EVA: Earth Visibility Angle
@@ -35,6 +35,7 @@ function [SAA,EVA,SCA,SolarConjunction] = aspect_angles(sol)
         [kep_EA,ksun] = uplanet(mjd2000, 3);
         [rEA, ~] = sv_from_coe(kep_EA,ksun); % km, km/s
         DistSpacecraftEarth = position_wrt_sun(i,:) - rEA';
+        y_sc_EA(i,:) = DistSpacecraftEarth;
         SC_EA_vers = DistSpacecraftEarth./norm(DistSpacecraftEarth);
 %         rEA_norm = rEA./norm(rEA);
         % MAYBE
@@ -43,7 +44,7 @@ function [SAA,EVA,SCA,SolarConjunction] = aspect_angles(sol)
         % Earth Covered by the sun
         % Solar Conjunction
         % Sun disturbance radius considered 10 times its radius
-        SunRadius = astroConstants(3)*10; %km
+        SunRadius = astroConstants(3)*3; %km
 %         DistSpacecraftEarth = position_wrt_sun(i,:) - rEA';
         % tol is the angle given by the Sun disk at a given distance
         tol = atan2(norm(cross(position_wrt_sun(i,:),(position_wrt_sun(i,:)-SunRadius))),...

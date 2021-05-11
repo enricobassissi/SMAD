@@ -201,6 +201,7 @@ sol.end_of_mission_date_overall = max(sol.end_of_mission_date_sc1,sol.end_of_mis
 
 %% Plot trajectories
 sol = plot_mission_4neo_flyby_ARCH2sc(sol,data,sim,colors)
+[sol_dates] = sol_to_dates_of_mission(sol,'2SC_FB')
 
 %% Plot orbit asteroids
 % plot_orbits_asteroids(asteroid_names,colors)
