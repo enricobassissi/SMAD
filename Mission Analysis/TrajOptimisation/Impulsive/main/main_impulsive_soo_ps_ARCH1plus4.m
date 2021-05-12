@@ -72,26 +72,34 @@ sim.dry_mass_lander=4;%kg
 AU = astroConstants(2);
 muSun = astroConstants(4);
 
-% data extraction section
-data.asteroid_names = ["2006HX57";"2008XU2";"2008KN11";"2012SY49";"2012QD8";"2020UE";...
-                  "2006SC";"2005WG57";"2012BY1"];
+% % data extraction section
+% % data.asteroid_names = ["2006HX57";"2008XU2";"2008KN11";"2012SY49";"2012QD8";"2020UE";...
+% %                   "2006SC";"2005WG57";"2012BY1"];
+% 
+% % Number of possible combination of 4 asteroids among the ones in the list
+% data.HowMany = factorial(length(data.asteroid_names)) / factorial(length(data.asteroid_names) - 4);
+% [data.PermutationMatrix, ~] = permnUnique(data.asteroid_names, 4);
+% 
+% % data.PermutationMatrix = PermutationMatrix;
+% data.asteroid_names = asteroid_names;
+% % data.HowMany = length(data.PermutationMatrix);
 
-% Number of possible combination of 4 asteroids among the ones in the list
-data.HowMany = factorial(length(data.asteroid_names)) / factorial(length(data.asteroid_names) - 4);
-[data.PermutationMatrix, ~] = permnUnique(data.asteroid_names, 4);
+load('data_elements_matrix.mat')
+[data.asteroid_names, data.PermutationMatrix, data.HowMany] = ...
+            sequences_local_pruning(data_elements_matrix);
 
 %% uNEO
 % try 
-    load('data.mat')
+%     load('data.mat')
 % catch
     % if the asteroid have changed, run the find_eph_neo below, it takes about 1 min
-%     [data.y_interp_ft, data.t_vector] = find_eph_neo(data.asteroid_names);
+    [data.y_interp_ft, data.t_vector] = find_eph_neo(data.asteroid_names);
 %     save('data.mat', data);
 % end
 
 %% Boundaries
 % Departure dates (1)
-sim.soo_lim.date_ed = [2022, 1, 1, 0, 0, 0];
+sim.soo_lim.date_ed = [2024, 1, 1, 0, 0, 0];
 sim.soo_lim.date_ld =  [2028, 1, 1, 0, 0, 0];
 sim.soo_lim.mjd2000_ed = date2mjd2000(sim.soo_lim.date_ed);
 sim.soo_lim.mjd2000_ld = date2mjd2000(sim.soo_lim.date_ld);
@@ -112,6 +120,8 @@ sim.soo_lim.TOF4_max = 3*365; % days
 % the first or to the last element in the matrix as in the middle elements!
 sim.soo_lim.permutations_low = 0.5; 
 sim.soo_lim.permutations_up = data.HowMany + 0.4999;
+% sim.soo_lim.permutations_low = 1; 
+% sim.soo_lim.permutations_up = data.HowMany;
 
 % x = [MJD0,TOF1,TOF2,TOF3,TOF4,ID_permutation]
 sim.soo_bound.lb = [sim.soo_lim.mjd2000_ed,  sim.soo_lim.TOF1_min,...
@@ -138,7 +148,7 @@ FitnessFunction = @(x) ff_impulsive_soo_ARCH1plus4(x, data, sim); % Function han
 % FitnessFunction = @(x) ff_impulsive_soo_ARCH1plus4_mass(x, data, sim); % Function handle to the fitness function
 numberOfVariables = length(sim.soo_bound.ub); % Number of decision variables
 
-%% Constraints
+% %% Constraints
 % sim.soo_constr.A = []; % linear inequality constraints
 % sim.soo_constr.b = []; % linear inequality constraints
 % sim.soo_constr.Aeq = []; % linear equality constraints
@@ -147,7 +157,7 @@ numberOfVariables = length(sim.soo_bound.ub); % Number of decision variables
 % 
 % % if you want to restrict x(2) and x(10) to be integers, set IntCon to [2,10].
 % % ga(fitnessfcn,nvars,A,b,Aeq,beq,lb,ub,nonlcon,IntCon,options)
-% sim.soo_constr.IntCon = [7];
+% sim.soo_constr.IntCon = [6];
 
 % %% Options ga
 % options = optimoptions(@ga);
@@ -156,8 +166,15 @@ numberOfVariables = length(sim.soo_bound.ub); % Number of decision variables
 % % A hybrid function is another minimization function that runs after the 
 % % multiobjective genetic algorithm terminates
 % % options.HybridFcn = @fmincon;
-% 
-% options.PopulationSize = 1000; 
+
+% %% Run Optimisation ga
+% tic
+% [x,Fval,exitFlag,Output] = ga(FitnessFunction,numberOfVariables,sim.soo_constr.A, ...
+%     sim.soo_constr.b,sim.soo_constr.Aeq,sim.soo_constr.beq,sim.soo_bound.lb,sim.soo_bound.ub,...
+%     sim.soo_constr.nonlcon,sim.soo_constr.IntCon,options);
+% el_time_min_pp = toc/60;
+
+% options.PopulationSize = 1500; 
 % options.MaxGenerations = 200; 
 % options.FunctionTolerance = 1e-6;
 % options.MaxStallGenerations = 50;
@@ -165,25 +182,21 @@ numberOfVariables = length(sim.soo_bound.ub); % Number of decision variables
 %% Options ps
 options = optimoptions('particleswarm');
 options.HybridFcn = @fmincon;
-options.SwarmSize = 1000; % Default is min(100,10*nvars),
+options.SwarmSize = 600; % Default is min(100,10*nvars),
 options.MaxIterations = 300; %  Default is 200*nvars
 options.MaxStallIterations = 50; % Default 20
 options.Display = 'iter';
 options.FunctionTolerance = 1e-6;
 options.UseParallel = true;
 
-%% Run Optimisation ga
-% tic
-% [x,Fval,exitFlag,Output] = ga(FitnessFunction,numberOfVariables,sim.soo_constr.A, ...
-%     sim.soo_constr.b,sim.soo_constr.Aeq,sim.soo_constr.beq,sim.soo_bound.lb,sim.soo_bound.ub,...
-%     sim.soo_constr.nonlcon,sim.soo_constr.IntCon,options);
-% el_time_min_pp = toc/60;
-
 %% Run Optimisation ps
-
+Fval = 200;
+while Fval > 110
+tic
 [x,Fval,exitFlag,Output] = particleswarm(FitnessFunction,numberOfVariables...
     ,sim.soo_bound.lb,sim.soo_bound.ub,options);
 el_time_min_pp = toc/60;
+end
 
 %% Build solution structure
 % set the knee as main solution

@@ -523,7 +523,7 @@ def refined_selection(dict_risk_list):
             if (dict_risk_list[key]["magn_radius_flag"]=='H' and float(dict_risk_list[key]["H"])<=26) or (dict_risk_list[key]["magn_radius_flag"]=='D' and float(dict_risk_list[key]["D"])>=200):
                 MOID_H_selected.append(key)
 
-    # At least one impact 2026<year<2048 with a Palermo Scale>=-7
+    # At least one impact 2026<year<2048 with a Palermo Scale>=-7 (-12 now)
     date_selected=[]
     PS_date_selected=[]
     for key in dict_risk_list.keys():
@@ -544,7 +544,7 @@ def refined_selection(dict_risk_list):
                         max_P=float(dict_risk_list[key]['impacts'][imp_id]['ps']);
             if date_flag==1:
                 date_selected.append(key)
-                if max_P>=-7:
+                if max_P>=-12: # - 7 up to PM1, -12 (meaning kinda all) after PM2 to check more asteroids
                     PS_date_selected.append(key)
             dict_risk_list[key]["PS"]=max_P
 
