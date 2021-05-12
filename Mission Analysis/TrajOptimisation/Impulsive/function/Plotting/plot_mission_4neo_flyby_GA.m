@@ -54,10 +54,12 @@ function [sol] = plot_mission_4neo_flyby_GA(sol,asteroid_names_sequence,data,sim
     
     % astroConstants(23) = Radius_Earth, km
     % astroConstants(13) = muEarth, km^3/s^2
-    sol.delta_V_p = flyby(astroConstants(23), astroConstants(13), MJDGA, VF_EAGA, VI_GAast1);
+    R_lim_from_planet = 440; %km, ok for earth to avoid atmosphere
+    sol.delta_V_p = flyby(astroConstants(23), astroConstants(13),R_lim_from_planet, MJDGA, VF_EAGA, VI_GAast1);
 
     % Velocity gained with flyby
     sol.dV_gained_flyby = sqrt((VI_GAast1(1)-VF_EAGA(1))^2+(VI_GAast1(2)-VF_EAGA(2))^2+(VI_GAast1(3)-VF_EAGA(3))^2) - sol.delta_V_p;
+    sol.Vrel_passage_ast1 = sqrt((VF_GAast1(1)-v1(1))^2+(VF_GAast1(2)-v1(2))^2+(VF_GAast1(3)-v1(3))^2);
     
     % asteroid 1 -> 2
     [~,~,~,~,VI_ast12,VF_ast12,~,~] = lambertMR(r1,r2,ToF_ast12_sec,ksun,0,0,0,0);
@@ -94,14 +96,14 @@ function [sol] = plot_mission_4neo_flyby_GA(sol,asteroid_names_sequence,data,sim
     % PLOT FULL ORBITS AND BEST LAMBERT TRANSFER 
     figure('Name','Mission Orbits and Phases')
     % Earth
-    plot_earth_orbit(MJD01,colors,8);
+    plot_earth_orbit(MJD01,3,colors,8);
     hold on
     % Asteroids
-    years = 5;
-%     plot_asteorid_orbit(MJDP1,years,ast1,colors,2);
-%     plot_asteorid_orbit(MJDP2,years,ast2,colors,3);
-%     plot_asteorid_orbit(MJDP3,years,ast3,colors,4);
-%     plot_asteorid_orbit(MJDP4,years,ast4,colors,5);
+    Frac_Orb = 1/6;
+    plot_asteorid_orbit(MJDP1-100,Frac_Orb,ast1,colors,2);
+    plot_asteorid_orbit(MJDP2,Frac_Orb,ast2,colors,3);
+    plot_asteorid_orbit(MJDP3,Frac_Orb,ast3,colors,4);
+    plot_asteorid_orbit(MJDP4-200,Frac_Orb,ast4,colors,5);
     
     % Mission Arcs
     % Converting mJD2000 passage time in seconds
@@ -179,7 +181,7 @@ function [sol] = plot_mission_4neo_flyby_GA(sol,asteroid_names_sequence,data,sim
 %     hp8.Annotation.LegendInformation.IconDisplayStyle = 'off';
 
     axis equal; grid on
-    title(sim.case_name)
+%     title(sim.case_name)
     xlabel('x [AU]')
     ylabel('y [AU]')
     zlabel('z [AU]')

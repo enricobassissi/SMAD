@@ -31,14 +31,22 @@ colors = [0    50   71;... % (1) DEEP SPACE
           51   94   111;... % (11) DEEP SPACE -1
           0    174  157;... % (12) PURE TEAL
           0    0    0]./255; % (13) BLACK
-
-sim.case_name = 'ARCH ID 2: IMPULSIVE FLYBY ON EVERY ASTEROID';
-
-% %% INTRO ADIMENSIONALISATION
-% sim.mu = 1.32712440017987e11; % Sun planetary constant (mu = mass * G) (from DE405) [km^3/s^2]
-% sim.DU = 149597870.691; % Distance Unit = Astronomical Unit (AU) (from DE405) [km]
-% sim.TU = (sim.DU^3/sim.mu)^0.5; % Time Unit
-% sim.mu = 1;
+ 
+map = [150  1    54;...    % (1) EXCITE RED +2
+       207  29   57;...    % (2) EXCITE RED +1
+       244  121  32;...    % (4) ENLIGHT YELLOW +1
+       251  171  24;...    % (5) ENLIGHT YELLOW
+       0    174  157;...   % (6) PURE TEAL
+       0    142  122;...   % (7) PURE TEAL +1
+       0    103  98]./255; % (8) PURE TEAL +2
+   
+map_inverted = [0    103  98        % (1) PURE TEAL +2
+                0    142  122;...   % (2) PURE TEAL +1
+                0    174  157;...   % (3) PURE TEAL
+                251  171  24;...    % (4) ENLIGHT YELLOW
+                244  121  32;...    % (5) ENLIGHT YELLOW +1
+                207  29   57;...    % (6) EXCITE RED +1
+                150  1    54]./255; % (7) EXCITE RED +2
 
 %% add path of functions and python stuff
 str_path=split(pwd, 'TrajOptimisation\Impulsive\main');
@@ -61,126 +69,15 @@ catch
     module = py.importlib.import_module('neo_api_function');
 end
 
-%% Asteroids
-AU = astroConstants(2);
-muSun = astroConstants(4);
-
-% data extraction section
-data.asteroid_names = ["2006HX57";"2008XU2";"2008KN11";"2012SY49";"2012QD8";"2020UE";...
-                       "2006SC";"2005WG57";"2012BY1"];
-
-% Number of possible combination of 4 asteroids among the ones in the list
-data.HowMany = factorial(length(data.asteroid_names)) / factorial(length(data.asteroid_names) - 4);
-[data.PermutationMatrix, ~] = permnUnique(data.asteroid_names, 4);
-
-%% uNEO
-try
-    load('data.mat')
-catch
-    %     if the asteroid have changed, run the find_eph_neo below, it takes about 1 min
-    [data.y_interp_ft, data.t_vector] = find_eph_neo(data.asteroid_names);
-end
-
-%% delete the python file from this directory
-delete('neo_api_function.py');
-
-%% Boundaries
-% Departure dates (1)
-sim.soo_lim.date_ed = [2022, 1, 1, 0, 0, 0];
-sim.soo_lim.date_ld =  [2028, 1, 1, 0, 0, 0];
-sim.soo_lim.mjd2000_ed = date2mjd2000(sim.soo_lim.date_ed);
-sim.soo_lim.mjd2000_ld = date2mjd2000(sim.soo_lim.date_ld);
-% TOF1 (2)
-sim.soo_lim.TOF1_min = 100; % days
-sim.soo_lim.TOF1_max = 3*365; % days
-% TOF2 (3)
-sim.soo_lim.TOF2_min = 50; % days
-sim.soo_lim.TOF2_max = 3*365; % days
-% TOF3 (4)
-sim.soo_lim.TOF3_min = 50; % days
-sim.soo_lim.TOF3_max = 3*365; % days
-% TOF4 (5)
-sim.soo_lim.TOF4_min = 50; % days
-sim.soo_lim.TOF4_max = 3*365; % days
-% Matrix of permutations (6)
-% to use round in the code... so we have same probility to be rounded to
-% the first or to the last element in the matrix as in the middle elements!
-sim.soo_lim.permutations_low = 0.5; 
-sim.soo_lim.permutations_up = data.HowMany + 0.4999;
-
-% x = [MJD0,TOF1,TOF2,TOF3,TOF4,ID_permutation]
-sim.soo_bound.lb = [sim.soo_lim.mjd2000_ed, sim.soo_lim.TOF1_min,...
-      sim.soo_lim.TOF2_min,sim.soo_lim.TOF3_min,...
-      sim.soo_lim.TOF4_min,sim.soo_lim.permutations_low]; % Lower bound
-sim.soo_bound.ub = [sim.soo_lim.mjd2000_ld, sim.soo_lim.TOF1_max,...
-      sim.soo_lim.TOF2_max,sim.soo_lim.TOF3_max,...
-      sim.soo_lim.TOF4_max,sim.soo_lim.permutations_up]; % Upper bound
-
-% Constraint on C3 Launcher
-sim.C3_max = 40; % km^2/s^2
-
-%% Options
-options = optimoptions('particleswarm');
-options.HybridFcn = @fmincon;
-options.SwarmSize = 1000; % Default is min(100,10*nvars),
-options.MaxIterations = 500; %  Default is 200*nvars
-options.MaxStallIterations = 70; % Default 20
-options.Display = 'iter';
-options.FunctionTolerance = 1e-6;
-
-% Parallel pool
-% Open the parallel pool
-par_pool = gcp; 
-if isempty(par_pool)
-    poolsize = 0;
-else
-    poolsize = par_pool.NumWorkers;
-end
-
-options.UseParallel = true;
-
-%% Build the soo
-FitnessFunction = @(x) ff_impulsive_soo_ARCH1plus4(x, data, sim); % Function handle to the fitness function
-numberOfVariables = length(sim.soo_bound.ub); % Number of decision variables
-
-tic
-[x,Fval,exitFlag,Output] = particleswarm(FitnessFunction,numberOfVariables...
-    ,sim.soo_bound.lb,sim.soo_bound.ub,options);
-el_time_min_pp = toc/60;
-
-%% Build solution structure
-% set the knee as main solution
-asteroid_sequence = data.PermutationMatrix(round(x(6)),:);
-sol.ast_1 = asteroid_sequence(1);
-sol.ast_2 = asteroid_sequence(2);
-sol.ast_3 = asteroid_sequence(3);
-sol.ast_4 = asteroid_sequence(4);
-sol.MJD0 = x(1);
-sol.dep_date = mjd20002date(sol.MJD0)';
-sol.TOF_tot_D = x(2)+x(3)+x(4)+x(5);
-sol.TOF_tot_Y = sol.TOF_tot_D/365;
-sol.end_of_mission_date = mjd20002date(sol.MJD0+sol.TOF_tot_D)';
-sol.dV_tot = Fval(1);
-sol.TOF1 = x(2);
-sol.TOF2 = x(3);
-sol.TOF3 = x(4);
-sol.TOF4 = x(5);
-
-%% Mass Consumption for High Thrust Impulsive Case
-g0 = 9.81; %m/s^2
-% https://www.space-propulsion.com/spacecraft-propulsion/hydrazine-thrusters/20n-hydrazine-thruster.html
-Isp = 230; %s 
-m_dry = 100; %kg
-m_prop = m_dry*(exp(sol.dV_tot*1e3/(g0*Isp)) - 1); %kg
-%% Plot trajectories
-sol = plot_mission_4neo_flyby(sol,asteroid_sequence,data,sim,colors);
-return
 %% ------------------------------------------------ %%
 %% ----------- FLEXIBILITY ANALYSIS 1--------------- %%
 %% ------------ OVER LAUNCH DATE ------------------ %%
 %% -------- AND COMBINATION OF THE SEQUENCE ------- %%
 %% ------------ BUT SAME ASTEROIDS ---------------- %%
 %% ------------------------------------------------ %%
+% load previous optimisation decided
+load('soo_ps_flyby_3-33_1dayeachpointTraj.mat')
+
 %% Description
 % We have a solution optimised. Now we say, if the launch date is delayed,
 % what happens to the mission? Which is the impact on the cost (dV and TOF)
@@ -205,7 +102,7 @@ delay_time = 2*365; %730
 % that now it becomes a fixed variable and not anymore a degree of freedom
 % if i have problem for the launch, if i posticipate the launch is it a
 % problem? meaning how does the costs (dV, TOF) changes?
-N_div_points = 2; % how many points do you want? fine or coarse grid %5
+N_div_points = 10; % how many points do you want? fine or coarse grid %5
 lw_vector = linspace(sol.MJD0,sol.MJD0+delay_time,delay_time/N_div_points);
 
 %% Permutations among the 4 asteroid fixed
@@ -240,7 +137,7 @@ sim.soo_bound.ub = [sim.soo_lim.TOF1_max,sim.soo_lim.TOF2_max,...
     sim.soo_lim.TOF3_max,sim.soo_lim.TOF4_max,sim.soo_lim.permutations_up]; % Upper bound
 
 % Constraint on C3 Launcher
-sim.C3_max = 40; % km^2/s^2
+sim.C3_max = 30; % km^2/s^2
 
 %% PS Options
 options = optimoptions('particleswarm');
@@ -306,21 +203,49 @@ for i=1:length(lw_vector)
 end
 clearvars i
 
+%% double axis
 figure('Name','Flexibility over Departure Time and Asteroids Sequence Order')
 yyaxis left
 plot(lw_vector',dV_flex,'*')
 ylabel('$\Delta V$ [km/s]')
 hold on
 yyaxis right
-plot(lw_vector',TOF_flex)
+plot(lw_vector',TOF_flex,'o')
 ylabel('TOF [d]')
 xlabel('Departure MJD2000')
 % plot(sol.MJD0,sol.dV_tot,'o')
+
+%% scatter
+figure('Name','Flexibility over Departure Time and Asteroids Sequence Order')
+scatter(lw_vector',dV_flex,100,TOF_flex./365,'filled')
+c = colorbar;
+colormap(map_inverted);shading interp;
+c.Label.String = 'Mission Duration [y]';
+ylabel('$\Delta V$ [km/s]'); xlabel('Departure MJD2000');
+
+%% interpolated
+figure('Name','Flexibility over Departure Time and Asteroids Sequence Order')
+yyaxis left
+tt = linspace(lw_vector(1),lw_vector(end),length(lw_vector)*10);
+vv = interp1(lw_vector',dV_flex,tt,'spline');
+plot(lw_vector',dV_flex,'*')
+hold on
+plot(tt,vv,'-')
+ylabel('$\Delta V$ [km/s]');
+yyaxis right
+TT = interp1(lw_vector',TOF_flex,tt,'spline');
+plot(lw_vector',TOF_flex./365,'*');
+plot(tt,TT./365,'-')
+ylabel('TOF [y]')
+xlabel('Departure MJD2000');
 
 %% ------------------------------------------------ %%
 %% ----------- FLEXIBILITY ANALYSIS 2--------------- %%
 %% ---------- Let's change one asteroid ----------- %%
 %% ------------------------------------------------ %%
+% load previous optimisation decided
+load('soo_ps_flyby_3-33_1dayeachpointTraj.mat')
+
 %% Description
 % We optimised the solution for a given set of asteroids. But then after
 % some observations of them we understand that one is not suitable for the
@@ -385,7 +310,7 @@ sim.soo_bound.ub = [sim.soo_lim.mjd2000_ld, sim.soo_lim.TOF1_max,...
       sim.soo_lim.TOF2_max,sim.soo_lim.TOF3_max,...
       sim.soo_lim.TOF4_max,sim.soo_lim.permutations_up]; % Upper bound
 % Constraint on C3 Launcher
-sim.C3_max = 40; % km^2/s^2
+sim.C3_max = 30; % km^2/s^2
 
 %% PS Options
 options = optimoptions('particleswarm');
@@ -446,23 +371,28 @@ end
 clearvars i j idx
 
 %% plot the result
+dV_flex_order = zeros(data.NumberOfOtherAsteroids,length(asteroid_sequence));
+TOF_flex_order = zeros(data.NumberOfOtherAsteroids,length(asteroid_sequence));
+dep_date_flex_order = zeros(data.NumberOfOtherAsteroids,length(asteroid_sequence));
 for i=1:data.NumberOfOtherAsteroids % rows
     for j=1:length(asteroid_sequence) % columns
         dV_flex_order(i,j) = flex_order{i,j}.dV_tot;
         TOF_flex_order(i,j) = flex_order{i,j}.TOF_tot_D;
+        dep_date_flex_order(i,j) = flex_order{i,j}.MJD0;
     end
 end
 clearvars i j
 
+dim_pallino = 70;
 figure('Name','Changing and optimising the asteroid sequence order')
-scatter(dV_flex_order(:,1),TOF_flex_order(:,1),[],colors(1,:),'filled',...
-    'DisplayName','Ast 1 Variations and Reordering'); % all changes on first ast
+scatter(dV_flex_order(:,1),TOF_flex_order(:,1)./365,dim_pallino,colors(1,:),'filled',...
+    'DisplayName','Ast 1 Var \& Reorder'); % all changes on first ast
 hold on
-scatter(dV_flex_order(:,2),TOF_flex_order(:,2),[],colors(2,:),'filled',...
-    'DisplayName','Ast 2 Variations and Reordering'); % all changes on 2nd ast
-scatter(dV_flex_order(:,3),TOF_flex_order(:,3),[],colors(4,:),'filled',...
-    'DisplayName','Ast 3 Variations and Reordering'); % all changes on 3rd ast
-scatter(dV_flex_order(:,4),TOF_flex_order(:,4),[],colors(12,:),'filled',...
-    'DisplayName','Ast 4 Variations and Reordering'); % all changes on 4th ast
-xlabel('$\Delta V$ [km/s]'); ylabel('TOF [d]'); 
-legend('show','Location','northoutside','NumColumns',2)
+scatter(dV_flex_order(:,2),TOF_flex_order(:,2)./365,dim_pallino,colors(2,:),'filled',...
+    'DisplayName','Ast 2 Var \& Reorder'); % all changes on 2nd ast
+scatter(dV_flex_order(:,3),TOF_flex_order(:,3)./365,dim_pallino,colors(4,:),'filled',...
+    'DisplayName','Ast 3 Var \& Reorder'); % all changes on 3rd ast
+scatter(dV_flex_order(:,4),TOF_flex_order(:,4)./365,dim_pallino,colors(3,:),'filled',...
+    'DisplayName','Ast 4 Var \& Reorder'); % all changes on 4th ast
+xlabel('$\Delta V$ [km/s]'); ylabel('TOF [y]'); 
+legend('show','Location','eastoutside','NumColumns',1)

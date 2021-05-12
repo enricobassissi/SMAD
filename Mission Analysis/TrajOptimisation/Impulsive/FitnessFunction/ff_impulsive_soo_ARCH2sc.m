@@ -71,7 +71,8 @@ else
     % actually you would pay the difference, so we put a very big number to
     % let the optimizer to not consider this solution because too expansive
     % dv1_EAast1 - sqrt(sim.C3_max); 
-    dv_extra_launch1st = 30; % very high number, arbitrary
+%     dv_extra_launch1st = 30; % very high number, arbitrary
+    dv_extra_launch1st = 10*(dv1_EAast1 - sqrt(sim.C3_max))^2;
 end
 dv2_EAast1 = sqrt((VF_EAast1(1)-v1(1))^2+(VF_EAast1(2)-v1(2))^2+(VF_EAast1(3)-v1(3))^2);
 
@@ -93,7 +94,8 @@ else
     % actually you would pay the difference, so we put a very big number to
     % let the optimizer to not consider this solution because too expansive
     % dv1_EAast1 - sqrt(sim.C3_max); 
-    dv_extra_launch2nd = 30; % very high number, arbitrary
+%     dv_extra_launch2nd = 30; % very high number, arbitrary
+    dv_extra_launch2nd = 10*(dv1_EAasta - sqrt(sim.C3_max))^2;
 end
 dv2_EAasta = sqrt((VF_EAasta(1)-va(1))^2+(VF_EAasta(2)-va(2))^2+(VF_EAasta(3)-va(3))^2);
 
@@ -106,12 +108,43 @@ dv2_astab = sqrt((VF_astab(1)-vb(1))^2+(VF_astab(2)-vb(2))^2+(VF_astab(3)-vb(3))
 dv_passage_asta = sqrt((VI_astab(1)-VF_EAasta(1))^2+(VI_astab(2)-VF_EAasta(2))^2+(VI_astab(3)-VF_EAasta(3))^2);
 
 % if the last dv is a flyby it can go wherever it wants after the last encounter, both the sc
-obj_fun = dv_extra_launch1st + dv_extra_launch2nd + dv_passage_ast1 + dv_passage_asta; 
+% obj_fun = dv_extra_launch1st + dv_extra_launch2nd + dv_passage_ast1 + dv_passage_asta; 
 
 % else if the last dv is a rendezvous with the last object
 % obj_fun = all previous + 2 dv of rendezvous of the 2 sc
 
-% obj_fun = TOF1+TOF2+TOF3+TOF4;
+% Check of feasibility
+CHECK_TERM = 0; CHECK_TERM_TOF = 0;
+CHECK_TERM_A = 0; CHECK_TERM_B = 0;
+CHECK_TERM_C = 0; CHECK_TERM_D = 0;
+tot_TOF = TOF1+TOF2+TOFa+TOFb;
+if tot_TOF > 12*365
+    CHECK_TERM_TOF = 100;
+end
+if dv2_EAast1 > 7
+    CHECK_TERM_A = (dv2_EAast1)^2;
+end
+if dv2_ast12 > 7
+    CHECK_TERM_B = (dv2_ast12)^2;
+end
+if dv2_EAasta > 7
+    CHECK_TERM_C = (dv2_EAasta)^2;
+end
+if dv2_astab > 7
+    CHECK_TERM_D = (dv2_astab)^2;
+end
+CHECK_TERM = max([CHECK_TERM_A,CHECK_TERM_B,CHECK_TERM_C,CHECK_TERM_D]);
+
+% take into account also the rel velocity at the asteroids
+c = 0.01; % penalty function
+% weight less the vrel
+avg_dVrel_passage = mean([dv2_EAast1+dv2_ast12+dv2_EAasta+dv2_astab]);
+% obj_fun = dv_extra_launch1st + dv_extra_launch2nd + dv_passage_ast1 + dv_passage_asta +...
+%     c*((dv2_EAast1-avg_dVrel_passage)^2 + (dv2_ast12-avg_dVrel_passage)^2 +...
+%     (dv2_EAasta-avg_dVrel_passage)^2 + (dv2_astab-avg_dVrel_passage)^2) + CHECK_TERM;
+
+obj_fun = dv_extra_launch1st + dv_extra_launch2nd + dv_passage_ast1 + dv_passage_asta +...
+    CHECK_TERM_TOF + CHECK_TERM; 
 
 end
 

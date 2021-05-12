@@ -1,6 +1,6 @@
 %% --------------------------------------------------------------------- %%
 %% -------------------- EA Ast1 Ast2 Ast3 Ast4 Transfer ---------------- %%
-%% --------------------------- ARCH 1+4, FLYBY, GA --------------------- %%
+%% ---------------------- ARCH 1+4, FLYBY, MARS GA --------------------- %%
 %% --------------------------------------------------------------------- %%
 %% Setup for default options
 set(0, 'DefaultTextFontSize', 20)
@@ -96,7 +96,7 @@ sim.soo_lim.date_ld =  [2028, 1, 1, 0, 0, 0];
 sim.soo_lim.mjd2000_ed = date2mjd2000(sim.soo_lim.date_ed);
 sim.soo_lim.mjd2000_ld = date2mjd2000(sim.soo_lim.date_ld);
 % TOF0 (2)
-sim.soo_lim.TOF0_min = 400; % days more than 1 year, if not it stays on earth orbit
+sim.soo_lim.TOF0_min = 60; % days more than 1 year, if not it stays on earth orbit
 sim.soo_lim.TOF0_max = 3*365; % days
 % TOF1 (3)
 sim.soo_lim.TOF1_min = 100; % days
@@ -139,7 +139,7 @@ else
 end
 
 %% Build the soo
-FitnessFunction = @(x) ff_impulsive_soo_ARCH1plus4_GA(x, data, sim); % Function handle to the fitness function
+FitnessFunction = @(x) ff_impulsive_soo_ARCH1plus4_MARS_GA(x, data, sim); % Function handle to the fitness function
 % FitnessFunction = @(x) ff_impulsive_soo_ARCH1plus4_mass(x, data, sim); % Function handle to the fitness function
 numberOfVariables = length(sim.soo_bound.ub); % Number of decision variables
 
@@ -175,7 +175,7 @@ numberOfVariables = length(sim.soo_bound.ub); % Number of decision variables
 %% Options ps
 options = optimoptions('particleswarm');
 options.HybridFcn = @fmincon;
-options.SwarmSize = 2000; % Default is min(100,10*nvars),
+options.SwarmSize = 1000; % Default is min(100,10*nvars),
 options.MaxIterations = 200; %  Default is 200*nvars
 options.MaxStallIterations = 50; % Default 20
 options.Display = 'iter';
@@ -215,30 +215,31 @@ sol.TOF2 = x(4);
 sol.TOF3 = x(5);
 sol.TOF4 = x(6);
 
-%% Mass Consumption for High Thrust Impulsive Case
+% %% Mass Consumption for High Thrust Impulsive Case
 % g0 = 9.81; %m/s^2
 % % https://www.space-propulsion.com/spacecraft-propulsion/hydrazine-thrusters/20n-hydrazine-thruster.html
 % Isp = 230; %s 
 % m_dry = 100; %kg
 % m_prop = m_dry*(exp(sol.dV_tot*1e3/(g0*Isp)) - 1); %kg
 %% Plot trajectories
-sol = plot_mission_4neo_flyby_GA(sol,asteroid_sequence,data,sim,colors)
-
+sol = plot_mission_4neo_flyby_MARS_GA(sol,asteroid_sequence,data,sim,colors)
+[sol_dates] = sol_to_dates_of_mission(sol,'ga')
 % sol = plot_mission_4neo_flyby(sol,asteroid_sequence,data,sim,colors)
 
 %% Plot Angles
 figure()
-plot(sol.SCtime,sol.angles.SCA)
-xlabel('time [s]'); ylabel('Sun Conjunction Angle [rad]');
+plot((sol.SCtime./(3600*24)-sol.MJD0),sol.angles.SCA)
+xlabel('time elapsed [d]'); ylabel('Sun Conjunction Angle [rad]');
 hold on
-plot(sol.SCtime,sol.angles.SolarConjunction)
-xlabel('time [s]'); ylabel('Sun Conjunction Angle [rad]');
+plot((sol.SCtime./(3600*24)-sol.MJD0),sol.angles.SolarConjunction)
+xlabel('time elapsed [d]'); ylabel('Sun Conjunction Angle [rad]');
 figure()
-plot(sol.SCtime,sol.angles.SAA)
-xlabel('time [s]'); ylabel('Sun Aspect Angle [rad]');
+plot((sol.SCtime./(3600*24)-sol.MJD0),sol.angles.SAA)
+xlabel('time elapsed [d]'); ylabel('Sun Aspect Angle [rad]');
 figure()
-plot(sol.SCtime,sol.angles.EVA)
-xlabel('time [s]'); ylabel('Earth Visibility Angle [rad]');
+plot((sol.SCtime./(3600*24)-sol.MJD0),sol.angles.EVA)
+xlabel('time elapsed [d]'); ylabel('Earth Visibility Angle [rad]');
+
 %% Plot orbit asteroids
 % plot_orbits_asteroids(asteroid_names,colors)
 

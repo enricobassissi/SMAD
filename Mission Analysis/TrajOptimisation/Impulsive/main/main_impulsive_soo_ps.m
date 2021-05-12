@@ -1,6 +1,7 @@
 %% --------------------------------------------------------------------- %%
 %% ------------------ EA Ast1 Ast2 Ast3 Ast4 Transfer ------------------ %%
 %% ------------- ARCH 1: DOUBLE RENDEZVOUS WITH EACH ASTEROID ---------- %%
+%% ---------------------- SOO Particle Swarm --------------------------- %%
 %% --------------------------------------------------------------------- %%
 %% Setup for default options
 set(0, 'DefaultTextFontSize', 20)
@@ -87,7 +88,7 @@ sim.soo_lim.date_ld =  [2028, 1, 1, 0, 0, 0];
 sim.soo_lim.mjd2000_ed = date2mjd2000(sim.soo_lim.date_ed);
 sim.soo_lim.mjd2000_ld = date2mjd2000(sim.soo_lim.date_ld);
 % TOF1 (2)
-sim.soo_lim.TOF1_min = 200; % days
+sim.soo_lim.TOF1_min = 100; % days
 sim.soo_lim.TOF1_max = 3*365; % days
 % Buffer time 1 (3)
 sim.soo_lim.bt1_min = 30;
@@ -186,6 +187,7 @@ sol.TOF4 = x(9);
 % m_prop = m_dry*(exp(sol.dV_tot*1e3/(g0*Isp)) - 1); %kg
 %% Plot trajectories
 sol = plot_mission_4neo_rendezvous(sol,asteroid_sequence,data,sim,colors)
+[sol_dates] = sol_to_dates_of_mission(sol,'1SC_RV')
 
 %% Plot orbit asteroids
 % plot_orbits_asteroids(asteroid_names,colors)

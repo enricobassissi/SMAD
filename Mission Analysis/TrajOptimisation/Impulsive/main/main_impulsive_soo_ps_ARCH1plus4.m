@@ -31,7 +31,7 @@ colors = [0    50   71;... % (1) DEEP SPACE
           51   94   111;... % (11) DEEP SPACE -1
           0    0    0]./255; % (12) BLACK
 
-sim.case_name = 'ARCH ID 4: IMPULSIVE FLYBY ON EVERY ASTEROID WITH GA ON EARTH BEFORE GOING TO THE ASTEROIDS';
+sim.case_name = 'ARCH ID 2: IMPULSIVE FLYBY ON EVERY ASTEROID';
 
 % %% INTRO ADIMENSIONALISATION
 % sim.mu = 1.32712440017987e11; % Sun planetary constant (mu = mass * G) (from DE405) [km^3/s^2]
@@ -113,7 +113,7 @@ sim.soo_lim.TOF4_max = 3*365; % days
 sim.soo_lim.permutations_low = 0.5; 
 sim.soo_lim.permutations_up = data.HowMany + 0.4999;
 
-% x = [MJD0,TOF0,TOF1,TOF2,TOF3,TOF4,ID_permutation]
+% x = [MJD0,TOF1,TOF2,TOF3,TOF4,ID_permutation]
 sim.soo_bound.lb = [sim.soo_lim.mjd2000_ed,  sim.soo_lim.TOF1_min,...
       sim.soo_lim.TOF2_min,sim.soo_lim.TOF3_min,...
       sim.soo_lim.TOF4_min,sim.soo_lim.permutations_low]; % Lower bound
@@ -165,8 +165,8 @@ numberOfVariables = length(sim.soo_bound.ub); % Number of decision variables
 %% Options ps
 options = optimoptions('particleswarm');
 options.HybridFcn = @fmincon;
-options.SwarmSize = 2000; % Default is min(100,10*nvars),
-options.MaxIterations = 200; %  Default is 200*nvars
+options.SwarmSize = 1000; % Default is min(100,10*nvars),
+options.MaxIterations = 300; %  Default is 200*nvars
 options.MaxStallIterations = 50; % Default 20
 options.Display = 'iter';
 options.FunctionTolerance = 1e-6;
@@ -180,7 +180,7 @@ options.UseParallel = true;
 % el_time_min_pp = toc/60;
 
 %% Run Optimisation ps
-tic
+
 [x,Fval,exitFlag,Output] = particleswarm(FitnessFunction,numberOfVariables...
     ,sim.soo_bound.lb,sim.soo_bound.ub,options);
 el_time_min_pp = toc/60;
@@ -214,20 +214,46 @@ sol.TOF4 = x(5);
 % sol = plot_mission_4neo_flyby_GA(sol,asteroid_sequence,data,sim,colors)
 
 sol = plot_mission_4neo_flyby(sol,asteroid_sequence,data,sim,colors)
+[sol_dates] = sol_to_dates_of_mission(sol,'1SC_FB')
 
 %% Plot Angles
 figure()
-plot(sol.SCtime,sol.angles.SCA)
-xlabel('time [s]'); ylabel('Sun Conjunction Angle [rad]');
+plot((sol.SCtime./(3600*24)-sol.MJD0),rad2deg(sol.angles.SCA),'Color',colors(1,:))
+xlabel('time [d]'); ylabel('Sun Conjunction Angle [deg]');
 hold on
-plot(sol.SCtime,sol.angles.SolarConjunction)
-xlabel('time [s]'); ylabel('Sun Conjunction Angle [rad]');
+% plot(sol.SCtime,sol.angles.SolarConjunction)
+xlined = [];
+for i=1:length(sol.angles.SolarConjunction)
+    if sol.angles.SolarConjunction(i) == 1
+        xlined=[xlined,(sol.SCtime(i)/(3600*24)-sol.MJD0)];
+    end
+end
+xline(xlined,'Color',colors(6,:))
+xlabel('time [d]'); ylabel('Sun Conjunction Angle [deg]');
 figure()
-plot(sol.SCtime,sol.angles.SAA)
-xlabel('time [s]'); ylabel('Sun Aspect Angle [rad]');
+plot((sol.SCtime./(3600*24)-sol.MJD0),rad2deg(sol.angles.SAA),'Color',colors(1,:))
+xlabel('time [d]'); ylabel('Sun Aspect Angle [deg]');
 figure()
-plot(sol.SCtime,sol.angles.EVA)
-xlabel('time [s]'); ylabel('Earth Visibility Angle [rad]');
+plot((sol.SCtime./(3600*24)-sol.MJD0),rad2deg(sol.angles.EVA),'Color',colors(1,:))
+xlabel('time [d]'); ylabel('Earth Visibility Angle [deg]');
+
+%% Plot SC wrt Earth
+idx_max_dist_sc_ea = find(max(vecnorm(sol.SC_Earth_Distance,2,2))==vecnorm(sol.SC_Earth_Distance,2,2));
+
+h_traj_sc_ea = plot3(sol.SC_Earth_Distance(:,1)./AU,sol.SC_Earth_Distance(:,2)./AU,...
+    sol.SC_Earth_Distance(:,3)./AU,'Color',colors(1,:));
+hold on
+h_ea = plot3(0,0,0,'o','Color',colors(8,:),'MarkerSize',10);
+hp_max_dist_sc_ea = plot3(sol.SC_Earth_Distance(idx_max_dist_sc_ea,1)./AU,...
+    sol.SC_Earth_Distance(idx_max_dist_sc_ea,2)./AU,...
+    sol.SC_Earth_Distance(idx_max_dist_sc_ea,3)./AU,'o','Color',colors(2,:),'MarkerSize',10);
+
+legend([h_traj_sc_ea,h_ea,hp_max_dist_sc_ea],...
+    'Traj wrt Earth','Earth',sprintf('Max Dist %g AU', max(vecnorm(sol.SC_Earth_Distance,2,2))/AU));
+xlabel('x [AU]'); ylabel('y [AU]'); zlabel('z [AU]');
+axis equal; grid on;
+
+
 %% Plot orbit asteroids
 % plot_orbits_asteroids(asteroid_names,colors)
 

@@ -77,20 +77,26 @@ end
 [dv_tot78]=lambert_solver_rendezvous(r7,r8,v7,v8,t7_sec,t8_sec,ksun);
 
 % Check of feasibility
-CHECK_TERM = 0;
+CHECK_TERM_A = 0; CHECK_TERM_B = 0;
+CHECK_TERM_C = 0; CHECK_TERM_D = 0;
 tot_TOF = TOF1+TOF2+TOF3+TOF4;
 if tot_TOF > 12*365
-    CHECK_TERM = 100;
+    CHECK_TERM_A = 100;
 end
 if dv_tot34 > 6
-    CHECK_TERM = 100;
-end
-if dv_tot78 > 6
-    CHECK_TERM = 100;
+%     CHECK_TERM_B = 50;
+    CHECK_TERM_B = (dv_tot34 - 6)^2;
 end
 if dv_tot56 > 6
-    CHECK_TERM = 100;
+%     CHECK_TERM_C = 50;
+    CHECK_TERM_C = (dv_tot56 - 6)^2;
 end
+if dv_tot78 > 6
+%     CHECK_TERM_D = 50;
+    CHECK_TERM_D = (dv_tot78 - 6)^2;
+end
+
+CHECK_TERM = CHECK_TERM_A+CHECK_TERM_B+CHECK_TERM_C+CHECK_TERM_D;
 
 pen_212 = 2;
 pen_34 = 1.5;

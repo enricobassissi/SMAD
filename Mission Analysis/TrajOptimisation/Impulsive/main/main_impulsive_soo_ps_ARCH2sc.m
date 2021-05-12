@@ -80,10 +80,11 @@ data.HowMany = factorial(length(data.asteroid_names)) / factorial(length(data.as
 data.HowMany2 = factorial(length(data.asteroid_names)-2) / factorial((length(data.asteroid_names)-2) - 2);
 %% uNEO
 % try 
-%     load('data.mat')
+clearvars data
+load('data_2SC.mat');
 % catch
     % if the asteroid have changed, run the find_eph_neo below, it takes about 1 min
-    [data.y_interp_ft, data.t_vector] = find_eph_neo(data.asteroid_names);
+%     [data.y_interp_ft, data.t_vector] = find_eph_neo(data.asteroid_names);
 %     save('data.mat', data);
 % end
 
@@ -129,7 +130,7 @@ sim.soo_bound.ub = [sim.soo_lim.mjd2000_ld, sim.soo_lim.TOF1_max,...
       sim.soo_lim.permutations_up,sim.soo_lim.permutations2_up]; % Upper bound
 
 % Constraint on C3 Launcher
-sim.C3_max = 20; % km^2/s^2
+sim.C3_max = 30; % km^2/s^2
 
 %% Options
 options = optimoptions('particleswarm');
@@ -155,6 +156,7 @@ options.UseParallel = true;
 FitnessFunction = @(x) ff_impulsive_soo_ARCH2sc(x, data, sim); % Function handle to the fitness function
 numberOfVariables = length(sim.soo_bound.ub); % Number of decision variables
 
+%% Run the soo
 tic
 [x,Fval,exitFlag,Output] = particleswarm(FitnessFunction,numberOfVariables...
     ,sim.soo_bound.lb,sim.soo_bound.ub,options);
@@ -172,7 +174,7 @@ sol.TOF2 = x(3);
 sol.TOF_tot_D_sc1 = sol.TOF1+sol.TOF2;
 sol.TOF_tot_Y_sc1 = sol.TOF_tot_D_sc1/365;
 sol.end_of_mission_date_sc1 = mjd20002date(sol.MJD0+sol.TOF_tot_D_sc1)';
-sol.dV_tot = Fval(1);
+% sol.dV_tot = Fval(1);
 
 % 2nd sc stuff
 TF = contains(data.asteroid_names,asteroid_sequence);
@@ -190,15 +192,16 @@ sol.end_of_mission_date_sc2 = mjd20002date(sol.MJD0+sol.TOF_tot_D_sc2)';
 
 sol.end_of_mission_date_overall = max(sol.end_of_mission_date_sc1,sol.end_of_mission_date_sc2);
 
-%% Mass Consumption for High Thrust Impulsive Case
-g0 = 9.81; %m/s^2
-% https://www.space-propulsion.com/spacecraft-propulsion/hydrazine-thrusters/20n-hydrazine-thruster.html
-Isp = 230; %s 
-m_dry = 100; %kg
-m_prop = m_dry*(exp(sol.dV_tot*1e3/(g0*Isp)) - 1); %kg
+% %% Mass Consumption for High Thrust Impulsive Case
+% g0 = 9.81; %m/s^2
+% % https://www.space-propulsion.com/spacecraft-propulsion/hydrazine-thrusters/20n-hydrazine-thruster.html
+% Isp = 230; %s 
+% m_dry = 100; %kg
+% m_prop = m_dry*(exp(sol.dV_tot*1e3/(g0*Isp)) - 1); %kg
 
 %% Plot trajectories
 sol = plot_mission_4neo_flyby_ARCH2sc(sol,data,sim,colors)
+[sol_dates] = sol_to_dates_of_mission(sol,'2SC_FB')
 
 %% Plot orbit asteroids
 % plot_orbits_asteroids(asteroid_names,colors)

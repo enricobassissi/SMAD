@@ -121,7 +121,7 @@ y_interp_ft = interpft(horizons_data{1,1},N,1); % 1 by column, 2 by rows
 t_vector2 = linspace(pystr2mjd2000(epoch_start),pystr2mjd2000(epoch_stop),N);
 
 %% polynomial interpolation
-N = 6;
+N = 3;
 y_polyfit = polyfit(t_vector,horizons_data{1,1}(:,1),N);
 y_polyval = polyval(y_polyfit,t_vector);
 
@@ -133,7 +133,7 @@ hold on
 plot(t_vector2,y_interp_ft(:,1))
 plot(t_vector,y_polyval)
 xlabel('mjd2000'); ylabel('a [AU]');
-legend('real','fourier 200','poly 6')
+legend('Horizon','Fourier N200','Poly 3')
 title('semimajor axis for',selected_asteroids_names(1))
 
 % true anomaly

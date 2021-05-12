@@ -69,7 +69,8 @@ dv2_GAast1 = sqrt((VF_GAast1(1)-v1(1))^2+(VF_GAast1(2)-v1(2))^2+(VF_GAast1(3)-v1
 
 % astroConstants(23) = Radius_Earth, km
 % astroConstants(13) = muEarth, km^3/s^2
-delta_v_p = flyby(astroConstants(23), astroConstants(13), MJDGA, VF_EAGA, VI_GAast1);
+R_lim_from_planet = 440; % km, for earth is ok to avoid atmosphere
+delta_v_p = flyby(astroConstants(23), astroConstants(13),R_lim_from_planet, MJDGA, VF_EAGA, VI_GAast1);
 
 if strcmp(string(delta_v_p), 'Not found')
     % Arbitrarly big barrier number, related to no flyby solution

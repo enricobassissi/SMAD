@@ -74,19 +74,20 @@ function [sol] = plot_mission_4neo_rendezvous(sol,asteroid_names_sequence,data,s
     sol.dV_tot_leg4 = sol.dV7 + sol.dV8;
 
     sol.dV_tot = sol.dV_tot_leg1+sol.dV_tot_leg2+sol.dV_tot_leg3+sol.dV_tot_leg4;
+    
     %% Plotting
     % PLOT FULL ORBITS AND BEST LAMBERT TRANSFER 
     figure('Name','Mission Orbits and Phases')
     
     % Earth
-    plot_earth_orbit(MJD01,colors,8);
+    plot_earth_orbit(MJD01,3,colors,8);
     hold on
     % Asteroids
-    years = 6;
-%     plot_asteorid_orbit(MJDF1,years,ast1,colors,2);
-%     plot_asteorid_orbit(MJDF2,years,ast2,colors,3);
-%     plot_asteorid_orbit(MJDF3,years,ast3,colors,4);
-%     plot_asteorid_orbit(MJDF4,years,ast4,colors,5);
+    Frac_Orb = 1/6;
+    plot_asteorid_orbit(MJDF1,Frac_Orb,ast1,colors,2);
+    plot_asteorid_orbit(MJDF2,Frac_Orb,ast2,colors,3);
+    plot_asteorid_orbit(MJDF3,Frac_Orb,ast3,colors,4);
+    plot_asteorid_orbit(MJDF4+100,Frac_Orb,ast4,colors,5);
     
     % Mission Arcs
     % First leg: Earth -> Ast 1
@@ -205,8 +206,8 @@ function [sol] = plot_mission_4neo_rendezvous(sol,asteroid_names_sequence,data,s
 
     axis equal; grid on
     title(sim.case_name)
-    xlabel('AU')
-    ylabel('AU')
-    zlabel('AU')
+    xlabel('x [AU]')
+    ylabel('y [AU]')
+    zlabel('z [AU]')
 
 end
