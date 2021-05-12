@@ -109,7 +109,7 @@ fun = @(plan_d) find_d( plan_d , plan_a , plan_b , plan_c , L , rf , tan_gam_f ,
 plan_d = 0;
 %opt = optimset('Display','off');
 %plan_d = fzero(fun,plan_d,opt);
-plan_d = JP_secant_solver( fun , plan_d , 1e-8 , 1e-6 , 100);
+plan_d = JP_secant_solver( fun , plan_d , 1e-8 , 1e-6 , 100)
 
 % calculation of e f g
 AAA = [  30*L2 , -10*L3 ,    L4  ;
@@ -246,7 +246,7 @@ if isreal(l_d)
         
     else
         
-        m = k; %% what is k? 
+        m = l; %% actually k - what is k? 
         m(1) = M;
         K = -a_vect/(PS.Is*sim.g0)./l_d;
         m(2) = m(1) +dl/2*(K(1)*m(1)+K(2)*m(2));

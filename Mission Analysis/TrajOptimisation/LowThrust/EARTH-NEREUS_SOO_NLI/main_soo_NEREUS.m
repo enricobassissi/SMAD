@@ -1,7 +1,7 @@
 %% Initializing the Environment
 clear; close all; clc;
-addpath time
-addpath function
+% addpath time
+% addpath function
 AU = astroConstants(2);
 muSun = astroConstants(4);
 
@@ -34,50 +34,69 @@ format short
 %% simulation parameters
 sim.mu    = 132712440018          ; % actractor parameter [km^3 s^-2]
 sim.DU    = 149597870.7           ; % distance unit [km]
+% sim.mu    = muSun                   ; % actractor parameter [km^3 s^-2]
+% sim.DU    = AU                      ; % distance unit [km]
 sim.TU    = (sim.DU^3/sim.mu )^0.5; % time unit [s]
 sim.mu    = 1;                      % non-dimensional attractor parameter [DU^3/TU^2]
 sim.n_sol = 100;                    % number of computational nodes
 sim.x = linspace(0,1,sim.n_sol)';   % 
-sim.out_shape = 2;                  % out-of-plane shape, 2 = Conway-Wall shape
 sim.g0 = 9.81*(sim.TU^2/(1000*sim.DU)); % non-dimensional g0
 sim.direction = -1;                     % direction of integration (1 FW, -1 BW)
 
-sim.vinf = 0;
+
+str_path=split(pwd, 'TrajOptimisation\LowThrust\JP_LT\EARTH-NEREUS_SOO_NLI');
+util_path=string(str_path(1))+'Utils';
+addpath(genpath(util_path));
+py_path=string(str_path(1))+'PyInterface\NEO_API_py';
+addpath(genpath(py_path));
+neoeph_path=string(str_path(1))+'NeoEph';
+addpath(genpath(neoeph_path));
+str_path=split(pwd, 'EARTH-NEREUS_SOO_NLI');
+imp_path=string(str_path(1));
+addpath(genpath(imp_path));
+
+%% Call to NASA JPL Horizons to get Asteroid's Ephemerides
+% Import module of Python
+% try 
+%     module = py.importlib.import_module('neo_api_function');
+% catch
+%     copyfile(py_path+'\neo_api_function.py', pwd, 'f'); 
+%     module = py.importlib.import_module('neo_api_function');
+% end
+
+% [data_nereus,t_vector_nereus] = find_eph_neo("1982DB")
+load('data_nereus.mat');
 
 %% Propulsive system parameters
-sim.PS.Is = 3000/sim.TU;  % non-dimensional specific impulse
+sim.PS.Isp = 3000/sim.TU;  % non-dimensional specific impulse
 
 sim.M = 1000; % SC mass [kg]
-sim.hp = 3; 
-sim.kp = 3; %It is used just for sim.out_shape = 1;
+
 
 %% Boundaries
 % Departure dates
-sim.soo_lim.date_ed = [2028, 1, 1, 0, 0, 0];
-sim.soo_lim.date_ld =  [2031, 1, 1, 0, 0, 0];
+sim.soo_lim.date_ed = [2041, 1, 1, 0, 0, 0]; %30
+sim.soo_lim.date_ld =  [2043, 1, 1, 0, 0, 0]; %50
 sim.soo_lim.mjd2000_ed = date2mjd2000(sim.soo_lim.date_ed)*3600*24/sim.TU;
 sim.soo_lim.mjd2000_ld = date2mjd2000(sim.soo_lim.date_ld)*3600*24/sim.TU;
 % TOF1
-sim.soo_lim.TOF1_min = 600*3600*24/sim.TU; 
-sim.soo_lim.TOF1_max = 1000*3600*24/sim.TU; 
+sim.soo_lim.TOF1_min = 500*3600*24/sim.TU; %500
+sim.soo_lim.TOF1_max = 900*3600*24/sim.TU; %1500
 % N REV
-sim.soo_lim.N_REV_min = 2;
-sim.soo_lim.N_REV_max = 3;
+sim.soo_lim.N_REV_min = 1; %0
+sim.soo_lim.N_REV_max = 2;
 % vinf_mag
-sim.soo_lim.vinf_mag_min = 0.75;
-sim.soo_lim.vinf_mag_max = 2;
+sim.soo_lim.vinf_mag_min = 0*sim.TU/sim.DU;
+sim.soo_lim.vinf_mag_max = 6*sim.TU/sim.DU;
 % alpha
-sim.soo_lim.alpha_min = -pi;
-sim.soo_lim.alpha_max =  pi;
+sim.soo_lim.alpha_min = -pi/2;
+sim.soo_lim.alpha_max =  pi/2;
 % beta
-sim.soo_lim.beta_min = - pi;
-sim.soo_lim.beta_max =  pi;
+sim.soo_lim.beta_min = - pi/2;
+sim.soo_lim.beta_max =  pi/2;
 
 
-% % x = [MJD0,TOF,N_REV]
-% sim.moo_bound.lb = [sim.moo_lim.mjd2000_ed, sim.moo_lim.TOF1_min, sim.moo_lim.N_REV_min]; % Lower bound
-% sim.moo_bound.ub = [sim.moo_lim.mjd2000_ld, sim.moo_lim.TOF1_max, sim.moo_lim.N_REV_max]; % Upper bound
-% x = [MJD0,TOF,N_REV,hp,vinf_mag,alpha,beta]
+
 sim.soo_bound.lb = [sim.soo_lim.mjd2000_ed, sim.soo_lim.TOF1_min, sim.soo_lim.N_REV_min, sim.soo_lim.vinf_mag_min,sim.soo_lim.alpha_min,sim.soo_lim.beta_min]; % Lower bound
 sim.soo_bound.ub = [sim.soo_lim.mjd2000_ld, sim.soo_lim.TOF1_max, sim.soo_lim.N_REV_max, sim.soo_lim.vinf_mag_max,sim.soo_lim.alpha_max,sim.soo_lim.beta_max]; % Upper bound
 
@@ -104,7 +123,6 @@ options.Display = 'iter';
 
 
 options.PopulationSize = 1000; % ideal 1000
-%options.ParetoFraction = 0.5;
 options.MaxGenerations = 100; % ideal 100
 
 options.FunctionTolerance = 1e-9; %1e-6
@@ -122,7 +140,7 @@ end
 options.UseParallel = true;
 
 %% Build the soo
-FitnessFunction = @(x) ff_ea_ma_LT_soo(x,sim); % Function handle to the fitness function
+FitnessFunction = @(x) ff_soo_NEREUS(x,sim,data); % Function handle to the fitness function
 numberOfVariables = length(sim.soo_bound.ub); % Number of decision variables
 
 tic
@@ -131,28 +149,34 @@ tic
     sim.soo_bound.ub,sim.soo_constr.nonlcon,sim.soo_constr.IntCon,options);
 el_time_min_pp = toc/60;
 
-
+dep_opt = mjd20002date(x(1)*sim.TU/(3600*24))
+TOF_opt = x(2)*sim.TU/(3600*24) 
+Nrev_opt = x(3)
+vinf_opt = x(4)*sim.DU/sim.TU
+alpha_opt = rad2deg(x(5))
+beta_opt = rad2deg(x(6))
+Fval 
 %% plot
-[output, r1_true, r2_true] = plot_ff_ea_ma_LT_soo(x,sim);
+[output, r1_true, r2_true] = plot_ff_soo_NEREUS(x,sim,data);
 
 figure()
 subplot(5,1,1)
-plot(output.t*sim.TU/86400,output.u(:,1));
+plot(output.t*sim.TU/86400,output.Thrust(:,1));
 xlabel('Time [days]')
 ylabel('In-plane Thrust [N]')
 
 subplot(5,1,2)
-plot(output.t*sim.TU/86400,180/pi*output.u(:,2));
+plot(output.t*sim.TU/86400,180/pi*output.Thrust(:,2));
 xlabel('Time [days]')
 ylabel('In-plane Thrust angle [deg]')
 
 subplot(5,1,3)
-plot(output.t*sim.TU/86400,output.u(:,3));
+plot(output.t*sim.TU/86400,output.Thrust(:,3));
 xlabel('Time [days]')
 ylabel('out-of-plane Thrust [N]')
 
 subplot(5,1,4)
-plot(output.t*sim.TU/86400,sqrt(output.u(:,1).^2 + output.u(:,3).^2));
+plot(output.t*sim.TU/86400,sqrt(output.Thrust(:,1).^2 + output.Thrust(:,3).^2));
 xlabel('Time [days]')
 ylabel('Thrust [N]')
 
@@ -161,11 +185,12 @@ plot(output.t*sim.TU/86400,output.m);
 xlabel('Time [days]')
 ylabel('Mass [kg]')
 
-
+massfrac_opt = Fval
+TOF1_opt = x(2)*sim.TU/(3600*24)
 %%
 %JD_departure = x(knee_sol,1);
 day1 = [2028 1 1 0 0 0];
-day2 = [2031 1 1 0 0 0];
+day2 = [2030 1 1 0 0 0];
 
 t1 = date2mjd2000(day1);
 t2 = date2mjd2000(day2);
@@ -177,25 +202,27 @@ for i=1:length(times)
     [r1(i,1:3),v1(i,1:3)] = sv_from_coe(kep1,ksun);
     r1(i,1:3) = r1(i,1:3)/sim.DU;
     
-    % Orbit 2
-    [kep2,ksun] = uplanet(times(i),4);
-    [r2(i,1:3),~] = sv_from_coe(kep2,ksun);
+    nereus_elements = interp1(data.t_vector, data.nereus_tbl, times(i), 'spline'); 
+    [r2(i,1:3), v2] = sv_from_coe(nereus_elements,ksun); % km,km/s
+    % adimensionalise
     r2(i,1:3) = r2(i,1:3)/sim.DU;
+    
 end
 
 
-r3 = [output.r.*cos(output.l) output.r.*sin(output.l) output.z]; 
-
+r3  = [output.r.*cos(output.theta) output.r.*sin(output.theta) output.z];
+R3 = rotate_local2ecplitic(r1_true,r3,sim.n_sol,output.Href);
 
 figure()
-plot3(r3(:,1),r3(:,2),r3(:,3))
+plot3(R3(:,1),R3(:,2),R3(:,3))
+hold on
+plot3(r1_true(1),r1_true(2),r1_true(3),'*m')
+plot3(r2_true(1),r2_true(2),r2_true(3),'*c')
 axis equal
 grid on
 hold on
 % Earth
 hold on
-plot3(r1(:,1),r1(:,2),r1(:,3),'--g'); % geocentric equatorial frame 
-% Mars
-hold on
-plot3(r2(:,1),r2(:,2),r2(:,3),'--r');
+plot3(r1(:,1),r1(:,2),r1(:,3),'--g'); 
+plot3(r2(:,1),r2(:,2),r2(:,3),'--b'); 
 

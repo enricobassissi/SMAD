@@ -1,14 +1,16 @@
-function [ error_TOF ] = find_a(a,x,psi,TOF, sin_alpha1, sin_alpha2, p1, f1, g1, L1,p2, f2, g2, L2,sim)
+function [ error_TOF ] = find_a_old(a,x,psi,TOF, sin_alpha1, sin_alpha2, p1, f1, g1, L1,p2, f2, g2, L2,sim)
 
 
+x = sim.x;
 xm   = 0.5*(x(1:end-1) + x(2:end));
 
 n_sol = sim.n_sol;
 
-
+A = linspace(-500,500,1000);
 %------------------------------------------------------------------------ %
 % DEPARTURE ORBIT
-
+for j = 1:length(A)
+    a = A(j);
 %- Angle beta1(x) and derivatives needed to compute the declination
  beta1     = acos(sin_alpha1*cos(psi*x));
  beta1_x   = psi*sin_alpha1*sin(psi*x)./sin(beta1);
@@ -240,7 +242,8 @@ end
 I = I*h/6;
 
 % Computation of TOF error (residual)
-error_TOF = abs(TOF-I); %% abs l'ho aggiunto io
+error_TOF = abs(TOF-I)/abs(TOF) %% abs l'ho aggiunto io
+err(j) = error_TOF;
 
-
+end
 end

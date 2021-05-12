@@ -34,6 +34,8 @@ CONTRIBUTORS: Apparenza Lucia
               mu=4.2828314E+4;
           case 'neptune'
               mu=6.83653406400E+06;
+          case 'moon'
+              mu = astroConstants(20);
           otherwise
             disp('Unknown gravitational constant')
  end
