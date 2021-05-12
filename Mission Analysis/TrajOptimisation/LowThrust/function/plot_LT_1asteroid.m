@@ -16,7 +16,7 @@ v1 = v1/sim.DU*sim.TU;
 
 % passage at 1st ast
 MJDF1_dim = MJDF1*sim.TU/(3600*24);
-[kep_ast_1] = uNEO2(MJDF1_dim,"2006HX57",data); % [km,-,rad,rad,rad,wrapped rad]
+[kep_ast_1] = uNEO2(MJDF1_dim,sim.ast1,data); % [km,-,rad,rad,rad,wrapped rad]
 [r2, v2] = sv_from_coe(kep_ast_1,ksun); % km, km/s
 % adimensionalise
 r2 = r2/sim.DU;
@@ -31,7 +31,7 @@ vinf_mag = x(4);
 alpha = x(5);
 beta = x(6);
 
-vdep = v1 + vinf_mag*[cos(alpha)*cos(beta); sin(alpha)*cos(beta); sin(beta)] ;  % giusto?
+vdep = v1 + vinf_mag*[cos(alpha)*cos(beta); sin(alpha)*cos(beta); sin(beta)] ;  % ok?
 %vdep = v1;
 varr = v2; %since we want to rendez-vous
 

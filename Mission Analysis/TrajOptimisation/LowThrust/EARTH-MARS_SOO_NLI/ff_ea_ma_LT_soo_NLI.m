@@ -1,7 +1,8 @@
-function [output, r1, r2] = plot_ff_ea_ma_LT(x,sim)
+function obj_fun = ff_ea_ma_LT_soo_NLI(x,sim)
 % setting the input times
 MJD01 = x(1);
 TOF1 = x(2);
+%TOF1 = 1000;
 MJDF1 = MJD01 + TOF1;
 
 % Computing position and velocity of the planets in that days
@@ -24,22 +25,14 @@ v2 = v2/sim.DU*sim.TU;
 % N REV
 N_rev= round(x(3));
 
-
-% vinf
-vinf_mag = x(4);
-alpha = x(5);
-beta = x(6);
-
-%vdep = v1 + vinf_mag*[cos(alpha)*cos(beta); sin(alpha)*cos(beta); sin(beta)] ;  % giusto?
-vdep = v1;
+vdep = v1;  %since parabolic escape (vinf = 0)
 varr = v2; %since we want to rendez-vous
 
-[output] = CW_LowLambert( r1 , r2 , vdep , varr, N_rev , TOF1 , sim.M , sim.hp , sim.kp , sim.PS , sim );
+Isp = sim.PS.Isp;
 
+[output] = NL_interpolator( r1 , r2 , vdep , varr , N_rev , TOF1 , sim.M ,Isp ,sim );
 
-obj_fun(1) = TOF1;
-   
-obj_fun(2) = (output.m(1) - output.m(end))/output.m(1); % la massa è dimenionale
+obj_fun = (output.m(1) - output.m(end))/output.m(1); % la massa è dimenionale
 
 end
 

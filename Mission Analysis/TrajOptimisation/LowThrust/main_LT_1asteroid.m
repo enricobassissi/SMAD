@@ -34,19 +34,38 @@ format short
 str_path=split(pwd, 'TrajOptimisation\LowThrust\JP_LT');
 util_path=string(str_path(1))+'Utils';
 addpath(genpath(util_path));
+% py_path=string(str_path(1))+'PyInterface\NEO_API_py';
+% addpath(genpath(py_path));
+% neoeph_path=string(str_path(1))+'NeoEph';
+% addpath(genpath(neoeph_path));
+% str_path=split(pwd, 'main');
+% imp_path=string(str_path(1));
+% addpath(genpath(imp_path));
+% 
+% %% Call to NASA JPL Horizons to get Asteroid's Ephemerides
+% % Import module of Python
+% try 
+%     module = py.importlib.import_module('neo_api_function');
+% catch
+%     copyfile(py_path+'\neo_api_function.py', pwd, 'f'); 
+%     module = py.importlib.import_module('neo_api_function');
+% end
 
 %% simulation parameters
 sim.mu    = 132712440018          ; % actractor parameter [km^3 s^-2]
 sim.DU    = 149597870.7           ; % distance unit [km]
 sim.TU    = (sim.DU^3/sim.mu )^0.5; % time unit [s]
 sim.mu    = 1;                      % non-dimensional attractor parameter [DU^3/TU^2]
-sim.n_sol = 100;                    % number of computational nodes
+sim.n_sol = 300;                    % number of computational nodes
 sim.x = linspace(0,1,sim.n_sol)';   % 
 
 sim.g0 = 9.81*(sim.TU^2/(1000*sim.DU)); % non-dimensional g0
 sim.direction = -1;                     % direction of integration (1 FW, -1 BW)
 
 load('data.mat')
+
+sim.ast1 = "2020UE";
+
 %% Propulsive system parameters
 sim.PS.Is = 3000/sim.TU;  % non-dimensional specific impulse
 
@@ -63,10 +82,10 @@ sim.moo_lim.mjd2000_ld = date2mjd2000(sim.moo_lim.date_ld)*3600*24/sim.TU;
 sim.moo_lim.TOF1_min = 100*3600*24/sim.TU; 
 sim.moo_lim.TOF1_max = 3*365*3600*24/sim.TU; 
 % N REV(3)
-sim.moo_lim.N_REV_min = 2;
+sim.moo_lim.N_REV_min = 0;
 sim.moo_lim.N_REV_max = 3;
 % vinf_mag
-sim.moo_lim.vinf_mag_min = 1.1/sim.DU*sim.TU;
+sim.moo_lim.vinf_mag_min = sqrt(0.1)/sim.DU*sim.TU;
 sim.moo_lim.vinf_mag_max = sqrt(40)/sim.DU*sim.TU;
 % alpha
 sim.moo_lim.alpha_min = -pi;
@@ -138,27 +157,25 @@ el_time_min_pp = toc/60;
 
 %% plot
 [output, r1_true, r2_true,v1_true,v2_true] = plot_LT_1asteroid(x,sim,data);
-output.u = output.Thrust;
-output.l = output.theta;
 
 figure()
 subplot(5,1,1)
-plot(output.t*sim.TU/86400,output.u(:,1));
+plot(output.t*sim.TU/86400,output.Thrust(:,1));
 xlabel('Time [days]')
 ylabel('In-plane Thrust [N]')
 
 subplot(5,1,2)
-plot(output.t*sim.TU/86400,180/pi*output.u(:,2));
+plot(output.t*sim.TU/86400,180/pi*output.Thrust(:,2));
 xlabel('Time [days]')
 ylabel('In-plane Thrust angle [deg]')
 
 subplot(5,1,3)
-plot(output.t*sim.TU/86400,output.u(:,3));
+plot(output.t*sim.TU/86400,output.Thrust(:,3));
 xlabel('Time [days]')
 ylabel('out-of-plane Thrust [N]')
 
 subplot(5,1,4)
-plot(output.t*sim.TU/86400,sqrt(output.u(:,1).^2 + output.u(:,3).^2));
+plot(output.t*sim.TU/86400,sqrt(output.Thrust(:,1).^2 + output.Thrust(:,3).^2));
 xlabel('Time [days]')
 ylabel('Thrust [N]')
 
@@ -170,13 +187,29 @@ ylabel('Mass [kg]')
 
 %%
 
-r3 = [output.r.*cos(output.l) output.r.*sin(output.l) output.z]; 
 
+MJD01 = x(1)*sim.TU/(3600*24);
+
+r3  = [output.r.*cos(output.theta) output.r.*sin(output.theta) output.z];
+R3 = rotate_local2ecplitic(r1_true,r3,sim.n_sol,output.Href);
 
 figure()
-plot3(r3(:,1),r3(:,2),r3(:,3))
+plot3(R3(:,1),R3(:,2),R3(:,3))
 axis equal
 grid on
 hold on
 plot3(r1_true(1),r1_true(2),r1_true(3),'m*')
+plot_earth_orbit(MJD01,colors,8);
 plot3(r2_true(1),r2_true(2),r2_true(3),'c*')
+
+
+% MJD01 = x(1)*sim.TU/(3600*24);
+% MJDP1 = (x(1)+x(2))*sim.TU/(3600*24);
+% 
+% figure;
+% % Earth
+% plot_earth_orbit(MJD01,colors,8);
+% hold on
+% % Asteroid
+% years = 5;
+% plot_asteorid_orbit(MJDP1,years,sim.ast1,colors,2);

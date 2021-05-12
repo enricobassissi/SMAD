@@ -1,6 +1,5 @@
-function [output] = NL_interpolator( RI , RF , VI , VF , Nrev , TOF ,M ,Isp ,sim )
+function [output] = NL_interpolator( RI , RF , VI , VF , Nrev , TOF ,M ,Isp ,sim)
 
-%[output ] = CW_LowLambert( RI , RF , VI , VF , Nrev , TOF ,M ,hp , kp , PS ,sim )
 
 %-- Input:
    % RI RF VI VF
@@ -13,6 +12,7 @@ function [output] = NL_interpolator( RI , RF , VI , VF , Nrev , TOF ,M ,Isp ,sim
                                          % [0,1])
    % sim.g0 
    % sim.DU sim.TU
+   % sim.mu_dim                          % dimensional mu
  
 % ----------------------------------------------------------------------- % 
 
@@ -52,14 +52,14 @@ function [output] = NL_interpolator( RI , RF , VI , VF , Nrev , TOF ,M ,Isp ,sim
  Href = RIv_cross_RFv/ norm_RIv_cross_RFv;
  
  
-    % Transfer must be counterclockwise: %% enzo no
-    if Href(3) < 0 %%% paper usa condizione diversa : dot(RIv_cross_RFv, HI) < 0 
+    % Transfer must be counterclockwise: %% || no
+    if Href(3) < 0 %%% paper : dot(RIv_cross_RFv, HI) < 0 
         Href = - Href;
     end
     
     % Singular case:  
-    if  norm_RIv_cross_RFv < 1e-10 %%% paper usa condizione diversa : dot(RIv_cross_RFv, HI) = 0 
-        Href = 0.5*(HI + HF)/norm(HI + HF); %%%% prof la scrive diversa (considera solo HI)
+    if  norm_RIv_cross_RFv < 1e-10 %%% paper : dot(RIv_cross_RFv, HI) = 0 
+        Href = 0.5*(HI + HF)/norm(HI + HF); %%%% prof la scrive diversa (considera solo HI) ||*0.5
       
         if RIv_dot_RFv > 0
             psi1 = 0;
@@ -68,9 +68,9 @@ function [output] = NL_interpolator( RI , RF , VI , VF , Nrev , TOF ,M ,Isp ,sim
         end
     
     else
-        if RIv_cross_RFv(3) > 0   %%% paper usa condizione diversa :  cross(RIv_cross_RFv, Href) > 0
-            psi1 = acos(RIv_dot_RFv);
-        elseif RIv_cross_RFv(3) < 0  %%% paper usa condizione diversa :  cross(RIv_cross_RFv, Href) < 0
+        if RIv_cross_RFv(3) > 0   %%% paper  :  cross(RIv_cross_RFv, Href) > 0
+            psi1 = 2*pi + acos(RIv_dot_RFv);
+        elseif RIv_cross_RFv(3) < 0  %%% paper  :  cross(RIv_cross_RFv, Href) < 0
             psi1 = 2*pi - acos(RIv_dot_RFv);
         end
     end
@@ -80,7 +80,7 @@ function [output] = NL_interpolator( RI , RF , VI , VF , Nrev , TOF ,M ,Isp ,sim
    psi = psi1 + 2*pi*Nrev;   
 
 %-- theta(t) vector 
-theta = psi*sim.x;  
+theta = psi*x;  
 
 % In ConWay: x is defined outside (vector dimension n_sol from 0 to 1)
 % Inside he defines l = L*sim.x where L = psi
@@ -90,34 +90,34 @@ theta = psi*sim.x;
 
 % ----------------------------------------------------------------------- %
 %-- Initial modified equinoctial elements MEE1 = [p1 f1 g1 h1 k1 L1]
- [coe1] = coe_from_sv(RI*DU,VI*DU/TU,astroConstants(4));
+ [coe1] = coe_from_sv(RI*DU,VI*DU/TU,sim.mu_dim);  
  a1 = coe1(1); e1 = coe1(2); i1 = coe1(3); OM1 = coe1(4); om1 = coe1(5); th1 = coe1(6);
 
- p1 = a1*(1-e1^2)/DU; %%% controlla /DU
- f1 = e1*cos(om1 + OM1); %%%% ho messo il wrap
- g1 = e1*sin(om1 + OM1); %%%% ho messo il wrap
+ p1 = a1*(1-e1^2)/DU;
+ f1 = e1*cos(om1 + OM1); 
+ g1 = e1*sin(om1 + OM1); 
  h1 = tan(i1/2) * cos(OM1);
  k1 = tan(i1/2) * sin(OM1);
- L1 = wrapTo2Pi(th1 + om1 + OM1); %%%% ho messo il wrap
-
+ L1 = th1 + om1 + OM1; 
+ 
 %-- Final modified equinoctial elements MEE2 = [p2 f2 g2 h2 k2 L2]
- [coe2] = coe_from_sv(RF*DU,VF*DU/TU,astroConstants(4));
+ [coe2] = coe_from_sv(RF*DU,VF*DU/TU, sim.mu_dim);
  a2 = coe2(1); e2 = coe2(2); i2 = coe2(3); OM2 = coe2(4); om2 = coe2(5); th2 = coe2(6);
 
  p2 = a2*(1-e2^2)/DU;
- f2 = e2*cos(om2 + OM2); %%%% ho messo il wrap
- g2 = e2*sin(om2 + OM2); %%%% ho messo il wrap
+ f2 = e2*cos(om2 + OM2); 
+ g2 = e2*sin(om2 + OM2); 
  h2 = tan(i2/2) * cos(OM2);
  k2 = tan(i2/2) * sin(OM2);
- L2 = wrapTo2Pi(th2 + om2 + OM2);  %%%% ho messo il wrap
+ L2 = th2 + om2 + OM2;  
 
 % ----------------------------------------------------------------------- %
 %-- Departure orbit
 
  %- Inclination of the departure orbit above the reference frame (alpha1)
- cos_alpha1 = dot(HI,Href); % dot product 
+ cos_alpha1 = dot(HI,Href); 
  
- if dot(VI,Href) >= 0 %%% dot product - caso uguale a zero? vi vf sono velocità iniziali e finali? %%%%%%%
+ if dot(VI,Href) >= 0 
      csi1 = 1;
  elseif dot(VI,Href) < 0
      csi1 = -1;
@@ -150,7 +150,7 @@ theta = psi*sim.x;
               + sin(beta1).*cos(delta1).*(3*beta1_x.^2 .*delta1_x + delta1_x.^3)./(cos(delta1).*sin(beta1));
  
  %- Variation of true longitude DL1(x)
- sin_DL1 = 1/sin_alpha1 * sin(delta1);
+ sin_DL1 = 1./sin_alpha1 .* sin(delta1);
  cos_DL1 = cos(psi*x) .* cos(delta1);
  %DL1 = atan(sin_DL1./cos_DL1);
  DL1 = atan2(sin_DL1,cos_DL1);
@@ -169,7 +169,7 @@ theta = psi*sim.x;
  
  if dot(VF,Href) < 0 %%% dot product - uguale a zero?
      csi2 = 1;
- elseif dot(VF,Href) > 0
+ elseif dot(VF,Href) >= 0
      csi2 = -1;
  end
  sin_alpha2 = csi2*sqrt(1 - cos_alpha2^2);
@@ -214,20 +214,19 @@ theta = psi*sim.x;
  
 %-- Attractor distance
  %- True long on the initial and final orbit: l1(x) l1_x(x) l2(x) l2_x(x)
- l1 = L1 + DL1; %%%% L1 è 1x1 e DL1 è 100x1 ?????
+ l1 = L1 + DL1; %%%% L1 è 1x1 e DL1 è 100x1
  l1_x = DL1_x;
  
- l2 = L2 + DL2; %%%% L2 è 1x1 e DL2 è 100x1 ?????
+ l2 = L2 - DL2; %%%% L2 è 1x1 e DL2 è 100x1
  l2_x = -DL2_x;
  
  cosl1 = cos(DL1)*cos(L1) - sin(DL1)*sin(L1);
  cosl2 = cos(DL2)*cos(L2) + sin(DL2)*sin(L2);
  
  sinl1 = sin(DL1)*cos(L1) + cos(DL1)*sin(L1);
- sinl2 = sin(DL1)*cos(L1) - cos(DL1)*sin(L1);
+ sinl2 = sin(L2)*cos(DL2) - cos(L2)*sin(DL2);
  
  %- Quantity qi(x) i = 1,2 needed to compute de distance from the attractor
-
  q1     = 1 + f1*cosl1 + g1*sinl1;
  q1_x   = (- f1*sinl1 + g1*cosl1).*DL1_x;
  q1_xx  = (1 - q1).*DL1_x.^2 + q1_x.*DL1_xx./DL1_x.^2;
@@ -240,7 +239,6 @@ theta = psi*sim.x;
  
  %- Distance s/c from the attractor (through MEE definition) : si(x) and
  %  derivatives si_x(x) si_xx(x) si_xxx(x) where i = 1,2
- 
  s1     = p1./q1;
  s1_x   = -p1*q1_x./(q1.^2);
  s1_xx  = 2*p1*q1_x.^2./(q1.^3) - p1*q1_xx./(q1.^2);
@@ -251,20 +249,25 @@ theta = psi*sim.x;
  s2_xx  = 2*p2*q2_x.^2./(q2.^3) - p2*q2_xx./(q2.^2);
  s2_xxx = -6*p2*q2_x.^3./(q2.^4) + 6*p2*q2_x.*q2_xx./(q2.^3) - p2*q2_xxx./(q2.^2);
  
+ 
 % ----------------------------------------------------------------------- %
 %- Interpolationg function coefficient a - fsolve + Cavalieri-Simpson to
 %  solve the integral
-% a0  = 0;
-% fun = @(a) find_a(a,x,psi,TOF, sin_alpha1, sin_alpha2,p1, f1, g1, L1, p2,f2, g2, L2,sim);
-% options=optimoptions('fsolve', 'TolFun', 1e-7, 'TolX', 1e-8,'Display','off');
-% %options=optimoptions('fsolve','Display','off');
-% a = fsolve(fun,a0,options); %% alternative: fzero 
-a = 0;
+%a0  = 0;
+%fun = @(a) find_a(a,x,psi,TOF,sim,s1,s1_x,s1_xx,s2,s2_x,s2_xx,delta1,delta1_x,delta1_xx,delta2,delta2_x,delta2_xx);
+
+%options=optimoptions('fsolve', 'TolFun', 1e-8, 'TolX', 1e-8,'Display','off');
+%options=optimoptions('fsolve','Display','off');
+%a = fsolve(fun,a0,options) %% alternative: fzero 
+%a = fzero(fun,a0);
+%a = 0;
+
+a  = find_a_prof(x,psi,TOF,sim,s1,s1_x,s1_xx,s2,s2_x,s2_xx,delta1,delta1_x,delta1_xx,delta2,delta2_x,delta2_xx); % prof
 
 %- Interpolating function xi(x,a) and derivatives
  % Initial and final position and velocity shall be constrained, therefore
  % the function shall be continuous (between 0 and 1).
- % If you want TOF free (not imposed) : a = 0.      %%%% controlla derivate
+ % If you want TOF free (not imposed) : a = 0.     
 xi     = a*x.^8 - (20 + 4*a)*x.^7 + (70 + 6*a)*x.^6 - (84 + 4*a)*x.^5 + (35 + a)*x.^4;
 xi_x   = 8*a*x.^7 - 7*(20+4*a)*x.^6 + 6*(70 + 6*a)*x.^5 - 5*(84 + 4*a)*x.^4 + 4*(35 + a)*x.^3;
 xi_xx  = 56*a*x.^6 - 42*(20+4*a)*x.^5 + 30*(70 + 6*a)*x.^4 - 20*(84 + 4*a)*x.^3 + 12*(35 + a)*x.^2;
@@ -275,18 +278,18 @@ s     = (s2 - s1).* xi + s1;
 delta = (delta2 - delta1).* xi + delta1; 
 
 
-%-- Transformation between spherical and cylindrical coordinates
+%- Transformation between spherical and cylindrical coordinates
 r = s.*cos(delta);
 z = s.*sin(delta);
 
-% Ds Ds_x  Ds_xx Ds_xxx 
+%- Ds Ds_x  Ds_xx Ds_xxx 
 Ds     = s2 - s1;
 Ds_x   = s2_x - s1_x;
 Ds_xx  = s2_xx - s1_xx;
 Ds_xxx = s2_xxx - s1_xxx;
 
 
-% Ddelta Ddelta_x Ddelta_xx Ddelta_xxx %%%% controlla
+%- Ddelta Ddelta_x Ddelta_xx Ddelta_xxx 
 Ddelta     = delta2 - delta1 ;
 Ddelta_x   = delta2_x - delta1_x;
 Ddelta_xx  = delta2_xx - delta1_xx;
@@ -308,7 +311,7 @@ delta_xxx = Ddelta_xxx.*xi + xi_xxx.*Ddelta +3*Ddelta_xx.*xi_x + 3*Ddelta_x.*xi_
 
 % r_x r_xx r_xxx
 r_x   = - s.*delta_x.*sin(delta) + s_x .* cos(delta);
-r_xx  = - (2*s_x.*delta_x + s_x.*delta_xx).*sin(delta) + (s_xx - s.*delta_x.^2).*cos(delta);
+r_xx  = - (2*s_x.*delta_x + s.*delta_xx).*sin(delta) + (s_xx - s.*delta_x.^2).*cos(delta);
 r_xxx = - (3*(s_xx.*delta_x + s_x.*delta_xx) + s.*(delta_xxx - delta_x.^3)).*sin(delta) + ...
           (s_xxx - 3*delta_x.*(s_x.*delta_x + s.*delta_xx)).*cos(delta);
 
@@ -343,7 +346,7 @@ x_tt = 0.5*(Nu_x - x_t_2.*De_x)./De;
 %  the x time derivative can be analytically computed removing the dependency
 %  from thrust per unit mass. 
 %gamma = atan(r_x./(r*psi));
-gamma = atan2(r_x,(r*psi)); %atan
+gamma = atan2(r_x,(r*psi)); % || atan
 
 %- In plane thrust per unit mass
 Tin2m  = 1./cos(gamma) .* (2*psi*r_x.*x_t_2 + r.*psi.*x_tt);
@@ -355,38 +358,57 @@ Tout2m = z_xx.*x_t_2 + z_x.*x_tt + sim.mu./(s.^3).*z;
 T2m = sqrt(Tin2m.^2 + Tout2m.^2);
 
 %- Mass time history from Tsiolkovsky equation: m_t
-   % I consider the backward case (from dry to wet) %%%%%%%%%%
+   % devo scriverle in funzione di theta o x (||) ???
 
 dtheta = theta(2)- theta(1);
 dtheta2 = dtheta/2;
 dtheta12 = dtheta/12;
 dtheta24 = dtheta/24;
 
-   if sim.direction == -1   
-       m = theta; %% perchè?
-       m(sim.n_sol) = M;
-       K = - T2m./(Isp*sim.g0);
-       m(sim.n_sol-1) = m(sim.n_sol) -   dtheta2*(K(sim.n_sol)*m(sim.n_sol)...
-                        +K(sim.n_sol-1)*m(sim.n_sol-1)); % (?) Alternative: FE
-       m(sim.n_sol-2) = m(sim.n_sol-1) - dtheta2*(K(sim.n_sol-1)*m(sim.n_sol-1)...
-                        +K(sim.n_sol-2)*m(sim.n_sol-2));
+theta_t = psi*x_t;  
+
+   if sim.direction == -1   %backward case (from dry to wet)
+       m = theta; % o theta? %% giusto?
+       m(n_sol) = M;
+       K = - T2m./(Isp*sim.g0)./theta_t; 
+       m(n_sol-1) = m(n_sol) -   dtheta2*(K(n_sol)*m(sim.n_sol)...
+                        +K(n_sol-1)*m(n_sol-1)); % (?) Alternative: FE
+       m(n_sol-2) = m(n_sol-1) - dtheta2*(K(n_sol-1)*m(n_sol-1)...
+                        +K(n_sol-2)*m(n_sol-2));
         
-       for i = sim.n_sol-2:-1:2 % predictor corrector AB3AM4 
+       for i = n_sol-2:-1:2 % predictor corrector AB3AM4 
            m(i-1) = m(i) - dtheta12*(23*K(i)*m(i) - 16*K(i+1)*m(i+1) + 5*K(i+2)*m(i+2) ) ;
            m(i-1) = m(i) - dtheta24*(9*K(i-1)*m(i-1)+19*K(i)*m(i) - 5*K(i+1)*m(i+1) + K(i+2)*m(i+2) ) ;
        end
-   end
+       
+   else %forward case (from wet to dry)
+        
+        m = theta; %% o theta? giusto?
+        m(1) = M;
+        K = - T2m./(Isp*sim.g0)./theta_t;
+        m(2) = m(1) +dtheta2*(K(1)*m(1)+K(2)*m(2));
+        m(3) = m(2) +dtheta2*(K(2)*m(2)+K(3)*m(3));
+        
+        for i = 3:n_sol-1 % dal quarto al penultimo punto con predictor corrector AB3AM4 expl
+            m(i+1) = m(i) + dtheta12*(23*K(i)*m(i) - 16*K(i-1)*m(i-1) + 5*K(i-2)*m(i-2) ) ;
+            m(i+1) = m(i) + dtheta24*(9*K(i+1)*m(i+1)+19*K(i)*m(i) - 5*K(i-1)*m(i-1) + K(i-2)*m(i-2) ) ;
+        end
+        
+    end
 
    
 %- time vector
 d_time =1./x_t;
-dtheta6 = dtheta./6;
+dx = x(2) - x(1);
+dx6 = dx./6;
+
+t    = x;
 t(1) = 0; % Initialization
 
 for i = 2:n_sol-1
-    t(i) = t(i-1) + dtheta6 * (d_time(i-1) + 4*d_time(i) + d_time(i+1) ) ; %% RK4 (?)
+    t(i) = t(i-1) + dx6 * (d_time(i-1) + 4*d_time(i) + d_time(i+1) ) ; %% RK4 (?)
 end
-t(n_sol) = t(n_sol-1) + d_time(n_sol-1)*dtheta ;
+t(n_sol) = t(n_sol-1) + d_time(n_sol-1)*dx ;
 
 % Thrust
 Tin = Tin2m.*m * 1000* DU/TU^2;
@@ -394,11 +416,12 @@ Tout = Tout2m.*m * 1000* DU/TU^2;
 
 % Output
 output.m       = m ;
-output.t       = t ; 
+output.t       = t ;
 output.Thrust  = [Tin,gamma,Tout];
 output.r       = r;
 output.theta   = theta;
 output.z       = z;
 output.a       = a;
+output.Href    = Href;
 
 end
