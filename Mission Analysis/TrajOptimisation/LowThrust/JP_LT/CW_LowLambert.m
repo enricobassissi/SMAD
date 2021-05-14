@@ -104,12 +104,16 @@ l4 = l3.*l;
 l5 = l4.*l;
 l6 = l5.*l;
 
-% solving for d
-fun = @(plan_d) find_d( plan_d , plan_a , plan_b , plan_c , L , rf , tan_gam_f , rate_theta_f , TOF ,l,l2,l3,l4,l5,l6,sim.n_sol);
-plan_d = 0;
-%opt = optimset('Display','off');
-%plan_d = fzero(fun,plan_d,opt);
-plan_d = JP_secant_solver( fun , plan_d , 1e-8 , 1e-6 , 100)
+if sim.TOF_imposed_flag == 1
+    % solving for d
+    fun = @(plan_d) find_d( plan_d , plan_a , plan_b , plan_c , L , rf , tan_gam_f , rate_theta_f , TOF ,l,l2,l3,l4,l5,l6,sim.n_sol);
+    plan_d = 0;
+    %opt = optimset('Display','off');
+    %plan_d = fzero(fun,plan_d,opt);
+    plan_d = JP_secant_solver( fun , plan_d , 1e-8 , 1e-6 , 100)
+else
+    plan_d = 0;
+end
 
 % calculation of e f g
 AAA = [  30*L2 , -10*L3 ,    L4  ;

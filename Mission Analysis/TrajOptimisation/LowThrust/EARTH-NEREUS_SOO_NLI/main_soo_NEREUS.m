@@ -32,19 +32,20 @@ set(0, 'DefaultLineLineWidth', 1.8)
 format short
 
 %% simulation parameters
-sim.mu    = 132712440018          ; % actractor parameter [km^3 s^-2]
+sim.mu_dim    = 132712440018          ; % actractor parameter [km^3 s^-2]
 sim.DU    = 149597870.7           ; % distance unit [km]
-% sim.mu    = muSun                   ; % actractor parameter [km^3 s^-2]
-% sim.DU    = AU                      ; % distance unit [km]
-sim.TU    = (sim.DU^3/sim.mu )^0.5; % time unit [s]
+sim.TU    = (sim.DU^3/sim.mu_dim)^0.5; % time unit [s]
 sim.mu    = 1;                      % non-dimensional attractor parameter [DU^3/TU^2]
 sim.n_sol = 100;                    % number of computational nodes
+sim.tol_vers = 1e-8; % tolerance on vector parallelism
 sim.x = linspace(0,1,sim.n_sol)';   % 
 sim.g0 = 9.81*(sim.TU^2/(1000*sim.DU)); % non-dimensional g0
 sim.direction = -1;                     % direction of integration (1 FW, -1 BW)
 
+sim.TOF_imposed_flag = 1;
 
-str_path=split(pwd, 'TrajOptimisation\LowThrust\JP_LT\EARTH-NEREUS_SOO_NLI');
+%% Python Referencing
+str_path=split(pwd, 'TrajOptimisation\LowThrust\EARTH-NEREUS_SOO_NLI');
 util_path=string(str_path(1))+'Utils';
 addpath(genpath(util_path));
 py_path=string(str_path(1))+'PyInterface\NEO_API_py';
@@ -72,7 +73,6 @@ sim.PS.Isp = 3000/sim.TU;  % non-dimensional specific impulse
 
 sim.M = 1000; % SC mass [kg]
 
-
 %% Boundaries
 % Departure dates
 sim.soo_lim.date_ed = [2041, 1, 1, 0, 0, 0]; %30
@@ -94,7 +94,6 @@ sim.soo_lim.alpha_max =  pi/2;
 % beta
 sim.soo_lim.beta_min = - pi/2;
 sim.soo_lim.beta_max =  pi/2;
-
 
 
 sim.soo_bound.lb = [sim.soo_lim.mjd2000_ed, sim.soo_lim.TOF1_min, sim.soo_lim.N_REV_min, sim.soo_lim.vinf_mag_min,sim.soo_lim.alpha_min,sim.soo_lim.beta_min]; % Lower bound
@@ -122,11 +121,11 @@ options.Display = 'iter';
 % options.HybridFcn = 'fgoalattain';
 
 
-options.PopulationSize = 1000; % ideal 1000
-options.MaxGenerations = 100; % ideal 100
+options.PopulationSize = 500; % ideal 1000
+options.MaxGenerations = 50; % ideal 100
 
-options.FunctionTolerance = 1e-9; %1e-6
-options.MaxStallGenerations = 3;
+options.FunctionTolerance = 1e-6; %1e-6
+options.MaxStallGenerations = 10;
 
 % Parallel pool
 % Open the parallel pool
@@ -155,7 +154,8 @@ Nrev_opt = x(3)
 vinf_opt = x(4)*sim.DU/sim.TU
 alpha_opt = rad2deg(x(5))
 beta_opt = rad2deg(x(6))
-Fval 
+massfrac_opt = Fval
+
 %% plot
 [output, r1_true, r2_true] = plot_ff_soo_NEREUS(x,sim,data);
 
@@ -185,8 +185,6 @@ plot(output.t*sim.TU/86400,output.m);
 xlabel('Time [days]')
 ylabel('Mass [kg]')
 
-massfrac_opt = Fval
-TOF1_opt = x(2)*sim.TU/(3600*24)
 %%
 %JD_departure = x(knee_sol,1);
 day1 = [2028 1 1 0 0 0];

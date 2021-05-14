@@ -29,18 +29,18 @@ varr = v2; %since we want to rendez-vous
 
 [output] = NL_interpolator( r1 , r2 , vdep , varr , N_rev , TOF1 , sim.M ,sim.PS.Isp ,sim );
 
-T = sqrt(output.Thrust(:,1).^2 + output.Thrust(:,3).^2);
-CHECK_TERM_T = 0;
-if T > 0.22 
-    CHECK_TERM_T = 100;
+if ~isnan(output.Thrust) % if is not nan
+    T = sqrt(output.Thrust(:,1).^2 + output.Thrust(:,3).^2);
+    CHECK_TERM_T = 0;
+    if abs(max(T)) > 0.22 
+        CHECK_TERM_T = 100;
+    end
+    obj_fun(1) = (output.m(1) - output.m(end))/output.m(1) + CHECK_TERM_T; % la massa è dimensionale
+    obj_fun(2) = TOF1 + 100*CHECK_TERM_T;
+else
+    obj_fun(1) = 1e2;
+    obj_fun(2) = 1e4;
 end
-
-obj_fun(1) = (output.m(1) - output.m(end))/output.m(1) + CHECK_TERM_T; % la massa è dimenionale
-
-
-obj_fun(2) = TOF1 + CHECK_TERM_T;
-
-
 
 end
 

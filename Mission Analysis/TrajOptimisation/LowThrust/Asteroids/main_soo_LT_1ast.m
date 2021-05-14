@@ -1,5 +1,5 @@
 %% --------------------------------------------------------------------- %%
-%% ------------------------- Earth Mars Transfer ----------------------- %%
+%% ------------------------- Earth Ast1 Transfer ----------------------- %%
 %% ------------------------- ARCH 1+4, LT FLYBY ------------------------ %%
 %% ------------------------------ SOO ---------------------------------- %%
 %% --------------------------------------------------------------------- %%
@@ -35,61 +35,98 @@ colors = [0    50   71;... % (1) DEEP SPACE
 sim.case_name = 'ARCH ID 6: LOW THRUST FLYBY ON EVERY ASTEROID';
 
 %% add path of functions and python stuff
-str_path=split(pwd, 'TrajOptimisation\LowThrust\EARTH-MARS_SOO_NLI');
+str_path=split(pwd, 'TrajOptimisation\LowThrust\Asteroids');
 util_path=string(str_path(1))+'Utils';
 addpath(genpath(util_path));
 py_path=string(str_path(1))+'PyInterface\NEO_API_py';
 addpath(genpath(py_path));
 neoeph_path=string(str_path(1))+'NeoEph';
 addpath(genpath(neoeph_path));
-str_path=split(pwd, 'EARTH-MARS_SOO_NLI');
+str_path=split(pwd, 'Asteroids');
 imp_path=string(str_path(1));
 addpath(genpath(imp_path));
 
+%% Call to NASA JPL Horizons to get Asteroid's Ephemerides
+% Import module of Python
+try 
+    module = py.importlib.import_module('neo_api_function');
+catch
+    copyfile(py_path+'\neo_api_function.py', pwd, 'f'); 
+    module = py.importlib.import_module('neo_api_function');
+end
+
+%% Asteroids
+load('data_elements_matrix.mat')
+[data.asteroid_names, data.PermutationMatrix, data.HowMany] = ...
+            sequences_local_pruning(data_elements_matrix);
+
+[data.y_interp_ft, data.t_vector] = find_eph_neo(data.asteroid_names);
+
 %% simulation parameters
-sim.mu_dim    = 132712440018          ; % actractor parameter [km^3 s^-2]
-sim.DU        = 149597870.7           ; % distance unit [km]
+sim.mu_dim    = 132712440018              ; % actractor parameter [km^3 s^-2]
+sim.DU        = 149597870.7               ; % distance unit [km]
 sim.TU        = (sim.DU^3/sim.mu_dim )^0.5; % time unit [s]
 sim.mu        = 1;                      % non-dimensional attractor parameter [DU^3/TU^2]
 sim.n_sol     = 200;                    % number of computational nodes
 sim.x = linspace(0,1,sim.n_sol)';   % 
 
 sim.g0 = 9.81*(sim.TU^2/(1000*sim.DU)); % non-dimensional g0
-sim.direction = -1;                     % direction of integration (1 FW, -1 BW)
+sim.direction = 1;                     % direction of integration (1 FW, -1 BW)
 
-sim.vinf = 0; % Parabolic escape
+% sim.vinf = 0; % Parabolic escape
 
 sim.TOF_imposed_flag = 1;
 
-%% Propulsive system parameters
 sim.PS.Isp = 3000/sim.TU;  % non-dimensional specific impulse
 
-sim.M = 1000; % SC mass [kg]
+sim.M = 100; % SC mass [kg]
 
 %% Boundaries
 % Departure dates
-sim.soo_lim.date_ed = [2028, 3, 1, 0, 0, 0]; %28
-sim.soo_lim.date_ld =  [2031, 1, 1, 0, 0, 0]; %31
-sim.soo_lim.mjd2000_ed = date2mjd2000(sim.soo_lim.date_ed)*3600*24/sim.TU;
-sim.soo_lim.mjd2000_ld = date2mjd2000(sim.soo_lim.date_ld)*3600*24/sim.TU;
+bound.date_ed = [2024, 1, 1, 0, 0, 0]; 
+bound.date_ld =  [2028, 1, 1, 0, 0, 0]; 
+bound.mjd2000_ed = date2mjd2000(bound.date_ed)*3600*24/sim.TU;
+bound.mjd2000_ld = date2mjd2000(bound.date_ld)*3600*24/sim.TU;
 % TOF1
-sim.soo_lim.TOF1_min = 950*3600*24/sim.TU; %600
-sim.soo_lim.TOF1_max = 1000*3600*24/sim.TU; 
+bound.TOF1_min = 550*3600*24/sim.TU; %600
+bound.TOF1_max = 900*3600*24/sim.TU; 
+% TOF2
+bound.TOF2_min = 1*365*3600*24/sim.TU; %600
+bound.TOF2_max = 3*365*3600*24/sim.TU; 
 % N REV
-sim.soo_lim.N_REV_min = 0; %0
-sim.soo_lim.N_REV_max = 3; %3
+bound.N_REV_min = 1; %0
+bound.N_REV_max = 1; %3
+% ID Permutation
+bound.IDP_min = 1; 
+% bound.IDP_max = data.HowMany; 
+bound.IDP_max = length(data.asteroid_names);
+% C3 stuff
+% Constraint on C3 Launcher
+sim.C3_max = 10; % km^2/s^2
+bound.v_inf_magn_min = 0;
+bound.v_inf_magn_max = sqrt(sim.C3_max)/sim.DU*sim.TU;
+bound.alpha_min = -pi;
+bound.alpha_max = pi;
+bound.beta_min = -pi;
+bound.beta_max = pi;
 
-sim.soo_bound.lb = [sim.soo_lim.mjd2000_ed, sim.soo_lim.TOF1_min, sim.soo_lim.N_REV_min]; % Lower bound
-sim.soo_bound.ub = [sim.soo_lim.mjd2000_ld, sim.soo_lim.TOF1_max, sim.soo_lim.N_REV_max]; % Upper bound
+% x = [MJD0,TOF1,TOF2,NREV,IDP,v_inf_magn,alpha,beta]
+bound.lb = [bound.mjd2000_ed, bound.TOF1_min, bound.TOF2_min, ...
+    bound.N_REV_min, bound.IDP_min, bound.v_inf_magn_min, ...
+    bound.alpha_min, bound.beta_min]; % Lower bound
+bound.ub = [bound.mjd2000_ld, bound.TOF1_max, bound.TOF2_max, ...
+    bound.N_REV_max, bound.IDP_max, bound.v_inf_magn_max, ...
+    bound.alpha_max, bound.beta_max]; % Upper bound
+
 %% Constraints
-sim.soo_constr.A = []; % linear inequality constraints
-sim.soo_constr.b = []; % linear inequality constraints
-sim.soo_constr.Aeq = []; % linear equality constraints
-sim.soo_constr.beq = []; % linear equality constraints
-sim.soo_constr.nonlcon = []; % linear equality constraints
+constr.A = []; % linear inequality constraints
+constr.b = []; % linear inequality constraints
+constr.Aeq = []; % linear equality constraints
+constr.beq = []; % linear equality constraints
+constr.nonlcon = []; % linear equality constraints
 % if you want to restrict x(2) and x(10) to be integers, set IntCon to [2,10].
 % ga(fitnessfcn,nvars,A,b,Aeq,beq,lb,ub,nonlcon,IntCon,options)
-sim.soo_constr.IntCon = [3];
+constr.IntCon = [4,5];
 
 %% Options
 options = optimoptions(@ga);
@@ -120,19 +157,20 @@ end
 options.UseParallel = true;
 
 %% Build the soo
-FitnessFunction = @(x) ff_ea_ma_LT_soo_NLI(x,sim); % Function handle to the fitness function
-numberOfVariables = length(sim.soo_bound.ub); % Number of decision variables
+FitnessFunction = @(x) ff_ea_ast_LT_soo_NLI(x,sim,data); % Function handle to the fitness function
+numberOfVariables = length(bound.ub); % Number of decision variables
 
 tic
-[x,Fval,exitFlag,Output] = ga(FitnessFunction,numberOfVariables,sim.soo_constr.A, ...
-    sim.soo_constr.b,sim.soo_constr.Aeq,sim.soo_constr.beq,sim.soo_bound.lb,...
-    sim.soo_bound.ub,sim.soo_constr.nonlcon,sim.soo_constr.IntCon,options);
+[x,Fval,exitFlag,Output] = ga(FitnessFunction,numberOfVariables,constr.A, ...
+    constr.b,constr.Aeq,constr.beq,bound.lb,...
+    bound.ub,constr.nonlcon,constr.IntCon,options);
 el_time_min_pp = toc/60;
 
 dep_opt = mjd20002date(x(1)*sim.TU/(3600*24))
+asteroid_1 = data.asteroid_names(x(5))
 
 %% plot
-[output, r1_true, r2_true,v1_true,v2_true] = plot_ff_ea_ma_LT_soo_NLI(x,sim);
+[output, r1_true, r2_true,v1_true,v2_true] = plot_ff_ea_ast_LT_soo_NLI(x,sim,data);
 
 figure()
 subplot(5,1,1)
@@ -160,7 +198,6 @@ plot(output.t*sim.TU/86400,output.m);
 xlabel('Time [days]')
 ylabel('Mass [kg]')
 
-
 %%
 %JD_departure = x(knee_sol,1);
 day1 = [2028 1 1 0 0 0];
@@ -180,25 +217,30 @@ for i=1:length(times)
     [kep2,ksun] = uplanet(times(i),4);
     [r2(i,1:3),~] = sv_from_coe(kep2,ksun);
     r2(i,1:3) = r2(i,1:3)/sim.DU;
+    
+    % Orbit 3
+    [kep_ast_1] = uNEO2(times(i),asteroid_1,data); % [km,-,rad,rad,rad,wrapped rad]
+    [r_ast1(i,1:3), v1] = sv_from_coe(kep_ast_1,ksun); % km, km/s
+    r_ast1(i,1:3) = r_ast1(i,1:3)/sim.DU;
 end
-
 
 r3  = [output.r.*cos(output.theta) output.r.*sin(output.theta) output.z];
 R3 = rotate_local2ecplitic(r1_true,r3,sim.n_sol,output.Href);
 
 figure()
-plot3(R3(:,1),R3(:,2),R3(:,3))
+plot3(R3(:,1),R3(:,2),R3(:,3),'DisplayName','Traj')
 hold on
-plot3(r1_true(1),r1_true(2),r1_true(3),'*m')
-plot3(r2_true(1),r2_true(2),r2_true(3),'*c')
-axis equal
-grid on
-hold on
+plot3(r1_true(1),r1_true(2),r1_true(3),'*m','DisplayName','Dep')
+plot3(r2_true(1),r2_true(2),r2_true(3),'*c','DisplayName','Arr')
+axis equal; grid on;
+xlabel('x [AU]'); ylabel('y [AU]'); ylabel('y [AU]'); 
 % Earth
-hold on
-plot3(r1(:,1),r1(:,2),r1(:,3),'--g'); % geocentric equatorial frame 
+plot3(r1(:,1),r1(:,2),r1(:,3),'--g','DisplayName','Earth'); % geocentric equatorial frame 
 % Mars
-hold on
-plot3(r2(:,1),r2(:,2),r2(:,3),'--r');
-plot3(0,0,0,'oy')
+plot3(r2(:,1),r2(:,2),r2(:,3),'--r','DisplayName','Mars');
+% Asteroid 1
+plot3(r_ast1(:,1),r_ast1(:,2),r_ast1(:,3),'--b','DisplayName','Ast1');
+% Sun
+plot3(0,0,0,'oy','DisplayName','Sun')
+legend('show')
 

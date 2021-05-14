@@ -1,6 +1,7 @@
-function [asteroid_names, PermutationMatrix_after, HowMany_after] = sequences_local_pruning(data_elements)
+function [asteroid_names, PermutationMatrix_after, HowMany_after] = sequences_local_pruning(data_elements,p_number)
 
 %{
+ p_number = number of selected element in the dataset
  w_up = Longitude of pericenter, OM+om
  transfer trajectory between two orbits (subscripts 1 and 2) with a large 
  delta_w_up = mod((w_up_1 - w_up_2), pi) is, in fact, as more difficult to 
@@ -17,14 +18,14 @@ incl_asteroids = str2double(data_elements(:,4));
 OM_asteroids = str2double(data_elements(:,5));
 om_asteroids = str2double(data_elements(:,6));
 
-HowMany = factorial(length(asteroid_names)) / factorial(length(asteroid_names) - 4);
-[PermutationMatrix_whole, ~] = permnUnique(asteroid_names, 4);
+HowMany = factorial(length(asteroid_names)) / factorial(length(asteroid_names) - p_number);
+[PermutationMatrix_whole, ~] = permnUnique(asteroid_names, p_number);
 
 PermutationMatrix_to_cut = PermutationMatrix_whole;
 
 delta_incl_max = 5;
 for i = 1:HowMany % rows
-    for j = 2:4 % cols
+    for j = 2:p_number % cols
         idx_ast_considered_a = find(PermutationMatrix_whole(i,j-1)==asteroid_names);
         idx_ast_considered_b = find(PermutationMatrix_whole(i,j)==asteroid_names);
         incl_a = incl_asteroids(idx_ast_considered_a);

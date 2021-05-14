@@ -44,21 +44,23 @@ xm_t = 0.5*(x_t(1:end-1) + x_t(2:end));
 % ----------------------------------------------------------------------- %
 % MIA 1
 % dTOF at each theta 
-dTOF  = 1./x_t;
-dTOFm = 1./xm_t;
-
-% step size
-h = x(2)- x(1);
+% dTOF  = 1./x_t;
+% dTOFm = 1./xm_t;
+% 
+% % step size
+% h = x(2)- x(1);
 %h = 1e-8;
 
-% Cavalieri-Simpson method
-I = 0;
-for i = 2:n_sol
-    I = I + dTOF(i-1) + 4*dTOFm(i-1) + dTOF(i);
-end
+% % Cavalieri-Simpson method
+% I = 0;
+% for i = 2:n_sol
+%     I = I + dTOF(i-1) + 4*dTOFm(i-1) + dTOF(i);
+% end
+% 
+% I = I*h/6;
 
-I = I*h/6;
-error_TOF = (TOF-I);
+% I = trapz(x,dTOF);
+% error_TOF = (TOF-I);
 
 % %------------------------------------------------------------------------%
 % % MIA 2 :
@@ -77,5 +79,21 @@ error_TOF = (TOF-I);
 % 
 % %Computation of TOF error (residual)
 % error_TOF = (TOF-TOF11); %% abs?
+
+%% MIA 3 e un po di enri
+theta = psi*x;
+theta_t = psi*x_t; 
+% thetam_t = psi*xm_t;
+
+dTOF  = 1./theta_t;
+% dTOFm = 1./xm_t;
+
+% step size
+% h = x(2)- x(1);
+
+
+
+I = trapz(theta,dTOF);
+error_TOF = (TOF-I);
 
 end

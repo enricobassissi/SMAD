@@ -69,7 +69,7 @@ function [output] = NL_interpolator( RI , RF , VI , VF , Nrev , TOF ,M ,Isp ,sim
     
     else
         if RIv_cross_RFv(3) > 0   %%% paper  :  cross(RIv_cross_RFv, Href) > 0
-            psi1 = 2*pi + acos(RIv_dot_RFv);
+            psi1 = acos(RIv_dot_RFv); % 2*pi + acos(RIv_dot_RFv)
         elseif RIv_cross_RFv(3) < 0  %%% paper  :  cross(RIv_cross_RFv, Href) < 0
             psi1 = 2*pi - acos(RIv_dot_RFv);
         end
@@ -250,20 +250,21 @@ theta = psi*x;
  s2_xxx = -6*p2*q2_x.^3./(q2.^4) + 6*p2*q2_x.*q2_xx./(q2.^3) - p2*q2_xxx./(q2.^2);
  
  
-% ----------------------------------------------------------------------- %
-%- Interpolationg function coefficient a - fsolve + Cavalieri-Simpson to
-%  solve the integral
-%a0  = 0;
-%fun = @(a) find_a(a,x,psi,TOF,sim,s1,s1_x,s1_xx,s2,s2_x,s2_xx,delta1,delta1_x,delta1_xx,delta2,delta2_x,delta2_xx);
+%% ----------------- Time Of Flight Solution --------------------------- %%
+if sim.TOF_imposed_flag == 1
+    %- Interpolationg function coefficient a - fsolve + Cavalieri-Simpson to
+    %  solve the integral
+    a0  = 0;
+    fun = @(a) find_a(a,x,psi,TOF,sim,s1,s1_x,s1_xx,s2,s2_x,s2_xx,delta1,delta1_x,delta1_xx,delta2,delta2_x,delta2_xx);
 
-%options=optimoptions('fsolve', 'TolFun', 1e-8, 'TolX', 1e-8,'Display','off');
-%options=optimoptions('fsolve','Display','off');
-%a = fsolve(fun,a0,options) %% alternative: fzero 
-%a = fzero(fun,a0);
-%a = 0;
-
-a  = find_a_prof(x,psi,TOF,sim,s1,s1_x,s1_xx,s2,s2_x,s2_xx,delta1,delta1_x,delta1_xx,delta2,delta2_x,delta2_xx); % prof
-
+    %options=optimoptions('fsolve', 'TolFun', 1e-8, 'TolX', 1e-8,'Display','off');
+    options=optimoptions('fsolve','Display','none');
+    [a,fsolve_err] = fsolve(fun,a0,options); %% alternative: fzero 
+    % a  = find_a_prof(x,psi,TOF,sim,s1,s1_x,s1_xx,s2,s2_x,s2_xx,delta1,delta1_x,delta1_xx,delta2,delta2_x,delta2_xx); % prof
+else
+    a = 0;
+end
+    
 %- Interpolating function xi(x,a) and derivatives
  % Initial and final position and velocity shall be constrained, therefore
  % the function shall be continuous (between 0 and 1).
@@ -332,7 +333,7 @@ De_x = 3*s_x./s.*De + s.^3.*(r_x*psi^2 - r_xxx + (2*r.*r_x.*r_xx - r_x.^3)./(r.^
 
 %- Square of derivative of x wrt time : x_t_2
 
-x_t_2 = Nu./De;
+x_t_2 = Nu./De; % \dot{x}^2
 x_t   = sqrt(x_t_2);
 
 
@@ -340,7 +341,7 @@ x_t   = sqrt(x_t_2);
 x_tt = 0.5*(Nu_x - x_t_2.*De_x)./De;
    
 % ----------------------------------------------------------------------- %
-
+if isreal(a)
 %- Thrust angle gamma -> It is imposed equal to the flight path angle in
 %  order to have the in-plane thrust imposed as tangential only. In this way
 %  the x time derivative can be analytically computed removing the dependency
@@ -368,9 +369,9 @@ dtheta24 = dtheta/24;
 theta_t = psi*x_t;  
 
    if sim.direction == -1   %backward case (from dry to wet)
-       m = theta; % o theta? %% giusto?
+       m = theta; % o x? %% giusto?
        m(n_sol) = M;
-       K = - T2m./(Isp*sim.g0)./theta_t; 
+       K = - T2m./(Isp*sim.g0)./theta_t; % dividi per theta_t per dimensionalità
        m(n_sol-1) = m(n_sol) -   dtheta2*(K(n_sol)*m(sim.n_sol)...
                         +K(n_sol-1)*m(n_sol-1)); % (?) Alternative: FE
        m(n_sol-2) = m(n_sol-1) - dtheta2*(K(n_sol-1)*m(n_sol-1)...
@@ -381,47 +382,59 @@ theta_t = psi*x_t;
            m(i-1) = m(i) - dtheta24*(9*K(i-1)*m(i-1)+19*K(i)*m(i) - 5*K(i+1)*m(i+1) + K(i+2)*m(i+2) ) ;
        end
        
-   else %forward case (from wet to dry)
+   else %forward case (from wet to dry) % +1
         
-        m = theta; %% o theta? giusto?
+        m = theta; %% o x? giusto?
         m(1) = M;
         K = - T2m./(Isp*sim.g0)./theta_t;
-        m(2) = m(1) +dtheta2*(K(1)*m(1)+K(2)*m(2));
-        m(3) = m(2) +dtheta2*(K(2)*m(2)+K(3)*m(3));
+        m(2) = m(1) + dtheta2*( K(1)*m(1)+K(2)*m(2) );
+        m(3) = m(2) + dtheta2*( K(2)*m(2)+K(3)*m(3) );
         
         for i = 3:n_sol-1 % dal quarto al penultimo punto con predictor corrector AB3AM4 expl
-            m(i+1) = m(i) + dtheta12*(23*K(i)*m(i) - 16*K(i-1)*m(i-1) + 5*K(i-2)*m(i-2) ) ;
-            m(i+1) = m(i) + dtheta24*(9*K(i+1)*m(i+1)+19*K(i)*m(i) - 5*K(i-1)*m(i-1) + K(i-2)*m(i-2) ) ;
+            m(i+1) = m(i) + dtheta12*( 23*K(i)*m(i) - 16*K(i-1)*m(i-1) + 5*K(i-2)*m(i-2) );
+            m(i+1) = m(i) + dtheta24*( 9*K(i+1)*m(i+1)+19*K(i)*m(i) - 5*K(i-1)*m(i-1) + ...
+                K(i-2)*m(i-2) );
         end
         
     end
 
    
-%- time vector
+% time vector
 d_time =1./x_t;
 dx = x(2) - x(1);
-dx6 = dx./6;
 
 t    = x;
 t(1) = 0; % Initialization
 
 for i = 2:n_sol-1
-    t(i) = t(i-1) + dx6 * (d_time(i-1) + 4*d_time(i) + d_time(i+1) ) ; %% RK4 (?)
+    t(i) = t(i-1) + dx/6 * (d_time(i-1) + 4*d_time(i) + d_time(i+1) ) ; %% RK2 (?)
 end
 t(n_sol) = t(n_sol-1) + d_time(n_sol-1)*dx ;
+
 
 % Thrust
 Tin = Tin2m.*m * 1000* DU/TU^2;
 Tout = Tout2m.*m * 1000* DU/TU^2;
 
-% Output
-output.m       = m ;
-output.t       = t ;
-output.Thrust  = [Tin,gamma,Tout];
-output.r       = r;
-output.theta   = theta;
-output.z       = z;
-output.a       = a;
-output.Href    = Href;
+    % Output
+    output.m       = m ;
+    output.t       = t ;
+    output.Thrust  = [Tin,gamma,Tout];
+    output.r       = r;
+    output.theta   = theta;
+    output.z       = z;
+    output.a       = a;
+    output.Href    = Href;
 
+else
+    % Output in case a is complex -> no solution with that tof
+    output.m       = nan ;
+    output.t       = nan ;
+    output.Thrust  = nan ;
+    output.r       = nan ;
+    output.theta   = nan ;
+    output.z       = nan ;
+    output.a       = nan ;
+    output.Href    = nan ;
+end
 end

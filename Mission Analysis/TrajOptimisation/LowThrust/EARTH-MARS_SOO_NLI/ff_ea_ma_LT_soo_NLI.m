@@ -26,13 +26,22 @@ v2 = v2/sim.DU*sim.TU;
 N_rev= round(x(3));
 
 vdep = v1;  %since parabolic escape (vinf = 0)
-varr = v2; %since we want to rendez-vous
+varr = v2; %since we want to rendezvous
 
 Isp = sim.PS.Isp;
 
 [output] = NL_interpolator( r1 , r2 , vdep , varr , N_rev , TOF1 , sim.M ,Isp ,sim );
 
-obj_fun = (output.m(1) - output.m(end))/output.m(1); % la massa è dimenionale
+if ~isnan(output.Thrust) % if is not nan
+    T = sqrt(output.Thrust(:,1).^2 + output.Thrust(:,3).^2);
+    CHECK_TERM_T = 0;
+    if abs(max(T)) > 0.22 
+        CHECK_TERM_T = 100;
+    end
+    obj_fun = (output.m(1) - output.m(end))/output.m(1) + CHECK_TERM_T; % la massa è dimenionale
+else
+    obj_fun = 1e2;
+end
 
 end
 
