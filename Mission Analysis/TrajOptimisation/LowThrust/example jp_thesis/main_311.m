@@ -47,7 +47,7 @@ sim.out_shape = 2;                  % out-of-plane shape (2:CONWAY)
 hp = 3; %3 OUT OF PLANE SHAPE PARAMETERS
 kp = 3; %3
 
-%%
+%% CONWAY
 [output] = CW_LowLambert( RI , RF , VI , VF , N_rev , TOF ,M ,hp , kp , PS,sim );
 
 output.m(1)
@@ -95,7 +95,7 @@ max_thrust1 = max(sqrt(output.u(:,1).^2 + output.u(:,3).^2))
 TOF_hours1 = output.t(end)*sim.TU/3600
 
 
-%%
+%% NLI
 output2 = NL_interpolator( RI , RF , VI , VF , N_rev , TOF ,M ,PS.Is ,sim );
  
 
