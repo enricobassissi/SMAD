@@ -52,10 +52,17 @@ function [sol] = plot_mission_4neo_flyby_MARS_GA(sol,asteroid_names_sequence,dat
     [~,~,~,~,VI_GAast1,VF_GAast1,~,~] = lambertMR(rGA,r1,ToF_GAast1_sec,ksun,0,0,0,0);
     dv2_GAast1 = sqrt((VF_GAast1(1)-v1(1))^2+(VF_GAast1(2)-v1(2))^2+(VF_GAast1(3)-v1(3))^2);
     
-    % astroConstants(24) = Radius_Mars, km
-    % astroConstants(14) = muMars, km^3/s^2
-    R_lim_from_planet = 200; %km, ok for marso to avoid atmosphere
-    sol.delta_V_p = flyby(astroConstants(24), astroConstants(14),R_lim_from_planet, MJDGA, VF_EAGA, VI_GAast1);
+    if sim.ID_FLYBY == 3
+        RPlanet_flyby = astroConstants(23); % Radius_Earth, km
+        muPlanet_flyby = astroConstants(13); % muEarth, km^3/s^2
+        R_lim_from_planet = 500; % km, for earth is ok to avoid atmosphere
+    elseif sim.ID_FLYBY == 4
+        RPlanet_flyby = astroConstants(24); % Radius_mars, km
+        muPlanet_flyby = astroConstants(14); % mu mars, km^3/s^2
+        R_lim_from_planet = 200; % km, for mars is ok to avoid atmosphere
+    end
+     sol.delta_V_p = flyby(RPlanet_flyby, muPlanet_flyby,R_lim_from_planet, ...
+                  MJDGA, VF_EAGA', VI_GAast1', sim.ID_FLYBY); % input needs to be vertical vectors
 
     % Velocity gained with flyby
     sol.dV_gained_flyby = sqrt((VI_GAast1(1)-VF_EAGA(1))^2+(VI_GAast1(2)-VF_EAGA(2))^2+(VI_GAast1(3)-VF_EAGA(3))^2) - sol.delta_V_p;

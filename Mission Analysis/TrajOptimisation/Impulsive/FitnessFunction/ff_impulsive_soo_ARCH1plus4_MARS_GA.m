@@ -67,11 +67,17 @@ end
 [~,~,~,~,VI_GAast1,VF_GAast1,~,~] = lambertMR(rGA,r1,ToF_GAast1_sec,ksun,0,0,0,0);
 dv2_GAast1 = sqrt((VF_GAast1(1)-v1(1))^2+(VF_GAast1(2)-v1(2))^2+(VF_GAast1(3)-v1(3))^2);
 
-% astroConstants(24) = Radius_Mars, km
-% astroConstants(14) = muMars, km^3/s^2
-R_lim_from_planet = 200; % km, for mars it' ok
-delta_v_p = flyby(astroConstants(24), astroConstants(14),R_lim_from_planet, MJDGA, VF_EAGA, VI_GAast1);
-
+if sim.ID_FLYBY == 3
+    RPlanet_flyby = astroConstants(23); % Radius_Earth, km
+    muPlanet_flyby = astroConstants(13); % muEarth, km^3/s^2
+    R_lim_from_planet = 500; % km, for earth is ok to avoid atmosphere
+elseif sim.ID_FLYBY == 4
+    RPlanet_flyby = astroConstants(24); % Radius_mars, km
+    muPlanet_flyby = astroConstants(14); % mu mars, km^3/s^2
+    R_lim_from_planet = 200; % km, for mars is ok to avoid atmosphere
+end
+delta_v_p = flyby(RPlanet_flyby, muPlanet_flyby,R_lim_from_planet, ...
+              MJDGA, VF_EAGA', VI_GAast1', sim.ID_FLYBY); % input needs to be vertical vectors
 if strcmp(string(delta_v_p), 'Not found')
     % Arbitrarly big barrier number, related to no flyby solution
     delta_v_p = 200;
@@ -140,19 +146,19 @@ CHECK_TERM = CHECK_TERM_A+CHECK_TERM_B+CHECK_TERM_C+CHECK_TERM_D;
 % c_dVpass_1 = 20; c_dVpass_2 = 20; c_dVpass_3 = 20; c_dVdeltavp = 20;
 % c_dVrel_1 = 0.1; c_dVrel_2 = 0.08; c_dVrel_3 = 0.06; c_dVrel_4 = 0.04;
 % 
-% avg_dVrel = mean([dv2_GAast1, dv2_ast12, dv2_ast23, dv2_ast34]);
+avg_dVrel = mean([dv2_GAast1, dv2_ast12, dv2_ast23, dv2_ast34]);
 % 
 % % obj_fun = dv_extra_launch + c_dVpass_1*dv_passage_ast1 + c_dVdeltavp*delta_v_p + ...
 % %     c_dVpass_2*dv_passage_ast2 + c_dVpass_3*dv_passage_ast3 + ...
 % %     c_dVrel_1*(dv2_GAast1-avg_dVrel)^2 + c_dVrel_2*(dv2_ast12-avg_dVrel)^2 +...
 % %     c_dVrel_3*(dv2_ast23-avg_dVrel)^2 + c_dVrel_4*(dv2_ast34-avg_dVrel)^2 + ...
 % %     CHECK_TERM + CHECK_TERM_TOF; 
-% obj_fun = dv_extra_launch + dv_passage_ast1 + delta_v_p + ...
-%     dv_passage_ast2 + dv_passage_ast3 + ...
-%     CHECK_TERM + CHECK_TERM_TOF;
+c_dVrel = 0.1;
 obj_fun = dv_extra_launch + delta_v_p + dv_passage_ast1 + ...
     dv_passage_ast2 + dv_passage_ast3 + ...
-	CHECK_TERM + CHECK_TERM_TOF;
+	c_dVrel*(dv2_GAast1-avg_dVrel)^2 + c_dVrel*(dv2_ast12-avg_dVrel)^2 +...
+    c_dVrel*(dv2_ast23-avg_dVrel)^2 + c_dVrel*(dv2_ast34-avg_dVrel)^2 + ...
+    CHECK_TERM + CHECK_TERM_TOF;
 
 end
 

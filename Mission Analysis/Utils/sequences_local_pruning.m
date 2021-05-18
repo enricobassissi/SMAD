@@ -13,6 +13,7 @@ function [asteroid_names, PermutationMatrix_after, HowMany_after] = sequences_lo
 
 % asteroids elements extraction
 asteroid_names = data_elements(:,1);
+a_asteroids = str2double(data_elements(:,2));
 e_asteroids = str2double(data_elements(:,3));
 incl_asteroids = str2double(data_elements(:,4));
 OM_asteroids = str2double(data_elements(:,5));
@@ -24,6 +25,7 @@ HowMany = factorial(length(asteroid_names)) / factorial(length(asteroid_names) -
 PermutationMatrix_to_cut = PermutationMatrix_whole;
 
 delta_incl_max = 5;
+delta_a_max = 0.5;
 for i = 1:HowMany % rows
     for j = 2:p_number % cols
         idx_ast_considered_a = find(PermutationMatrix_whole(i,j-1)==asteroid_names);
@@ -50,14 +52,19 @@ for i = 1:HowMany % rows
         if cond_1 || cond_2
             PermutationMatrix_to_cut(i,:) = "TO BE CUT w_up";
         end
-%         if (incl_asteroids(idx_ast_considered_b) - incl_asteroids(idx_ast_considered_a)) > 5 && (e_asteroids(idx_ast_considered_b) - e_asteroids(idx_ast_considered_a)) > 0.2
-%             PermutationMatrix(i,:) = "TO BE CUT i and e";
+        
+%         a_a = a_asteroids(idx_ast_considered_a);
+%         a_b = a_asteroids(idx_ast_considered_b);
+%         delta_a = abs(a_b - a_a);
+%         if delta_a > delta_a_max
+%             PermutationMatrix_to_cut(i,:) = "TO BE CUT a";
 %         end
     end
 end
 
 PermutationMatrix_without_i = PermutationMatrix_to_cut(~all(PermutationMatrix_to_cut == "TO BE CUT i", 2),:); % 2 works by rows, 1 works by columns
-PermutationMatrix_after = PermutationMatrix_without_i(~all(PermutationMatrix_without_i == "TO BE CUT w_up", 2),:); % 2 works by rows, 1 works by columns
+PermutationMatrix_without_w_up = PermutationMatrix_without_i(~all(PermutationMatrix_without_i == "TO BE CUT w_up", 2),:); % 2 works by rows, 1 works by columns
+PermutationMatrix_after = PermutationMatrix_without_w_up(~all(PermutationMatrix_without_w_up == "TO BE CUT a", 2),:); % 2 works by rows, 1 works by columns
 
 HowMany_after = length(PermutationMatrix_after);
 

@@ -72,27 +72,33 @@ selected_asteroids_names = cellfun(@string,cell(py_selected_asteroids{2}));
     get_orbital_elements_and_sigma(selected_asteroids_names,py_selected_asteroids_dict);
 
 % initialise
-a_asteroids = zeros(length(selected_asteroids_orbital_elements_and_sigma),1); % (1)
-e_asteroids = zeros(length(selected_asteroids_orbital_elements_and_sigma),1); % (2)
-incl_asteroids = zeros(length(selected_asteroids_orbital_elements_and_sigma),1); % (3)
-OM_asteroids = zeros(length(selected_asteroids_orbital_elements_and_sigma),1);  % (4)
-om_asteroids = zeros(length(selected_asteroids_orbital_elements_and_sigma),1); % (5)
+% a_asteroids = zeros(length(selected_asteroids_orbital_elements_and_sigma),1); % (1)
+% e_asteroids = zeros(length(selected_asteroids_orbital_elements_and_sigma),1); % (2)
+% incl_asteroids = zeros(length(selected_asteroids_orbital_elements_and_sigma),1); % (3)
+% OM_asteroids = zeros(length(selected_asteroids_orbital_elements_and_sigma),1);  % (4)
+% om_asteroids = zeros(length(selected_asteroids_orbital_elements_and_sigma),1); % (5)
 % extraction of data
+idx = 0;
 for i = 1:length(selected_asteroids_orbital_elements_and_sigma)
-    a_asteroids(i) = selected_asteroids_orbital_elements_and_sigma{i}(1,1);
-    e_asteroids(i) = selected_asteroids_orbital_elements_and_sigma{i}(2,1);
-    incl_asteroids(i) = selected_asteroids_orbital_elements_and_sigma{i}(3,1);
-    OM_asteroids(i) = selected_asteroids_orbital_elements_and_sigma{i}(4,1);
-    om_asteroids(i) = selected_asteroids_orbital_elements_and_sigma{i}(5,1);
+    if selected_asteroids_orbital_elements_and_sigma{i}(1,1) < 2
+        idx = idx+1;
+        a_asteroids(idx,1) = selected_asteroids_orbital_elements_and_sigma{i}(1,1);
+        e_asteroids(idx,1) = selected_asteroids_orbital_elements_and_sigma{i}(2,1);
+        incl_asteroids(idx,1) = selected_asteroids_orbital_elements_and_sigma{i}(3,1);
+        OM_asteroids(idx,1) = selected_asteroids_orbital_elements_and_sigma{i}(4,1);
+        om_asteroids(idx,1) = selected_asteroids_orbital_elements_and_sigma{i}(5,1);
+        sel_asteroids_names(idx,1) = selected_asteroids_names(i);
+    end
 end
-clearvars i
+clearvars i idx
 
-data_elements_matrix = [selected_asteroids_names',a_asteroids,e_asteroids,incl_asteroids,...
+data_elements_matrix = [sel_asteroids_names,a_asteroids,e_asteroids,incl_asteroids,...
     OM_asteroids,om_asteroids];
 % table of results
-TABLE = table(selected_asteroids_names',a_asteroids,e_asteroids,incl_asteroids,OM_asteroids,...
+TABLE = table(sel_asteroids_names,a_asteroids,e_asteroids,incl_asteroids,OM_asteroids,...
     om_asteroids)
 
 %% Local Pruning on i and w_up
+p_number = 4;
 [asteroid_names, PermutationMatrix_after, HowMany_after] = ...
-            sequences_local_pruning(data_elements_matrix);
+            sequences_local_pruning(data_elements_matrix, p_number);

@@ -1,6 +1,6 @@
 %% --------------------------------------------------------------------- %%
 %% ------------------------- Earth Ast1 Transfer ----------------------- %%
-%% ------------------------- ARCH 1+4, LT FLYBY ------------------------ %%
+%% ------------------------- ARCH 1+4, LT GA --------------------------- %%
 %% ------------------------------ SOO ---------------------------------- %%
 %% --------------------------------------------------------------------- %%
 %% Setup for default options
@@ -56,9 +56,10 @@ catch
 end
 
 %% Asteroids
-% load('data_elements_matrix.mat')
+% load('data_elements_matrix_9.mat')
+% p_number = 1;
 % [data.asteroid_names, data.PermutationMatrix, data.HowMany] = ...
-%             sequences_local_pruning(data_elements_matrix);
+%             sequences_local_pruning(data_elements_matrix,p_number);
 % 
 % [data.y_interp_ft, data.t_vector] = find_eph_neo(data.asteroid_names);
 
@@ -79,9 +80,10 @@ sim.direction = 1;                     % direction of integration (1 FW, -1 BW)
 
 sim.TOF_imposed_flag = 1;
 
-sim.PS.Isp = 3000/sim.TU;  % non-dimensional specific impulse
+sim.PS.Isp = 3200/sim.TU;  % non-dimensional specific impulse
 
 sim.M = 100; % SC mass [kg]
+sim.ID_FLYBY = 4; % flyby planet
 
 %% Boundaries
 % Departure dates (1)
@@ -89,35 +91,61 @@ bound.date_ed = [2024, 1, 1, 0, 0, 0];
 bound.date_ld =  [2028, 1, 1, 0, 0, 0]; 
 bound.mjd2000_ed = date2mjd2000(bound.date_ed)*3600*24/sim.TU;
 bound.mjd2000_ld = date2mjd2000(bound.date_ld)*3600*24/sim.TU;
-% TOF1 (2)
-bound.TOF1_min = 550*3600*24/sim.TU; %600
+% TOFGA (2)
+bound.TOFGA_min = 400*3600*24/sim.TU; %600
+bound.TOFGA_max = 900*3600*24/sim.TU; 
+% TOF1 (3)
+bound.TOF1_min = 500*3600*24/sim.TU; %600
 bound.TOF1_max = 900*3600*24/sim.TU; 
-% N REV (3)
+% N REV (4)
 bound.N_REV_min = 0; %0
-bound.N_REV_max = 1; %3
+bound.N_REV_max = 0; %3
+% N REV2 (14)
+bound.N_REV2_min = 0; %0
+bound.N_REV2_max = 1; %3
 % C3 stuff
-% Constraint on C3 Launcher (4)
+% Constraint on C3 Launcher (6)
 sim.C3_max = 10; % km^2/s^2
 bound.v_inf_magn_min = 0;
 bound.v_inf_magn_max = sqrt(sim.C3_max)/sim.DU*sim.TU;
-% azimuth (5)
+% azimuth (7)
 bound.az_min = -pi;
 bound.az_max = pi;
-% elevation (6)
+% elevation (8)
 bound.el_min = -pi;
 bound.el_max = pi;
-% ID Permutation (7)
+% GA Stuff in
+% v_inf_magn2 (9)
+bound.v_inf_magn2_min = 0;
+bound.v_inf_magn2_max = sqrt(sim.C3_max)/sim.DU*sim.TU;
+% azimuth2 (10)
+bound.az2_min = -pi;
+bound.az2_max = pi;
+% elevation2 (11)
+bound.el2_min = -pi;
+bound.el2_max = pi;
+% GA Stuff out
+% azimuth3 (12)
+bound.az3_min = -pi;
+bound.az3_max = pi;
+% elevation3 (13)
+bound.el3_min = -pi;
+bound.el3_max = pi;
+% ID Permutation (5)
 bound.IDP_min = 1; 
 % bound.IDP_max = data.HowMany; 
 bound.IDP_max = length(data.asteroid_names);
 
-% x = [MJD0,TOF1,NREV,v_inf_magn,az,el,IDP]
-bound.lb = [bound.mjd2000_ed, bound.TOF1_min, ...
-    bound.N_REV_min, bound.v_inf_magn_min, ...
-    bound.az_min, bound.el_min, bound.IDP_min]; % Lower bound
-bound.ub = [bound.mjd2000_ld, bound.TOF1_max, ...
-    bound.N_REV_max, bound.v_inf_magn_max, ...
-    bound.az_max, bound.el_max, bound.IDP_max]; % Upper bound
+% x = [MJD0,TOFGA,TOF1,NREV,IDP,v_inf_magn,az,el,v_inf_magn2,az2,el2,...
+%      az3,el3,NREV2]
+bound.lb = [bound.mjd2000_ed, bound.TOFGA_min, bound.TOF1_min, ...
+    bound.N_REV_min, bound.IDP_min, bound.v_inf_magn_min, ...
+    bound.az_min, bound.el_min, bound.v_inf_magn2_min, bound.az2_min, ...
+    bound.el2_min, bound.az3_min, bound.el3_min, bound.N_REV2_min]; % Lower bound
+bound.ub = [bound.mjd2000_ld, bound.TOFGA_max, bound.TOF1_max, ...
+    bound.N_REV_max, bound.IDP_max, bound.v_inf_magn_max, ...
+    bound.az_max, bound.el_max, bound.v_inf_magn2_max, bound.az2_max, ...
+    bound.el2_max, bound.az3_max, bound.el3_max, bound.N_REV2_max]; % Upper bound
 
 %% Constraints
 constr.A = []; % linear inequality constraints
@@ -127,7 +155,7 @@ constr.beq = []; % linear equality constraints
 constr.nonlcon = []; % linear equality constraints
 % if you want to restrict x(2) and x(10) to be integers, set IntCon to [2,10].
 % ga(fitnessfcn,nvars,A,b,Aeq,beq,lb,ub,nonlcon,IntCon,options)
-constr.IntCon = [3,7];
+constr.IntCon = [4,5,14];
 
 %% Options
 options = optimoptions(@ga);
@@ -158,7 +186,7 @@ end
 options.UseParallel = true;
 
 %% Build the soo
-FitnessFunction = @(x) ff_ea_1ast_LT_soo_NLI(x,sim,data); % Function handle to the fitness function
+FitnessFunction = @(x) ff_ea_1ast_LT_GA_soo_NLI(x,sim,data); % Function handle to the fitness function
 numberOfVariables = length(bound.ub); % Number of decision variables
 
 tic
@@ -168,34 +196,39 @@ tic
 el_time_min_pp = toc/60;
 
 dep_opt = mjd20002date(x(1)*sim.TU/(3600*24))
-asteroid_1 = data.asteroid_names(x(7))
+asteroid_1 = data.asteroid_names(x(5))
 
 %% plot
-[output, r_encounter, v_encounter] = plot_ff_ea_1ast_LT_soo_NLI(x,sim,data);
+[output,r_encounter,v_encounter] = plot_ff_ea_1ast_LT_GA_soo_NLI(x,sim,data);
 
 figure()
 subplot(5,1,1)
 plot(output.t*sim.TU/86400,output.Thrust(:,1));
-xlabel('Time [days]')
+xline(x(2)*sim.TU/86400,'LineWidth',2);
+% xlabel('Time [days]')
 ylabel('In-plane Thrust [N]')
 
 subplot(5,1,2)
 plot(output.t*sim.TU/86400,180/pi*output.Thrust(:,2));
-xlabel('Time [days]')
+xline(x(2)*sim.TU/86400,'LineWidth',2);
+% xlabel('Time [days]')
 ylabel('In-plane Thrust angle [deg]')
 
 subplot(5,1,3)
 plot(output.t*sim.TU/86400,output.Thrust(:,3));
-xlabel('Time [days]')
+xline(x(2)*sim.TU/86400,'LineWidth',2);
+% xlabel('Time [days]')
 ylabel('out-of-plane Thrust [N]')
 
 subplot(5,1,4)
 plot(output.t*sim.TU/86400,sqrt(output.Thrust(:,1).^2 + output.Thrust(:,3).^2));
-xlabel('Time [days]')
+xline(x(2)*sim.TU/86400,'LineWidth',2);
+% xlabel('Time [days]')
 ylabel('Thrust [N]')
 
 subplot(5,1,5)
 plot(output.t*sim.TU/86400,output.m);
+xline(x(2)*sim.TU/86400,'LineWidth',2);
 xlabel('Time [days]')
 ylabel('Mass [kg]')
 
@@ -225,13 +258,18 @@ for i=1:length(times)
     r_ast1(i,1:3) = r_ast1(i,1:3)/sim.DU;
 end
 
-r3  = [output.r.*cos(output.theta) output.r.*sin(output.theta) output.z];
-R3 = rotate_local2ecplitic(r_encounter.EA,r3,sim.n_sol,output.Href);
+r3  = [output.r.leg1.*cos(output.theta.leg1) output.r.leg1.*sin(output.theta.leg1) output.z.leg1];
+R3 = rotate_local2ecplitic(r_encounter.EA,r3,sim.n_sol,output.Href.leg1);
+
+r4  = [output.r.leg2.*cos(output.theta.leg2) output.r.leg2.*sin(output.theta.leg2) output.z.leg2];
+R4 = rotate_local2ecplitic(r_encounter.GA,r4,sim.n_sol,output.Href.leg2);
 
 figure()
 plot3(R3(:,1),R3(:,2),R3(:,3),'DisplayName','Traj')
 hold on
+plot3(R4(:,1),R4(:,2),R4(:,3),'DisplayName','Traj')
 plot3(r_encounter.EA(1),r_encounter.EA(2),r_encounter.EA(3),'*m','DisplayName','Dep')
+plot3(r_encounter.GA(1),r_encounter.GA(2),r_encounter.GA(3),'*c','DisplayName','GA')
 plot3(r_encounter.ast1(1),r_encounter.ast1(2),r_encounter.ast1(3),'*c','DisplayName','Arr')
 axis equal; grid on;
 xlabel('x [AU]'); ylabel('y [AU]'); ylabel('y [AU]'); 
