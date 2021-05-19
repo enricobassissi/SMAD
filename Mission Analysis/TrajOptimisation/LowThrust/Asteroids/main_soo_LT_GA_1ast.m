@@ -1,6 +1,6 @@
 %% --------------------------------------------------------------------- %%
 %% ------------------------- Earth Ast1 Transfer ----------------------- %%
-%% ------------------------- ARCH 1+4, LT GA --------------------------- %%
+%% ------------------------- ARCH 1, LT GA --------------------------- %%
 %% ------------------------------ SOO ---------------------------------- %%
 %% --------------------------------------------------------------------- %%
 %% Setup for default options
@@ -32,7 +32,7 @@ colors = [0    50   71;... % (1) DEEP SPACE
           51   94   111;... % (11) DEEP SPACE -1
           0    0    0]./255; % (12) BLACK
 
-sim.case_name = 'ARCH 1RL + GA MARS: LOW THRUST FLYBY ON 1 ASTEROID + GA';
+sim.case_name = 'ARCH 1RL + GA MARS: LOW THRUST FLYBY ON 1 ASTEROID + GA - without coasting time';
 
 %% add path of functions and python stuff
 str_path=split(pwd, 'TrajOptimisation\LowThrust\Asteroids');
