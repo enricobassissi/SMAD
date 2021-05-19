@@ -20,7 +20,7 @@ asteroid_3 = data.PermutationMatrix(IDP,3);
 asteroid_4 = data.PermutationMatrix(IDP,4);
 
 % DSM
-rD_mag     = x(8);
+rD_mag = x(8);
 thetaD = x(9);
 
 % Computing position and velocity of the planets in that days
@@ -71,55 +71,47 @@ end
 [~,~,~,~,V1d,V1a,~,~] = lambertMR(rD,r1,ToF_1b_sec,ksun,0,0,0,0);
 dv1 = sqrt((V1d(1)-VDa(1))^2+(V1d(2)-VDa(2))^2+(V1d(3)-VDa(3))^2);
 
-%dv2_EAast1 = sqrt((VF_EAast1(1)-v1(1))^2+(VF_EAast1(2)-v1(2))^2+(VF_EAast1(3)-v1(3))^2);
+Vrel1 = sqrt((V1a(1)-v1(1))^2+(V1a(2)-v1(2))^2+(V1a(3)-v1(3))^2);
 
 
 % asteroid 1 -> 2
 [~,~,~,~,V2d,V2a,~,~] = lambertMR(r1,r2,ToF_ast12_sec,ksun,0,0,0,0);
-dv2 = sqrt((V2d(1)- V1a(1))^2+(V2d(2)- V1a(2))^2+(V2d(3)-v1(3))^2);
+dv2 = sqrt((V2d(1)- V1a(1))^2+(V2d(2)- V1a(2))^2+(V2d(3)-V1a(3))^2);
 
-%dv2_ast12 = sqrt((VF_ast12(1)-v2(1))^2+(VF_ast12(2)-v2(2))^2+(VF_ast12(3)-v2(3))^2);
+Vrel2 = sqrt((V2a(1)-v2(1))^2+(V2a(2)-v2(2))^2+(V2a(3)-v2(3))^2);
 
-    
+
+
 % asteroid 2 -> 3
 [~,~,~,~,V3d,V3a,~,~] = lambertMR(r2,r3,ToF_ast23_sec,ksun,0,0,0,0);
 dv3 = sqrt((V3d(1)-V2a(1))^2+(V3d(2)-V2a(2))^2+(V3d(3)-V2a(3))^2);
 
-%dv2_ast23 = sqrt((VF_ast23(1)-v3(1))^2+(VF_ast23(2)-v3(2))^2+(VF_ast23(3)-v3(3))^2);
+Vrel3 = sqrt((V3a(1)-v3(1))^2+(V3a(2)-v3(2))^2+(V3a(3)-v3(3))^2);
 
 
 % asteroid 3 -> 4
 [~,~,~,~,V4d,V4a,~,~] = lambertMR(r3,r4,ToF_ast34_sec,ksun,0,0,0,0);
 dv4 = sqrt((V4d(1)-V3a(1))^2+(V4d(2)-V3a(2))^2+(V4d(3)-V3a(3))^2);
 
-%dv2_ast34 = sqrt((VF_ast34(1)-v4(1))^2+(VF_ast34(2)-v4(2))^2+(VF_ast34(3)-v4(3))^2);
+Vrel4 = sqrt((V4a(1)-v4(1))^2+(V4a(2)-v4(2))^2+(V4a(3)-v4(3))^2);
 
-
-% if the last dv is a flyby it can go wherever it wants
-% obj_fun = dv_extra_launch + dv_passage_ast1 + dv_passage_ast2 + dv_passage_ast3; 
-
-% else if the last dv is a rendezvous with the last object
-% obj_fun = dv_extra_launch + dv_passage_ast1 + dv_passage_ast2 + dv_passage_ast3 + dv2_ast34; 
 
 % Check of feasibility
-% CHECK_TERM_TOF=0; CHECK_TERM_A=0; CHECK_TERM_B=0; CHECK_TERM_C=0; CHECK_TERM_D=0;
-% tot_TOF = TOF1a + TOF1b+TOF2+TOF3+TOF4;
-% if tot_TOF > 12*365
-%     CHECK_TERM_TOF = 100;
-% end
-% if dv2_EAast1 > 7
-%     CHECK_TERM_A = 0.8*dv2_EAast1^2;
-% end
-% if dv2_ast12 > 7
-%     CHECK_TERM_B = 0.8*dv2_ast12^2;
-% end
-% if dv2_ast23 > 7
-%     CHECK_TERM_C = 0.8*dv2_ast23^2;
-% end
-% if dv2_ast34 > 7
-%     CHECK_TERM_D = 0.8*dv2_ast34^2;
-% end
-% CHECK_TERM = CHECK_TERM_TOF+CHECK_TERM_A+CHECK_TERM_B+CHECK_TERM_C+CHECK_TERM_D;
+CHECK_TERM_A=0; CHECK_TERM_B=0; CHECK_TERM_C=0; CHECK_TERM_D=0;
+
+if Vrel1 > 7
+    CHECK_TERM_A = 20 + Vrel1^2;
+end
+if Vrel2 > 7
+    CHECK_TERM_B = 20 + Vrel2^2;
+end
+if Vrel3 > 7
+    CHECK_TERM_C = 20 + Vrel3^2;
+end
+if Vrel4 > 7
+    CHECK_TERM_D = 40 + Vrel4^2;
+end
+CHECK_TERM = CHECK_TERM_A+CHECK_TERM_B+CHECK_TERM_C+CHECK_TERM_D;
 
 % % Penalty Factor
 % % c_dVpass_1 = 1.2; c_dVpass_2 = 1; c_dVpass_3 = 0.8;
@@ -135,13 +127,14 @@ dv4 = sqrt((V4d(1)-V3a(1))^2+(V4d(2)-V3a(2))^2+(V4d(3)-V3a(3))^2);
 % %     c_dVpass_2*dv_passage_ast2 + c_dVpass_3*dv_passage_ast3 + ...
 % %     c_dVrel_1*(dv2_EAast1-avg_dVrel)^2 + c_dVrel_2*(dv2_ast12-avg_dVrel)^2 +...
 % %     c_dVrel_3*(dv2_ast23-avg_dVrel)^2 + c_dVrel_4*(dv2_ast34-avg_dVrel)^2 + CHECK_TERM; 
-
-% obj_fun = dv_extra_launch + 15*(dv_passage_ast1 + ...
-%     dv_passage_ast2 + dv_passage_ast3) + ...
+% 
+% obj_fun = dv_extra_launch + c_dVpass_1*(dv_passage_ast1 + dv_passage_ast2 + dv_passage_ast3) + ...
 %     c_dVrel*(dv2_EAast1-avg_dVrel)^2 + c_dVrel*(dv2_ast12-avg_dVrel)^2 +...
 %     c_dVrel*(dv2_ast23-avg_dVrel)^2 + c_dVrel*(dv2_ast34-avg_dVrel)^2 + CHECK_TERM; 
 
-obj_fun = dv1 + dv2 + dv3 + dv4 ; 
+% obj_fun = dv_extra_launch + dv_passage_ast1 + dv_passage_ast2 + dv_passage_ast3 + CHECK_TERM; 
+
+obj_fun = dv1 + dv2 + dv3 + dv4 + CHECK_TERM;
 
 end
 

@@ -24,26 +24,25 @@ function [sol] = plot_mission_4neo_flyby_DSM(sol,asteroid_names_sequence,data,si
     rD = sol.rD_mag*[cos(sol.thetaD)*cos(iEA); sin(sol.thetaD)*cos(iEA); sin(iEA)];
     
     [kep_ast_1] = uNEO2(MJDP1b,ast1,data);
-    [r1,v_ast1] = sv_from_coe(kep_ast_1,ksun); % km, km/s
+    [r1,v1] = sv_from_coe(kep_ast_1,ksun); % km, km/s
     [kep_ast_2] = uNEO2(MJDP2,ast2,data);
-    [r2,v_ast2] = sv_from_coe(kep_ast_2,ksun); % km, km/s
+    [r2,v2] = sv_from_coe(kep_ast_2,ksun); % km, km/s
     [kep_ast_3] = uNEO2(MJDP3,ast3,data);
-    [r3,v_ast3] = sv_from_coe(kep_ast_3,ksun); % km, km/s
+    [r3,v3] = sv_from_coe(kep_ast_3,ksun); % km, km/s
     [kep_ast_4] = uNEO2(MJDP4,ast4,data);
-    [r4,v_ast4] = sv_from_coe(kep_ast_4,ksun); % km, km/s % Ast 4 Arrival
+    [r4,v4] = sv_from_coe(kep_ast_4,ksun); % km, km/s % Ast 4 Arrival
     
     % Converting mJD2000 in seconds
-    t1_sec = MJD01*60*60*24;
-    t2a_sec = MJDP1a*60*60*24;
-    t2b_sec = MJDP1b*60*60*24;
-    t3_sec = MJDP2*60*60*24;
-    t4_sec = MJDP3*60*60*24;
-    t5_sec = MJDP4*60*60*24;
-    
+    MJD01_sec = sol.MJD0*60*60*24;
+    TOF_1a_sec = sol.TOF1a*60*60*24;
+    TOF_1b_sec = sol.TOF1b*60*60*24;
+    TOF_ast12_sec  = sol.TOF2*60*60*24;
+    TOF_ast23_sec  = sol.TOF3*60*60*24;
+    TOF_ast34_sec  = sol.TOF4*60*60*24;
     %% Lamberts and deltaVs
     
     % Earth -> DSM
-    [~,~,~,~,VDd,VDa,~,~] = lambertMR(rEA,rD,t1_sec,ksun,0,0,0,0);
+    [~,~,~,~,VDd,VDa,~,~] = lambertMR(rEA,rD,TOF_1a_sec,ksun,0,0,0,0);
     sol.dvD = sqrt((VDd(1)- vEA(1))^2+(VDd(2)-vEA(2))^2+(VDd(3)- vEA(3))^2);
     
     if sol.dvD < sqrt(sim.C3_max)
@@ -56,27 +55,32 @@ function [sol] = plot_mission_4neo_flyby_DSM(sol,asteroid_names_sequence,data,si
     
  
     % DSM -> asteroid 1
-    [~,~,~,~,V1d,V1a,~,~] = lambertMR(rD,r1,t2a_sec,ksun,0,0,0,0);
+    [~,~,~,~,V1d,V1a,~,~] = lambertMR(rD,r1,TOF_1b_sec,ksun,0,0,0,0);
     sol.dv1 = sqrt((V1d(1)-VDa(1))^2+(V1d(2)-VDa(2))^2+(V1d(3)-VDa(3))^2);
 
-
+    sol.Vrel1 = sqrt((V1a(1)-v1(1))^2+(V1a(2)-v1(2))^2+(V1a(3)-v1(3))^2);
+    
     % asteroid 1 -> 2
-    [~,~,~,~,V2d,V2a,~,~] = lambertMR(r1,r2,t2b_sec,ksun,0,0,0,0);
+    [~,~,~,~,V2d,V2a,~,~] = lambertMR(r1,r2,TOF_ast12_sec,ksun,0,0,0,0);
     sol.dv2 = sqrt((V2d(1)- V1a(1))^2+(V2d(2)- V1a(2))^2+(V2d(3)-V1a(3))^2);
 
-
+    sol.Vrel2 = sqrt((V2a(1)-v2(1))^2+(V2a(2)-v2(2))^2+(V2a(3)-v2(3))^2);
+    
     % asteroid 2 -> 3
-    [~,~,~,~,V3d,V3a,~,~] = lambertMR(r2,r3,t3_sec,ksun,0,0,0,0);
+    [~,~,~,~,V3d,V3a,~,~] = lambertMR(r2,r3,TOF_ast23_sec,ksun,0,0,0,0);
     sol.dv3 = sqrt((V3d(1)-V2a(1))^2+(V3d(2)-V2a(2))^2+(V3d(3)-V2a(3))^2);
 
-
+    sol.Vrel3 = sqrt((V3a(1)-v3(1))^2+(V3a(2)-v3(2))^2+(V3a(3)-v3(3))^2);
+    
     % asteroid 3 -> 4
-    [~,~,~,~,V4d,V4a,~,~] = lambertMR(r3,r4,t4_sec,ksun,0,0,0,0);
+    [~,~,~,~,V4d,V4a,~,~] = lambertMR(r3,r4,TOF_ast34_sec,ksun,0,0,0,0);
     sol.dv4 = sqrt((V4d(1)-V3a(1))^2+(V4d(2)-V3a(2))^2+(V4d(3)-V3a(3))^2);
     
-    % actual total dV, different from Fval because now it enters also
-    % penalty in the optimisation function
-    sol.dV_tot = sol.dv1 + sol.dv2 + sol.dv3 + sol.dv4 ; 
+    sol.Vrel4 = sqrt((V4a(1)-v4(1))^2+(V4a(2)-v4(2))^2+(V4a(3)-v4(3))^2);
+    
+    
+    % Total deltaV
+    sol.dV_tot_plot = sol.dv1 + sol.dv2 + sol.dv3 + sol.dv4 ; 
 
     
     %% Plotting
@@ -90,11 +94,11 @@ function [sol] = plot_mission_4neo_flyby_DSM(sol,asteroid_names_sequence,data,si
     plot_asteorid_orbit(MJDP1b,Frac_Orbit,ast1,colors,2);
     plot_asteorid_orbit(MJDP2,Frac_Orbit,ast2,colors,3);
     plot_asteorid_orbit(MJDP3,Frac_Orbit,ast3,colors,4);
-    plot_asteorid_orbit(MJDP4+200,Frac_Orbit,ast4,colors,5);
+    plot_asteorid_orbit(MJDP4,Frac_Orbit,ast4,colors,5);
     
     % Mission Arcs
     % First leg: Earth -> DSM
-    time_eval_12 = linspace(t1_sec,t2a_sec,sol.TOF1a);
+    time_eval_12 = [MJD01_sec MJD01_sec+TOF_1a_sec]; 
     y012 = [rEA; VDd']; %km, km/s; velocity from lambert arc transfer orbit injection
     options = odeset ('RelTol', 1e-13, 'AbsTol', 1e-14); 
     [t12,y12] = ode113(@rates, time_eval_12, y012,options,'sun');
@@ -102,7 +106,7 @@ function [sol] = plot_mission_4neo_flyby_DSM(sol,asteroid_names_sequence,data,si
         'DisplayName','Trajectory');
 
     % Second leg: DSM -> Ast 1
-    time_eval_23 = linspace(t2a_sec,t2b_sec,sol.TOF1b);
+    time_eval_23 = [TOF_1a_sec TOF_1a_sec+TOF_1b_sec]; 
     y023 = [rD; V1d']; %km, km/s; velocity from lambert arc transfer orbit injection
     options = odeset ('RelTol', 1e-13, 'AbsTol', 1e-14); 
     [t23,y23] = ode113(@rates, time_eval_23, y023,options,'sun');
@@ -110,7 +114,7 @@ function [sol] = plot_mission_4neo_flyby_DSM(sol,asteroid_names_sequence,data,si
         'DisplayName','Trajectory');
 
     % Third leg: Ast 1 -> Ast 2
-    time_eval_34 = linspace(t2b_sec,t3_sec,sol.TOF2);
+    time_eval_34 = [TOF_1b_sec TOF_1b_sec+TOF_ast12_sec]; 
     y034 = [r1; V2d']; %km, km/s
     options = odeset ('RelTol', 1e-13, 'AbsTol', 1e-14); 
     [t34,y34] = ode113(@rates, time_eval_34, y034,options,'sun');
@@ -118,7 +122,7 @@ function [sol] = plot_mission_4neo_flyby_DSM(sol,asteroid_names_sequence,data,si
     ht2.Annotation.LegendInformation.IconDisplayStyle = 'off';
 
     % Fourth leg: Ast 2 -> Ast 3
-    time_eval_56 = linspace(t3_sec,t4_sec,sol.TOF3);
+    time_eval_56 = [TOF_ast12_sec TOF_ast12_sec+TOF_ast23_sec]; 
     y056 = [r2; V3d']; %km, km/s
     options = odeset ('RelTol', 1e-13, 'AbsTol', 1e-14); 
     [t56,y56] = ode113(@rates, time_eval_56, y056,options,'sun');
@@ -126,7 +130,7 @@ function [sol] = plot_mission_4neo_flyby_DSM(sol,asteroid_names_sequence,data,si
     ht3.Annotation.LegendInformation.IconDisplayStyle = 'off';
 
     % Fifth leg: Ast 3 -> Ast 4
-    time_eval_78 = linspace(t4_sec,t5_sec,sol.TOF4);
+    time_eval_78 = [TOF_ast23_sec TOF_ast23_sec+TOF_ast34_sec]; 
     y078 = [r3; V4d']; %km, km/s
     options = odeset ('RelTol', 1e-13, 'AbsTol', 1e-14); 
     [t78,y78] = ode113(@rates, time_eval_78, y078,options,'sun');
