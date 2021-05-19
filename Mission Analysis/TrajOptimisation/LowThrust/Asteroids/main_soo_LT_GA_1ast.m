@@ -32,7 +32,7 @@ colors = [0    50   71;... % (1) DEEP SPACE
           51   94   111;... % (11) DEEP SPACE -1
           0    0    0]./255; % (12) BLACK
 
-sim.case_name = 'ARCH ID 6: LOW THRUST FLYBY ON EVERY ASTEROID';
+sim.case_name = 'ARCH 1RL + GA MARS: LOW THRUST FLYBY ON 1 ASTEROID + GA';
 
 %% add path of functions and python stuff
 str_path=split(pwd, 'TrajOptimisation\LowThrust\Asteroids');
@@ -83,7 +83,7 @@ sim.TOF_imposed_flag = 1;
 sim.PS.Isp = 3200/sim.TU;  % non-dimensional specific impulse
 
 sim.M = 100; % SC mass [kg]
-sim.ID_FLYBY = 4; % flyby planet
+sim.ID_FLYBY = 3; % flyby planet
 
 %% Boundaries
 % Departure dates (1)
@@ -99,7 +99,7 @@ bound.TOF1_min = 500*3600*24/sim.TU; %600
 bound.TOF1_max = 900*3600*24/sim.TU; 
 % N REV (4)
 bound.N_REV_min = 0; %0
-bound.N_REV_max = 0; %3
+bound.N_REV_max = 1; %3
 % N REV2 (14)
 bound.N_REV2_min = 0; %0
 bound.N_REV2_max = 1; %3
@@ -122,15 +122,15 @@ bound.v_inf_magn2_max = sqrt(sim.C3_max)/sim.DU*sim.TU;
 bound.az2_min = -pi;
 bound.az2_max = pi;
 % elevation2 (11)
-bound.el2_min = -pi;
-bound.el2_max = pi;
+bound.el2_min = -pi/2;
+bound.el2_max = pi/2;
 % GA Stuff out
 % azimuth3 (12)
 bound.az3_min = -pi;
 bound.az3_max = pi;
 % elevation3 (13)
-bound.el3_min = -pi;
-bound.el3_max = pi;
+bound.el3_min = -pi/2;
+bound.el3_max = pi/2;
 % ID Permutation (5)
 bound.IDP_min = 1; 
 % bound.IDP_max = data.HowMany; 
@@ -168,11 +168,11 @@ options.Display = 'iter';
 % multiobjective genetic algorithm terminates
 % options.HybridFcn = 'fgoalattain';
 
-options.PopulationSize = 600; % ideal 1000
+options.PopulationSize = 1000; % ideal 1000
 options.MaxGenerations = 30; % ideal 100
 
 options.FunctionTolerance = 1e-6; %1e-9
-options.MaxStallGenerations = ceil(options.MaxGenerations/10);
+options.MaxStallGenerations = ceil(options.MaxGenerations/5);
 
 % Parallel pool
 % Open the parallel pool
@@ -186,7 +186,7 @@ end
 options.UseParallel = true;
 
 %% Build the soo
-FitnessFunction = @(x) ff_ea_1ast_LT_GA_soo_NLI(x,sim,data); % Function handle to the fitness function
+FitnessFunction = @(x) ff_ea_1ast_LT_RV_GA_soo_NLI(x,sim,data); % Function handle to the fitness function
 numberOfVariables = length(bound.ub); % Number of decision variables
 
 tic
@@ -199,7 +199,7 @@ dep_opt = mjd20002date(x(1)*sim.TU/(3600*24))
 asteroid_1 = data.asteroid_names(x(5))
 
 %% plot
-[output,r_encounter,v_encounter] = plot_ff_ea_1ast_LT_GA_soo_NLI(x,sim,data);
+[output,r_encounter,v_encounter] = plot_ff_ea_1ast_LT_GA_RV_soo_NLI(x,sim,data);
 
 figure()
 subplot(5,1,1)

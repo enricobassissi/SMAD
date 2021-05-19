@@ -1,4 +1,4 @@
-function obj_fun = ff_ea_1ast_LT_GA_soo_NLI(x,sim,data)
+function obj_fun = ff_ea_1ast_LT_RV_GA_soo_NLI(x,sim,data)
 % setting the input times
 MJD01 = x(1);
 TOFGA = x(2);
@@ -71,49 +71,51 @@ if ~isnan(output_1.Thrust) % if is not nan
         RPlanet_flyby = astroConstants(23); % Radius_Earth, km
         muPlanet_flyby = astroConstants(13); % muEarth, km^3/s^2
         R_lim_from_planet = 500; % km, for earth is ok to avoid atmosphere
+        R_SOI_PL = 0.929*1e6; % km
     elseif sim.ID_FLYBY == 4
         RPlanet_flyby = astroConstants(24); % Radius_mars, km
         muPlanet_flyby = astroConstants(14); % mu mars, km^3/s^2
         R_lim_from_planet = 200; % km, for mars is ok to avoid atmosphere
+        R_SOI_PL = 0.578*1e6; %km
     end
     MJDPGA_dim = MJDPGA*sim.TU/(3600*24);
     v_arr_GA_dim = v_arr_GA.*sim.DU./sim.TU;
     v_dep_GA_dim = v_dep_GA.*sim.DU./sim.TU;
-    delta_v_p = flyby(RPlanet_flyby, muPlanet_flyby,R_lim_from_planet, ...
-                      MJDPGA_dim, v_arr_GA_dim, v_dep_GA_dim, sim.ID_FLYBY);
+    [delta_v_p,rp] = flyby(RPlanet_flyby, muPlanet_flyby,R_lim_from_planet, ...
+                      MJDPGA_dim, v_arr_GA_dim, v_dep_GA_dim, sim.ID_FLYBY, R_SOI_PL);
     
-    if strcmp(string(delta_v_p), 'Not found')
-        % Arbitrarly big barrier number, related to no flyby solution
-        obj_fun = 200;
-    end
-
-    M_after_GA = output_1.m(end);
-    [output_2] = NL_interpolator( r_GA , r1 , v_dep_GA , v1 , N_rev2 , TOF1 , M_after_GA ,sim.PS.Isp , sim );
-    
-    if ~isnan(output_2.Thrust) % if is not nan
+    if ~strcmp(string(delta_v_p), 'Not found')
         
-        mass_fract = (output_1.m(1) - output_2.m(end))/output_1.m(1);
+        M_after_GA = output_1.m(end);
+        [output_2] = NL_interpolator( r_GA , r1 , v_dep_GA , v1 , N_rev2 , TOF1 , M_after_GA ,sim.PS.Isp , sim );
 
-        % put one after the other, all the thrust profiles
-        T_append = [output_1.Thrust(:,1),output_1.Thrust(:,2),output_1.Thrust(:,3);
-                    output_2.Thrust(:,1),output_2.Thrust(:,2),output_2.Thrust(:,3)]; 
-        T = sqrt(T_append(:,1).^2 + T_append(:,3).^2);
-        
-        if abs(max(T)) <= 0.1 % bepi colombo is 250 mN
-            if mass_fract > 0 && mass_fract < 1 
-                obj_fun = mass_fract;
-                disp('success')
+        if ~isnan(output_2.Thrust) % if is not nan
+
+            mass_fract = (output_1.m(1) - output_2.m(end))/output_1.m(1);
+
+            % put one after the other, all the thrust profiles
+            T_append = [output_1.Thrust(:,1),output_1.Thrust(:,2),output_1.Thrust(:,3);
+                        output_2.Thrust(:,1),output_2.Thrust(:,2),output_2.Thrust(:,3)]; 
+            T = sqrt(T_append(:,1).^2 + T_append(:,3).^2);
+
+            if abs(max(T)) <= 0.05 % bepi colombo is 250 mN
+                if mass_fract > 0 && mass_fract < 1 
+                    obj_fun = mass_fract;
+                    disp('success')
+                else
+                    obj_fun = obj_fun + 10;
+                end
             else
-                obj_fun = obj_fun + 10;
+                obj_fun = obj_fun + 21;
             end
         else
-            obj_fun = obj_fun + 21;
+            obj_fun = obj_fun + 32;
         end
     else
-        obj_fun = obj_fun + 32;
+        obj_fun = obj_fun + 43;
     end
 else
-    obj_fun = obj_fun + 43;
+    obj_fun = obj_fun + 54;
 end
 
 end
