@@ -1,5 +1,5 @@
 function [delta_v_p, rp] = flyby(Radius_of_planet, mu_flyby_planet, R_lim_from_planet, ...
-                           flyby_mjd2000, v_minus, v_plus, ID_planet)
+                           flyby_mjd2000, v_minus, v_plus, ID_planet, R_SOI_PL)
             [kep,ksun] = uplanet(flyby_mjd2000,ID_planet);
             [~,V]=sv_from_coe(kep,ksun);
             v_inf_before=v_minus-V;
@@ -21,7 +21,7 @@ function [delta_v_p, rp] = flyby(Radius_of_planet, mu_flyby_planet, R_lim_from_p
 %                 rp = NaN;
 %             end
             
-            if or((rp<(Radius_of_planet+R_lim_from_planet)),isnan(rp))
+            if rp<(Radius_of_planet+R_lim_from_planet) || isnan(rp) || rp>R_SOI_PL + R_lim_from_planet/10
                 delta_v_p='Not found';
             else
             e_before=1+rp*norm(v_inf_before)^2/mu_flyby_planet;

@@ -33,12 +33,6 @@ colors = [0    50   71;... % (1) DEEP SPACE
 
 sim.case_name = 'ARCH ID 4: IMPULSIVE FLYBY ON EVERY ASTEROID WITH GA ON EARTH BEFORE GOING TO THE ASTEROIDS';
 
-% %% INTRO ADIMENSIONALISATION
-% sim.mu = 1.32712440017987e11; % Sun planetary constant (mu = mass * G) (from DE405) [km^3/s^2]
-% sim.DU = 149597870.691; % Distance Unit = Astronomical Unit (AU) (from DE405) [km]
-% sim.TU = (sim.DU^3/sim.mu)^0.5; % Time Unit
-% sim.mu = 1;
-
 %% add path of functions and python stuff
 str_path=split(pwd, 'TrajOptimisation\Impulsive\main');
 util_path=string(str_path(1))+'Utils';
@@ -67,22 +61,32 @@ sim.Isp_lander=230;%s Isp of landers
 sim.dry_mass=40;%kg
 sim.dry_mass_lander=4;%kg
 % so that the starting dry mass is 40+4*4=56 kg
+sim.ID_FLYBY = 4; 
 
 %% Asteroids
 AU = astroConstants(2);
 muSun = astroConstants(4);
 
 % data extraction section
-data.asteroid_names = ["2006HX57";"2008XU2";"2008KN11";"2012SY49";"2012QD8";"2020UE";...
-                  "2006SC";"2005WG57";"2012BY1"];
+% data.asteroid_names = ["2006HX57";"2008XU2";"2008KN11";"2012SY49";"2012QD8";"2020UE";...
+%                   "2006SC";"2005WG57";"2012BY1"];
+% 
+% % Number of possible combination of 4 asteroids among the ones in the list
+% data.HowMany = factorial(length(data.asteroid_names)) / factorial(length(data.asteroid_names) - 4);
+% [data.PermutationMatrix, ~] = permnUnique(data.asteroid_names, 4);
 
-% Number of possible combination of 4 asteroids among the ones in the list
-data.HowMany = factorial(length(data.asteroid_names)) / factorial(length(data.asteroid_names) - 4);
-[data.PermutationMatrix, ~] = permnUnique(data.asteroid_names, 4);
+% load('data_elements_matrix_9.mat')
+% data.p_number = 4;
+% [data.asteroid_names, data.PermutationMatrix, data.HowMany] = ...
+%             sequences_local_pruning(data_elements_matrix, data.p_number);
+% 
+% [data.y_interp_ft, data.t_vector] = find_eph_neo(data.asteroid_names);
+
 
 %% uNEO
 % try 
-    load('data.mat')
+%     load('data.mat')
+    load('data_processed_9_4')
 % catch
     % if the asteroid have changed, run the find_eph_neo below, it takes about 1 min
 %     [data.y_interp_ft, data.t_vector] = find_eph_neo(data.asteroid_names);

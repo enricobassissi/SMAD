@@ -74,14 +74,35 @@ VI = [-0.907762647631375;0.449438604937013;0];
 VF = [-0.445502785321434;-0.703586702008884;-0.140992872926641];
 
 N_rev = 1; % number of revolution
-TOF = 550*(3600*24)/sim.TU % TOF [TU] %10.4
+TOF = 600*(3600*24)/sim.TU % TOF [TU] %10.4
 M = 100; % SC mass [kg]
-hp = 3; %3 OUT OF PLANE SHAPE PARAMETERS
-kp = 3; %3
 
-% v_launcher = sqrt(20)*VI./norm(VI) ;
-v_launcher = sqrt(3)*VI./norm(VI).*sim.TU/sim.DU ;
-v_dep =VI + v_launcher;  %since parabolic escape (vinf = 0)
+elev = deg2rad(+160); az = deg2rad(-80); 
+v_launcher = sqrt(3)*[cos(elev)*cos(az); cos(elev)*sin(az); sin(elev)].*sim.TU/sim.DU;
+v_dep = VI + v_launcher;  %if parabolic escape (v_extra = 0)
+
+% v_launcher = sqrt(20)*VI./norm(VI).*sim.TU/sim.DU ;
+% v_launcher = sqrt(3)*VI./norm(VI).*sim.TU/sim.DU ;
+% v_dep =VI + v_launcher;  %since parabolic escape (vinf = 0)
+% alpha = deg2rad(10);
+% beta = deg2rad(10);
+% v_inf_magn = sqrt(1.00).*sim.TU/sim.DU;
+% % [azimuthv,elevationv,radiusv] = cart2sph(RI(1)+VI(1),RI(2)+VI(2),RI(2)+VI(3)); 
+% [azimuthv,elevationv,radiusv] = cart2sph(VI(1),VI(2),VI(3)); 
+% azimuthv2 = azimuthv + alpha;
+% elevationv2 = elevationv + beta;
+% radiusv2 = radiusv + v_inf_magn;
+% [v2x,v2y,v2z] = sph2cart(azimuthv2,elevationv2,radiusv2);
+% % v2 = [v2x-RI(1);v2y-RI(2);v2z-RI(3)];
+% v2 = [v2x;v2y;v2z];
+% v_dep = v2;  %if parabolic escape (v_extra = 0)
+% 
+% v_launcher = (v_dep).*sim.DU/sim.TU
+% norm(v_launcher)
+% 
+% quiver3(RI(1),RI(2),RI(2),v2x,v2y,v2z)
+% hold on
+% quiver3(RI(1),RI(2),RI(2),VI(1),VI(2),VI(3))
 
 %% Non linear interpolator
 output2 = NL_interpolator( RI , RF , v_dep , VF , N_rev , TOF ,M ,PS.Is ,sim );

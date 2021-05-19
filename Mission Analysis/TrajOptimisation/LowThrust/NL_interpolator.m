@@ -258,7 +258,7 @@ if sim.TOF_imposed_flag == 1
     fun = @(a) find_a(a,x,psi,TOF,sim,s1,s1_x,s1_xx,s2,s2_x,s2_xx,delta1,delta1_x,delta1_xx,delta2,delta2_x,delta2_xx);
 
     %options=optimoptions('fsolve', 'TolFun', 1e-8, 'TolX', 1e-8,'Display','off');
-    options=optimoptions('fsolve','Display','none');
+    options=optimoptions('fsolve','Display','off');
     [a,fsolve_err] = fsolve(fun,a0,options); %% alternative: fzero 
     % a  = find_a_prof(x,psi,TOF,sim,s1,s1_x,s1_xx,s2,s2_x,s2_xx,delta1,delta1_x,delta1_xx,delta2,delta2_x,delta2_xx); % prof
 else
