@@ -117,68 +117,6 @@ if max(TOF1+TOF2,TOFa+TOFb) < max_duration % 12 years max mission time
     v_dep = v_EA + v_launcher;  %if parabolic escape (v_extra = 0)
    
     %% NLI
-%     % SC1 
-%     % 1st leg - Earth -> Ast 1
-%     [output_1] = NL_interpolator( r_EA , r1 , v_dep , v1 , N_rev1 , TOF1 , sim.M1 ,sim.PS.Isp , sim );
-%     if ~isnan(output_1.Thrust) % if is not nan -> it's a valid solution
-%         % 2nd leg - Ast1 -> Ast2
-%         M_start_2nd_leg = output_1.m(end); %  - sim.M_pods
-%         [output_2] = NL_interpolator( r1 , r2 , v1 , v2 , N_rev2 , TOF2 , M_start_2nd_leg ,sim.PS.Isp , sim );
-%         if ~isnan(output_2.Thrust) % if is not nan -> it's a valid solution
-%             mass_fract_SC1 = (output_1.m(1) - output_2.m(end))/output_1.m(1);
-%             % put one after the other, all the thrust profiles
-%             T_append_SC1 = [output_1.Thrust(:,1),output_1.Thrust(:,2),output_1.Thrust(:,3);
-%                         output_2.Thrust(:,1),output_2.Thrust(:,2),output_2.Thrust(:,3)]; 
-%             T_SC1 = sqrt(T_append_SC1(:,1).^2 + T_append_SC1(:,3).^2);
-% 
-%             if abs(max(T_SC1)) <= 0.05 % bepi colombo is 250 mN
-%                 if mass_fract_SC1 > 0 && mass_fract_SC1 < 1 %17 kg of payload
-%                     obj_fun = mass_fract_SC1;
-%                     disp('success SC1')
-%                 else
-%                     obj_fun = obj_fun + 10; % error in the mass fraction of SC1
-%                 end
-%             else
-%                 obj_fun = obj_fun + 21; % error in the max thrust of SC1
-%             end
-%         else
-%             obj_fun = obj_fun + 32; % error in the 2nd leg of SC1
-%         end
-%     else
-%         obj_fun = obj_fun + 43; % error in the 1st leg of SC1
-%     end
-%     
-%     % SC 2
-%     [output_a] = NL_interpolator( r_EA , ra , v_dep , va , N_reva , TOFa , sim.M2 ,sim.PS.Isp , sim );
-%     if ~isnan(output_a.Thrust) % if is not nan -> it's a valid solution
-%         % a_th leg - Earth -> Ast_a
-%         M_start_b_th_leg = output_a.m(end); %  - sim.M_pods
-%         [output_b] = NL_interpolator( ra , rb , va , vb , N_revb , TOFb , M_start_b_th_leg ,sim.PS.Isp , sim );
-%         if ~isnan(output_b.Thrust) % if is not nan -> it's a valid solution
-%             mass_fract_SC2 = (output_a.m(1) - output_b.m(end))/output_a.m(1);
-%             % put one after the other, all the thrust profiles
-%             T_append_SC2 = [output_a.Thrust(:,1),output_a.Thrust(:,2),output_a.Thrust(:,3);
-%                             output_b.Thrust(:,1),output_b.Thrust(:,2),output_b.Thrust(:,3)]; 
-%             T_SC2 = sqrt(T_append_SC2(:,1).^2 + T_append_SC2(:,3).^2);
-% 
-%             if abs(max(T_SC2)) <= 0.05 % bepi colombo is 250 mN
-%                 if mass_fract_SC2 > 0 && mass_fract_SC2 < 1 %17 kg of payload
-%                     obj_fun = max(obj_fun,mass_fract_SC2);
-%                     disp('success SC2')
-%                 else
-%                     obj_fun = obj_fun + 11; % error in the mass fraction of SC2
-%                 end
-%             else
-%                 obj_fun = obj_fun + 22; % error in the max thrust of SC2
-%             end
-%         else
-%             obj_fun = obj_fun + 33; % error in the b_th leg of SC2
-%         end
-%     else
-%         obj_fun = obj_fun + 44; % error in the a_th leg of SC2
-%     end
-
-    % test 2
     % SC1 
     % 1st leg - Earth -> Ast 1
     [output_1] = NL_interpolator( r_EA , r1 , v_dep , v1 , N_rev1 , TOF1 , sim.M1 ,sim.PS.Isp , sim );
@@ -206,8 +144,8 @@ if max(TOF1+TOF2,TOFa+TOFb) < max_duration % 12 years max mission time
                                     output_b.Thrust(:,1),output_b.Thrust(:,2),output_b.Thrust(:,3)]; 
                     T_SC2 = sqrt(T_append_SC2(:,1).^2 + T_append_SC2(:,3).^2);
 
-                    if abs(max(T_SC1)) <= 0.1 % bepi colombo is 250 mN
-                        if abs(max(T_SC2)) <= 0.1
+                    if abs(max(T_SC1)) <= 0.05 % bepi colombo is 250 mN
+                        if abs(max(T_SC2)) <= 0.05
                             if mass_fract_SC1 > 0 && mass_fract_SC1 < 1 %17 kg of payload
                                 if mass_fract_SC2 > 0 && mass_fract_SC2 < 1 %17 kg of payload
                                     obj_fun = max(mass_fract_SC1,mass_fract_SC2); % + mean(mf_sc1,mf_sc2), cosi sono piu o meno uguali

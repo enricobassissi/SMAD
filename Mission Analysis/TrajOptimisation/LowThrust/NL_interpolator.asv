@@ -217,12 +217,9 @@ theta = psi*x;
  l1 = L1 + DL1; %%%% L1 è 1x1 e DL1 è 100x1
  l1_x = DL1_x;
  l1_xx = DL1_xx;
- l1_xxx = DL1_xxx;
  
  l2 = L2 - DL2; %%%% L2 è 1x1 e DL2 è 100x1
  l2_x = -DL2_x;
- l2_xx = - DL2_xx;
- l2_xxx =- DL2_xxx;
  
  cosl1 = cos(DL1)*cos(L1) - sin(DL1)*sin(L1);
  cosl2 = cos(DL2)*cos(L2) + sin(DL2)*sin(L2);
@@ -234,7 +231,7 @@ theta = psi*x;
  q1     = 1 + f1*cosl1 + g1*sinl1;
  q1_x   = (- f1*sinl1 + g1*cosl1).*l1_x;
  q1_xx  = (1 - q1).*l1_x.^2 + q1_x.*l1_xx./l1_x.^2;
- q1_xxx = - q1_x.*l1_x.^2 + 3*(1-q1).*l1_x.*l1_xx + q1_x.*l1_xxx./l1_x;
+ q1_xxx = - q1_x.*l1_x.^2 + 3*(1-q1).*l1_x.*DL1_xx + q1_x.*l1_xxx./DL1_x;
  
  q2     = 1 + f2*cosl2 + g2*sinl2;
  q2_x   = (- f2*sinl2 + g2*cosl2).*l2_x;

@@ -26,6 +26,6 @@ function [R, h] = plot_planet_orbit(mjd2000,PL_ID,colors,color_id)
     end
 
     h = plot3(R(:,1),R(:,2),R(:,3),'--','Color',colors(color_id,:),...
-        'DisplayName', disp_name);
+        'LineWidth',1,'DisplayName', disp_name);
     
 end

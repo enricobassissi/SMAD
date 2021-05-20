@@ -42,15 +42,15 @@ x_t   = sqrt(x_t_2);
 xm_t = 0.5*(x_t(1:end-1) + x_t(2:end));
 
 % ----------------------------------------------------------------------- %
-% MIA 1
-% dTOF at each theta 
+% % MIA 1
+% % dTOF at each theta 
 % dTOF  = 1./x_t;
 % dTOFm = 1./xm_t;
 % 
 % % step size
 % h = x(2)- x(1);
-%h = 1e-8;
-
+% h = 1e-8;
+% 
 % % Cavalieri-Simpson method
 % I = 0;
 % for i = 2:n_sol
@@ -58,8 +58,8 @@ xm_t = 0.5*(x_t(1:end-1) + x_t(2:end));
 % end
 % 
 % I = I*h/6;
-
-% I = trapz(x,dTOF);
+% 
+% % I = trapz(x,dTOF);
 % error_TOF = (TOF-I);
 
 % %------------------------------------------------------------------------%
@@ -68,7 +68,7 @@ xm_t = 0.5*(x_t(1:end-1) + x_t(2:end));
 % dtheta = 1e-8;
 % dtheta6 = dtheta./6;
 % 
-% TOF11    = theta;
+% TOF11    = x;
 % TOF11(1) = 0; % Initialization
 % dTOF  = 1./x_t;
 % 
