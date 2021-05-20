@@ -268,6 +268,7 @@ if sim.TOF_imposed_flag == 1
 else
     a = 0;
 end
+
     
 %- Interpolating function xi(x,a) and derivatives
  % Initial and final position and velocity shall be constrained, therefore
