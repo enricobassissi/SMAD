@@ -80,7 +80,7 @@ selected_asteroids_names = cellfun(@string,cell(py_selected_asteroids{2}));
 % extraction of data
 idx = 0;
 for i = 1:length(selected_asteroids_orbital_elements_and_sigma)
-    if selected_asteroids_orbital_elements_and_sigma{i}(1,1) < 2
+%     if selected_asteroids_orbital_elements_and_sigma{i}(1,1) < 2 % pre pruning of semimajor axis
         idx = idx+1;
         a_asteroids(idx,1) = selected_asteroids_orbital_elements_and_sigma{i}(1,1);
         e_asteroids(idx,1) = selected_asteroids_orbital_elements_and_sigma{i}(2,1);
@@ -88,7 +88,7 @@ for i = 1:length(selected_asteroids_orbital_elements_and_sigma)
         OM_asteroids(idx,1) = selected_asteroids_orbital_elements_and_sigma{i}(4,1);
         om_asteroids(idx,1) = selected_asteroids_orbital_elements_and_sigma{i}(5,1);
         sel_asteroids_names(idx,1) = selected_asteroids_names(i);
-    end
+%     end
 end
 clearvars i idx
 
@@ -98,7 +98,38 @@ data_elements_matrix = [sel_asteroids_names,a_asteroids,e_asteroids,incl_asteroi
 TABLE = table(sel_asteroids_names,a_asteroids,e_asteroids,incl_asteroids,OM_asteroids,...
     om_asteroids)
 
+%% cut down the asteroids on the orbital parameters
+TF_a_up = str2double(data_elements_matrix(:,2))<1.4; % check a upper bound
+TF_a_low = str2double(data_elements_matrix(:,2))> 0.6; % check a lower bound
+TF_e = str2double(data_elements_matrix(:,3))<0.5; % check e
+TF_i = str2double(data_elements_matrix(:,4))<4; % check i
+
+data_elements_matrix_cut = data_elements_matrix(and(and(and(TF_a_up,TF_e),TF_a_low),TF_i),:);
+
+clearvars TF_a_up TF_a_low TF_e TF_i
 %% Local Pruning on i and w_up
 p_number = 4;
 [asteroid_names, PermutationMatrix_after, HowMany_after] = ...
-            sequences_local_pruning(data_elements_matrix, p_number);
+            sequences_local_pruning2(data_elements_matrix_cut, p_number);
+
+%% preparation for the saving to other scripts
+data.asteroid_names = asteroid_names;
+data.PermutationMatrix = PermutationMatrix_after;
+data.HowMany = HowMany_after;
+data.data_elements_matrix = data_elements_matrix_cut;
+data.p_number = p_number;
+
+%% check on param of the pruned sequence
+for i = 1:HowMany_after
+    for j = 1:4
+        idx_ast_considered = find(PermutationMatrix_after(i,j)==data_elements_matrix(:,1));
+        a_perm_mat(i,j) = data_elements_matrix(idx_ast_considered,2);
+        e_perm_mat(i,j) = data_elements_matrix(idx_ast_considered,3);
+        i_perm_mat(i,j) = data_elements_matrix(idx_ast_considered,4);
+    end
+end
+clearvars i j idx_ast_considered
+
+data.a_perm_mat = a_perm_mat;
+data.e_perm_mat = e_perm_mat;
+data.i_perm_mat = i_perm_mat;

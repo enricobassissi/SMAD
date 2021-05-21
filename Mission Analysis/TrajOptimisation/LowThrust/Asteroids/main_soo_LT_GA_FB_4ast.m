@@ -63,7 +63,7 @@ end
 % 
 % [data.y_interp_ft, data.t_vector] = find_eph_neo(data.asteroid_names);
 
-load('data_processed_9.mat')
+load('data_processed_9_4.mat')
 
 %% simulation parameters
 sim.mu_dim    = 132712440018              ; % actractor parameter [km^3 s^-2]
@@ -81,6 +81,7 @@ sim.PS.Isp = 3200/sim.TU;  % non-dimensional specific impulse
 sim.M = 100; % SC wet mass [kg]
 sim.M_pods = 5; % mass of the payloads+landing stuff [kg]
 sim.ID_FLYBY = 4; % flyby planet
+sim.max_Available_Thrust = 100*1e-3; % [N]
 
 %% Boundaries
 % Departure dates (1)
@@ -96,13 +97,13 @@ bound.TOF1_min = 500*3600*24/sim.TU;
 bound.TOF1_max = 900*3600*24/sim.TU; 
 % TOF2 (3)
 bound.TOF2_min = 0.5*365*3600*24/sim.TU; 
-bound.TOF2_max = 2*365*3600*24/sim.TU; 
+bound.TOF2_max = 3*365*3600*24/sim.TU; 
 % TOF3 (4)
 bound.TOF3_min = 0.5*365*3600*24/sim.TU; 
-bound.TOF3_max = 2*365*3600*24/sim.TU; 
+bound.TOF3_max = 3*365*3600*24/sim.TU; 
 % TOF4 (5)
-bound.TOF4_min = 0.2*365*3600*24/sim.TU; 
-bound.TOF4_max = 2*365*3600*24/sim.TU; 
+bound.TOF4_min = 0.5*365*3600*24/sim.TU; 
+bound.TOF4_max = 3*365*3600*24/sim.TU; 
 % N REV 1 (6)
 bound.N_REV1_min = 0; %0
 bound.N_REV1_max = 1; %3
@@ -131,25 +132,25 @@ bound.v_inf_magn_max = sqrt(sim.C3_max)/sim.DU*sim.TU;
 bound.az_min = -deg2rad(180);
 bound.az_max = deg2rad(180);
 % elevation (13)
-bound.el_min = -deg2rad(180);
-bound.el_max = deg2rad(180);
+bound.el_min = -deg2rad(90);
+bound.el_max = deg2rad(90);
 % GA Stuff in
 % v_inf_magn2 (15)
 bound.v_inf_magn2_min = 0;
-bound.v_inf_magn2_max = sqrt(sim.C3_max)/sim.DU*sim.TU;
+bound.v_inf_magn2_max = 15/sim.DU*sim.TU; % Longusky GA 2
 % azimuth2 (16)
 bound.az2_min = -pi;
 bound.az2_max = pi;
 % elevation2 (17)
-bound.el2_min = -pi;
-bound.el2_max = pi;
+bound.el2_min = -pi/2;
+bound.el2_max = pi/2;
 % GA Stuff out
 % azimuth3 (18)
 bound.az3_min = -pi;
 bound.az3_max = pi;
 % elevation3 (19)
-bound.el3_min = -pi;
-bound.el3_max = pi;
+bound.el3_min = -pi/2;
+bound.el3_max = pi/2;
 
 % Departure dates (1)
 % TOF1 (2)

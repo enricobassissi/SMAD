@@ -24,9 +24,12 @@ HowMany = factorial(length(asteroid_names)) / factorial(length(asteroid_names) -
 
 PermutationMatrix_to_cut = PermutationMatrix_whole;
 
-delta_incl_max = 5;
-delta_a_max = 0.5;
+delta_incl_max = 0.5;
+% delta_a_max = 0.5;
 for i = 1:HowMany % rows
+    idx_first_ast_considered = PermutationMatrix_whole(i,1)==asteroid_names;
+    a_first_ast = a_asteroids(idx_first_ast_considered);
+    if  a_first_ast < 1.
     for j = 2:p_number % cols
         idx_ast_considered_a = find(PermutationMatrix_whole(i,j-1)==asteroid_names);
         idx_ast_considered_b = find(PermutationMatrix_whole(i,j)==asteroid_names);

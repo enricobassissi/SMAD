@@ -1,5 +1,5 @@
 %% --------------------------------------------------------------------- %%
-%% ------------------- Earth Ast1 Ast2 Transfer ------------------------ %%
+%% --------------- Earth Ast1 Ast2 Ast3 Ast4 Transfer ------------------ %%
 %% ---------------------- ARCH 1+4, LT GA FB --------------------------- %%
 %% --------------------- FREEDOM AT EACH AST --------------------------- %%
 %% ------------------------------ SOO ---------------------------------- %%
@@ -79,9 +79,10 @@ sim.direction = 1;                     % direction of integration (1 FW, -1 BW),
                                        % 1 is like imposing wet mass at beginning
 sim.TOF_imposed_flag = 1;
 sim.PS.Isp = 3200/sim.TU;  % non-dimensional specific impulse
-sim.M = 1000; % SC wet mass [kg]
+sim.M = 100; % SC wet mass [kg]
 sim.M_pods = 5; % mass of the payloads+landing stuff [kg]
 sim.ID_FLYBY = 4; % flyby planet
+sim.max_Available_Thrust = 0.100; %[N]
 
 %% Boundaries
 % Departure dates (1)
@@ -105,19 +106,19 @@ bound.TOF3_max = 2.5*365*3600*24/sim.TU;
 bound.TOF4_min = 0.5*365*3600*24/sim.TU; 
 bound.TOF4_max = 2.5*365*3600*24/sim.TU; 
 % N REV 1 (6)
-bound.N_REV1_min = 1; %0
+bound.N_REV1_min = 0; %0
 bound.N_REV1_max = 1; %3
 % N REV 2 (7)
-bound.N_REV2_min = 1; %0
+bound.N_REV2_min = 0; %0
 bound.N_REV2_max = 1; %3
 % N REV 3 (8)
-bound.N_REV3_min = 1; %0
+bound.N_REV3_min = 0; %0
 bound.N_REV3_max = 1; %3
 % N REV 4 (9)
 bound.N_REV4_min = 0; %0
 bound.N_REV4_max = 1; %3
 % N REV GA (20)
-bound.N_REV_GA_min = 1; %0
+bound.N_REV_GA_min = 0; %0
 bound.N_REV_GA_max = 1; %3
 % ID Permutation (10)
 bound.IDP_min = 1; 
@@ -129,28 +130,28 @@ sim.C3_max = 20; % km^2/s^2
 bound.v_inf_magn_min = 0;
 bound.v_inf_magn_max = sqrt(sim.C3_max)/sim.DU*sim.TU;
 % azimuth (12)
-bound.az_min = -deg2rad(180);
-bound.az_max = deg2rad(180);
+bound.az_min = -pi;
+bound.az_max = pi;
 % elevation (13)
-bound.el_min = -deg2rad(180);
-bound.el_max = deg2rad(180);
+bound.el_min = -pi/2;
+bound.el_max = pi/2;
 % GA Stuff in
 % v_inf_magn2 (15)
 bound.v_inf_magn2_min = 0;
-bound.v_inf_magn2_max = sqrt(sim.C3_max)/sim.DU*sim.TU;
+bound.v_inf_magn2_max = 15/sim.DU*sim.TU;
 % azimuth2 (16)
 bound.az2_min = -pi;
 bound.az2_max = pi;
 % elevation2 (17)
-bound.el2_min = -pi;
-bound.el2_max = pi;
+bound.el2_min = -pi/2;
+bound.el2_max = pi/2;
 % GA Stuff out
 % azimuth3 (18)
 bound.az3_min = -pi;
 bound.az3_max = pi;
 % elevation3 (19)
-bound.el3_min = -pi;
-bound.el3_max = pi;
+bound.el3_min = -pi/2;
+bound.el3_max = pi/2;
 
 % FB on asteroid angles 
 % ASTEROID 1 IN
@@ -158,50 +159,50 @@ bound.el3_max = pi;
 bound.az_ast1_in_min = -pi;
 bound.az_ast1_in_max = pi;
 % elevation_ast1_in (22)
-bound.el_ast1_in_min = -pi;
-bound.el_ast1_in_max = pi;
+bound.el_ast1_in_min = -pi/2;
+bound.el_ast1_in_max = pi/2;
 % ASTEROID 1 OUT
 % azimuth_ast1_out (23)
 bound.az_ast1_out_min = -pi;
 bound.az_ast1_out_max = pi;
 % elevation_ast1_out (24)
-bound.el_ast1_out_min = -pi;
-bound.el_ast1_out_max = pi;
+bound.el_ast1_out_min = -pi/2;
+bound.el_ast1_out_max = pi/2;
 % ASTEROID 2 IN
 % azimuth_ast2_in (25)
 bound.az_ast2_in_min = -pi;
 bound.az_ast2_in_max = pi;
 % elevation_ast2_in (26)
-bound.el_ast2_in_min = -pi;
-bound.el_ast2_in_max = pi;
+bound.el_ast2_in_min = -pi/2;
+bound.el_ast2_in_max = pi/2;
 % ASTEROID 2 OUT
 % azimuth_ast2_out (27)
 bound.az_ast2_out_min = -pi;
 bound.az_ast2_out_max = pi;
 % elevation_ast2_out (28)
-bound.el_ast2_out_min = -pi;
-bound.el_ast2_out_max = pi;
+bound.el_ast2_out_min = -pi/2;
+bound.el_ast2_out_max = pi/2;
 % ASTEROID 3 IN
 % azimuth_ast3_in (29)
 bound.az_ast3_in_min = -pi;
 bound.az_ast3_in_max = pi;
 % elevation_ast3_in (30)
-bound.el_ast3_in_min = -pi;
-bound.el_ast3_in_max = pi;
+bound.el_ast3_in_min = -pi/2;
+bound.el_ast3_in_max = pi/2;
 % ASTEROID 3 OUT
 % azimuth_ast3_out (31)
 bound.az_ast3_out_min = -pi;
 bound.az_ast3_out_max = pi;
 % elevation_ast3_out (32)
-bound.el_ast3_out_min = -pi;
-bound.el_ast3_out_max = pi;
+bound.el_ast3_out_min = -pi/2;
+bound.el_ast3_out_max = pi/2;
 % ASTEROID 4 IN
 % azimuth_ast4_in (33)
 bound.az_ast4_in_min = -pi;
 bound.az_ast4_in_max = pi;
 % elevation_ast4_in (34)
-bound.el_ast4_in_min = -pi;
-bound.el_ast4_in_max = pi;
+bound.el_ast4_in_min = -pi/2;
+bound.el_ast4_in_max = pi/2;
 
 % Departure dates (1)
 % TOF1 (2)
@@ -295,7 +296,7 @@ options.Display = 'iter';
 % multiobjective genetic algorithm terminates
 % options.HybridFcn = 'fgoalattain';
 
-options.PopulationSize = 500; % ideal 1000
+options.PopulationSize = 1500; % ideal 1000
 options.MaxGenerations = 50; % ideal 100
 
 options.FunctionTolerance = 1e-6; %1e-9

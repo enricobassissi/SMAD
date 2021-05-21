@@ -22,7 +22,7 @@ r1 = r1/sim.DU;
 v1 = v1/sim.DU*sim.TU;
 
 % N REV
-N_rev= x(3);
+N_rev = x(3);
 
 % launcher_stuff
 v_inf_magn = x(4);
@@ -34,6 +34,8 @@ v_dep = v_EA + v_launcher;  %since parabolic escape (vinf = 0)
 varr = v1; %since we want to rendez-vous
 
 [output] = NL_interpolator( r_EA , r1 , v_dep , varr , N_rev , TOF1 , sim.M ,sim.PS.Isp ,sim );
+
+output.T_magn = sqrt(output.Thrust(:,1).^2 + output.Thrust(:,3).^2);
 
 r_encounter.EA = r_EA;
 r_encounter.ast1 = r1;

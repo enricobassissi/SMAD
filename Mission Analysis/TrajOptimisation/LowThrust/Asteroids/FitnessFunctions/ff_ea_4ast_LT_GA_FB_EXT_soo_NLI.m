@@ -180,45 +180,48 @@ if (TOFGA+TOF1+TOF2+TOF3+TOF4) < max_duration % 12 years max mission time
     v_arr_GA = v_GA + v_inf_magn2*[cos(el2)*cos(az2); cos(el2)*sin(az2); sin(el2)];
    
     %% NLI
+    tol_TOF = 1; % 1 TU means approx 60 days
     % 1st leg - Earth -> GA
     [output_GA] = NL_interpolator( r_EA , r_GA , v_dep , v_arr_GA , N_revGA , TOFGA , sim.M ,sim.PS.Isp , sim );
-    if ~isnan(output_GA.Thrust) % if is not nan -> it's a valid solution
+    if ~isnan(output_GA.Thrust(1,1)) && abs(output_GA.t(end) - TOFGA) < tol_TOF  % if is not nan -> it's a valid solution
         % 2nd leg - GA -> Ast 1
         v_dep_GA = v_GA + v_inf_magn2*[cos(el3)*cos(az3); cos(el3)*sin(az3); sin(el3)];
         if sim.ID_FLYBY == 3
             RPlanet_flyby = astroConstants(23); % Radius_Earth, km
             muPlanet_flyby = astroConstants(13); % muEarth, km^3/s^2
             R_lim_from_planet = 500; % km, for earth is ok to avoid atmosphere
+            R_SOI_PL = 0.929*1e6; % km
         elseif sim.ID_FLYBY == 4
             RPlanet_flyby = astroConstants(24); % Radius_mars, km
             muPlanet_flyby = astroConstants(14); % mu mars, km^3/s^2
             R_lim_from_planet = 200; % km, for mars is ok to avoid atmosphere
+            R_SOI_PL = 0.578*1e6; %km
         end
         MJDPGA_dim = MJDPGA*sim.TU/(3600*24);
         v_arr_GA_dim = v_arr_GA.*sim.DU./sim.TU;
         v_dep_GA_dim = v_dep_GA.*sim.DU./sim.TU;
         delta_v_p = flyby(RPlanet_flyby, muPlanet_flyby,R_lim_from_planet, ...
-                          MJDPGA_dim, v_arr_GA_dim, v_dep_GA_dim, sim.ID_FLYBY);
+                          MJDPGA_dim, v_arr_GA_dim, v_dep_GA_dim, sim.ID_FLYBY, R_SOI_PL);
         if ~strcmp(string(delta_v_p), 'Not found')
             M_after_GA = output_GA.m(end); %  - sim.M_pods;
             [output_1] = NL_interpolator( r_GA , r1 , v_dep_GA , v_FB_1_in , N_rev1 , TOF1 , M_after_GA ,sim.PS.Isp , sim );
 
-            if ~isnan(output_1.Thrust) % if is not nan -> it's a valid solution
+            if ~isnan(output_1.Thrust(1,1)) && abs(output_1.t(end) - TOF1) < tol_TOF  % if is not nan -> it's a valid solution
                 % 3rd leg - Ast1 -> Ast2
                 M_start_2nd_leg = output_1.m(end); %  - sim.M_pods;
                 [output_2] = NL_interpolator( r1 , r2 , v_FB_1_out , v_FB_2_in , N_rev2 , TOF2 , M_start_2nd_leg ,sim.PS.Isp , sim );
 
-                if ~isnan(output_2.Thrust) % if is not nan -> it's a valid solution
+                if ~isnan(output_2.Thrust(1,1)) && abs(output_2.t(end) - TOF2) < tol_TOF  % if is not nan -> it's a valid solution
                     % 4th leg - Ast2 -> Ast3
                     M_start_3rd_leg = output_2.m(end); %  - sim.M_pods;
                     [output_3] = NL_interpolator( r2 , r3 , v_FB_2_out , v_FB_3_in , N_rev3 , TOF3 , M_start_3rd_leg ,sim.PS.Isp , sim );
 
-                    if ~isnan(output_3.Thrust) % if is not nan -> it's a valid solution
+                    if ~isnan(output_3.Thrust(1,1)) && abs(output_3.t(end) - TOF3) < tol_TOF  % if is not nan -> it's a valid solution
                         % 5th leg - Ast3 -> Ast4
                         M_start_4th_leg = output_3.m(end); %  - sim.M_pods;
                         [output_4] = NL_interpolator( r3 , r4 , v_FB_3_out , v_FB_4_in , N_rev4 , TOF4 , M_start_4th_leg ,sim.PS.Isp , sim );
 
-                        if ~isnan(output_4.Thrust) % if is not nan -> it's a valid solution
+                        if ~isnan(output_4.Thrust(1,1)) && abs(output_4.t(end) - TOF4) < tol_TOF  % if is not nan -> it's a valid solution
                             mass_fract = (output_GA.m(1) - output_4.m(end))/output_GA.m(1);
 
                             % put one after the other, all the thrust profiles
@@ -229,7 +232,7 @@ if (TOFGA+TOF1+TOF2+TOF3+TOF4) < max_duration % 12 years max mission time
                                         output_4.Thrust(:,1),output_4.Thrust(:,2),output_4.Thrust(:,3)]; 
                             T = sqrt(T_append(:,1).^2 + T_append(:,3).^2);
 
-                            if abs(max(T)) <= 0.1 % bepi colombo is 250 mN
+                            if abs(max(T)) <= sim.max_Available_Thrust % bepi colombo is 250 mN
                                 if mass_fract > 0 && mass_fract < 1 %17 kg of payload
                                     obj_fun = mass_fract;
                                     disp('success')

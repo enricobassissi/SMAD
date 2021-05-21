@@ -42,13 +42,14 @@ v_dep = v_EA + v_launcher;  %since parabolic escape (vinf = 0)
 [output] = NL_interpolator( r_EA , r1 , v_dep , v1 , N_rev , TOF1 , sim.M ,sim.PS.Isp , sim );
 
 obj_fun = 10;
-if ~isnan(output.Thrust) % if is not nan
+tol_TOF = 1;
+if ~isnan(output.Thrust(1,1)) && abs(output.t(end) - TOF1) < tol_TOF % if is not nan
     
     mass_fract = (output.m(1) - output.m(end))/output.m(1);
     
     T = sqrt(output.Thrust(:,1).^2 + output.Thrust(:,3).^2);
     
-    if abs(max(T)) > 0.1 % bepi colombo is 250 mN
+    if abs(max(T)) < sim.max_Available_Thrust % bepi colombo is 250 mN
         if mass_fract > 0 && mass_fract < 1 
             obj_fun = mass_fract;
             disp('success')
