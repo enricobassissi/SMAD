@@ -98,7 +98,7 @@ if ~isnan(output_1.Thrust) % if is not nan
                         output_2.Thrust(:,1),output_2.Thrust(:,2),output_2.Thrust(:,3)]; 
             T = sqrt(T_append(:,1).^2 + T_append(:,3).^2);
 
-            if abs(max(T)) <= 0.05 % bepi colombo is 250 mN
+            if abs(max(T)) <= 0.025 % bepi colombo is 250 mN
                 if mass_fract > 0 && mass_fract < 1 
                     obj_fun = mass_fract;
                     disp('success')

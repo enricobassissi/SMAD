@@ -220,9 +220,9 @@ theta = psi*x;
  l1_xxx = DL1_xxx;
  
  l2 = L2 - DL2; %%%% L2 è 1x1 e DL2 è 100x1
- l2_x = -DL2_x;
+ l2_x = - DL2_x;
  l2_xx = - DL2_xx;
- l2_xxx =- DL2_xxx;
+ l2_xxx = - DL2_xxx;
  
  cosl1 = cos(DL1)*cos(L1) - sin(DL1)*sin(L1);
  cosl2 = cos(DL2)*cos(L2) + sin(DL2)*sin(L2);
@@ -233,12 +233,12 @@ theta = psi*x;
  %- Quantity qi(x) i = 1,2 needed to compute de distance from the attractor
  q1     = 1 + f1*cosl1 + g1*sinl1;
  q1_x   = (- f1*sinl1 + g1*cosl1).*l1_x;
- q1_xx  = (1 - q1).*l1_x.^2 + q1_x.*l1_xx./l1_x.^2;
+ q1_xx  = (1 - q1).*l1_x.^2 + q1_x.*l1_xx./l1_x; %nel paper: /l1_x^2
  q1_xxx = - q1_x.*l1_x.^2 + 3*(1-q1).*l1_x.*l1_xx + q1_x.*l1_xxx./l1_x;
  
  q2     = 1 + f2*cosl2 + g2*sinl2;
  q2_x   = (- f2*sinl2 + g2*cosl2).*l2_x;
- q2_xx  = (1 - q2).*l2_x.^2 + q2_x.*l2_xx./l2_x.^2;
+ q2_xx  = (1 - q2).*l2_x.^2 + q2_x.*l2_xx./l2_x; %nel paper: /l2_x^2
  q2_xxx = - q2_x.*l2_x.^2 + 3*(1-q2).*l2_x.*l2_xx + q2_x.*l2_xxx./l2_x;
  
  %- Distance s/c from the attractor (through MEE definition) : si(x) and
@@ -258,18 +258,18 @@ theta = psi*x;
 if sim.TOF_imposed_flag == 1
     %- Interpolationg function coefficient a - fsolve + Cavalieri-Simpson to
     %  solve the integral
-    a0  = 0;
-    fun = @(a) find_a(a,x,psi,TOF,sim,s1,s1_x,s1_xx,s2,s2_x,s2_xx,delta1,delta1_x,delta1_xx,delta2,delta2_x,delta2_xx);
-
-    %options=optimoptions('fsolve', 'TolFun', 1e-8, 'TolX', 1e-8,'Display','off');
-    options=optimoptions('fsolve','Display','off');
-    [a,fsolve_err] = fsolve(fun,a0,options); %% alternative: fzero 
-    % a  = find_a_prof(x,psi,TOF,sim,s1,s1_x,s1_xx,s2,s2_x,s2_xx,delta1,delta1_x,delta1_xx,delta2,delta2_x,delta2_xx); % prof
+%     a0  = 0;
+%     fun = @(a) find_a(a,x,psi,TOF,sim,s1,s1_x,s1_xx,s2,s2_x,s2_xx,delta1,delta1_x,delta1_xx,delta2,delta2_x,delta2_xx);
+% 
+%     %options=optimoptions('fsolve', 'TolFun', 1e-8, 'TolX', 1e-8,'Display','off');
+%     options=optimoptions('fsolve','Display','off');
+%     [a,fsolve_err] = fsolve(fun,a0,options); %% alternative: fzero 
+    a  = find_a_prof(x,psi,TOF,sim,s1,s1_x,s1_xx,s2,s2_x,s2_xx,delta1,delta1_x,delta1_xx,delta2,delta2_x,delta2_xx); % prof
 else
     a = 0;
 end
 
-    
+   
 %- Interpolating function xi(x,a) and derivatives
  % Initial and final position and velocity shall be constrained, therefore
  % the function shall be continuous (between 0 and 1).
@@ -366,8 +366,8 @@ T2m = sqrt(Tin2m.^2 + Tout2m.^2);
 %- Mass time history from Tsiolkovsky equation: m_t
    % devo scriverle in funzione di theta o x (||) ???
 
-dtheta = theta(2)- theta(1);
-dtheta2 = dtheta/2;
+dtheta   = theta(2)- theta(1);
+dtheta2  = dtheta/2;
 dtheta12 = dtheta/12;
 dtheta24 = dtheta/24;
 
@@ -405,7 +405,7 @@ theta_t = psi*x_t;
 
    
 % time vector
-d_time =1./x_t;
+d_time = 1./x_t;
 dx = x(2) - x(1);
 
 t    = x;

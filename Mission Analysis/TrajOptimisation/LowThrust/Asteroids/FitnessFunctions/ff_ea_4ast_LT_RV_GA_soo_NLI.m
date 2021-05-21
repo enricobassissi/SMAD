@@ -6,9 +6,11 @@ MJD01 = x(1); % departure time from earth
 TOFGA = x(2);
 MJDPGA = MJD01 + TOFGA; % passage time GA
 TOF1 = x(3);
-MJDP1 = MJDPGA + TOF1; % passage time on ast 1
+MJDP1 = MJDPGA + TOF1; % arrival on ast 1
+TOC1 = x(21);
+MJDD1 = MJDP1 + TOC1; % departure from ast 1
 TOF2 = x(4);
-MJDP2 = MJDP1 + TOF2; % passage ast 2
+MJDP2 = MJDD1 + TOF2; % passage ast 2
 TOF3 = x(5);
 MJDP3 = MJDP2 + TOF3; % passage ast 3
 TOF4 = x(6);
@@ -17,7 +19,7 @@ MJDP4 = MJDP3 + TOF4; % passage ast 4
 obj_fun = 10;
 
 max_duration = 12*365*(3600*24)/sim.TU;
-if (TOFGA+TOF1+TOF2+TOF3+TOF4) < max_duration % 12 years max mission time 
+%if (TOFGA+TOF1+TOF2+TOF3+TOF4) < max_duration % 12 years max mission time 
     
     % N REV GA
     N_revGA = x(7);
@@ -66,12 +68,19 @@ if (TOFGA+TOF1+TOF2+TOF3+TOF4) < max_duration % 12 years max mission time
     r_GA = r_GA/sim.DU;
     v_GA = v_GA/sim.DU*sim.TU;
     
-    % PASSAGE at 1st ast
+    % Arrival at 1st ast
     MJDP1_dim = MJDP1*sim.TU/(3600*24);
     [kep_ast_1] = uNEO2(MJDP1_dim,asteroid_1,data); % [km,-,rad,rad,rad,wrapped rad]
     [r1, v1] = sv_from_coe(kep_ast_1,ksun); % km, km/s
     r1 = r1/sim.DU;
     v1 = v1/sim.DU*sim.TU;
+    
+    % Departure from 1st ast
+    MJDD1_dim = MJDD1*sim.TU/(3600*24);
+    [kep_ast_1] = uNEO2(MJDD1_dim,asteroid_1,data); % [km,-,rad,rad,rad,wrapped rad]
+    [r1d, v1d] = sv_from_coe(kep_ast_1,ksun); % km, km/s
+    r1d = r1d/sim.DU;
+    v1d = v1d/sim.DU*sim.TU;
 
     % passage at 2nd ast
     MJDP2_dim = MJDP2*sim.TU/(3600*24);
@@ -105,7 +114,7 @@ if (TOFGA+TOF1+TOF2+TOF3+TOF4) < max_duration % 12 years max mission time
     % 1st leg - Earth -> GA
     [output_GA] = NL_interpolator( r_EA , r_GA , v_dep , v_arr_GA , N_revGA , TOFGA , sim.M ,sim.PS.Isp , sim );
     
-    if ~isnan(output_GA.Thrust) % if is not nan -> it's a valid solution
+if ~isnan(output_GA.Thrust) % if is not nan -> it's a valid solution
         % 2nd leg - GA -> Ast 1
         v_dep_GA = v_GA + v_inf_magn2*[cos(el3)*cos(az3); cos(el3)*sin(az3); sin(el3)];
         if sim.ID_FLYBY == 3
@@ -119,7 +128,6 @@ if (TOFGA+TOF1+TOF2+TOF3+TOF4) < max_duration % 12 years max mission time
             R_lim_from_planet = 200; % km, for mars is ok to avoid atmosphere
             R_SOI_PL = 0.578*1e6; %km
         end
-        MJDPGA_dim = MJDPGA*sim.TU/(3600*24);
         v_arr_GA_dim = v_arr_GA.*sim.DU./sim.TU;
         v_dep_GA_dim = v_dep_GA.*sim.DU./sim.TU;
         [delta_v_p,rp] = flyby(RPlanet_flyby, muPlanet_flyby,R_lim_from_planet, ...
@@ -134,30 +142,37 @@ if (TOFGA+TOF1+TOF2+TOF3+TOF4) < max_duration % 12 years max mission time
             if ~isnan(output_1.Thrust) % if is not nan -> it's a valid solution
                         % 3rd leg - Ast1 -> Ast2
                         M_start_2nd_leg = output_1.m(end); %  - sim.M_pods;
-                        [output_2] = NL_interpolator( r1 , r2 , v1 , v2 , N_rev2 , TOF2 , M_start_2nd_leg ,sim.PS.Isp , sim );
+                        [output_2] = NL_interpolator( r1d , r2 , v1d , v2 , N_rev2 , TOF2 , M_start_2nd_leg ,sim.PS.Isp , sim );
 
                         if ~isnan(output_2.Thrust) % if is not nan -> it's a valid solution
-                            % 4th leg - Ast2 -> Ast3
-                            M_start_3rd_leg = output_2.m(end); %  - sim.M_pods;
-                            [output_3] = NL_interpolator( r2 , r3 , v2 , v3 , N_rev3 , TOF3 , M_start_3rd_leg ,sim.PS.Isp , sim );
-
-                            if ~isnan(output_3.Thrust) % if is not nan -> it's a valid solution
-                                % 5th leg - Ast3 -> Ast4
-                                M_start_4th_leg = output_3.m(end); %  - sim.M_pods;
-                                [output_4] = NL_interpolator( r3 , r4 , v3 , v4 , N_rev4 , TOF4 , M_start_4th_leg ,sim.PS.Isp , sim );
-
-                                if ~isnan(output_4.Thrust) % if is not nan -> it's a valid solution
-                                    mass_fract = (output_GA.m(1) - output_4.m(end))/output_GA.m(1);
+%                             % 4th leg - Ast2 -> Ast3
+%                             M_start_3rd_leg = output_2.m(end); %  - sim.M_pods;
+%                             [output_3] = NL_interpolator( r2 , r3 , v2 , v3 , N_rev3 , TOF3 , M_start_3rd_leg ,sim.PS.Isp , sim );
+% 
+%                             if ~isnan(output_3.Thrust) % if is not nan -> it's a valid solution
+%                                 % 5th leg - Ast3 -> Ast4
+%                                 M_start_4th_leg = output_3.m(end); %  - sim.M_pods;
+%                                 [output_4] = NL_interpolator( r3 , r4 , v3 , v4 , N_rev4 , TOF4 , M_start_4th_leg ,sim.PS.Isp , sim );
+% 
+%                                 if ~isnan(output_4.Thrust) % if is not nan -> it's a valid solution
+                                   % mass_fract = (output_GA.m(1) - output_4.m(end))/output_GA.m(1);
+                                    mass_fract = (output_GA.m(1) - output_2.m(end))/output_GA.m(1);
+                                    
 
                                     % put one after the other, all the thrust profiles
-                                    T_append = [output_GA.Thrust(:,1),output_GA.Thrust(:,2),output_GA.Thrust(:,3);
+%                                     T_append = [output_GA.Thrust(:,1),output_GA.Thrust(:,2),output_GA.Thrust(:,3);
+%                                                 output_1.Thrust(:,1),output_1.Thrust(:,2),output_1.Thrust(:,3);
+%                                                 output_2.Thrust(:,1),output_2.Thrust(:,2),output_2.Thrust(:,3);
+%                                                 output_3.Thrust(:,1),output_3.Thrust(:,2),output_3.Thrust(:,3);
+%                                                 output_4.Thrust(:,1),output_4.Thrust(:,2),output_4.Thrust(:,3)];
+                                            
+                                     T_append = [output_GA.Thrust(:,1),output_GA.Thrust(:,2),output_GA.Thrust(:,3);
                                                 output_1.Thrust(:,1),output_1.Thrust(:,2),output_1.Thrust(:,3);
-                                                output_2.Thrust(:,1),output_2.Thrust(:,2),output_2.Thrust(:,3);
-                                                output_3.Thrust(:,1),output_3.Thrust(:,2),output_3.Thrust(:,3);
-                                                output_4.Thrust(:,1),output_4.Thrust(:,2),output_4.Thrust(:,3)]; 
+                                                output_2.Thrust(:,1),output_2.Thrust(:,2),output_2.Thrust(:,3);];
+                                            
                                     T = sqrt(T_append(:,1).^2 + T_append(:,3).^2);
 
-                                    if abs(max(T)) <= 0.5 % bepi colombo is 250 mN
+                                     if abs(max(T)) <= 0.05 % bepi colombo is 250 mN
                                         if mass_fract > 0 && mass_fract < 1 %17 kg of payload
                                             obj_fun = mass_fract;
                                             disp('success')
@@ -171,16 +186,16 @@ if (TOFGA+TOF1+TOF2+TOF3+TOF4) < max_duration % 12 years max mission time
                 %                         obj_fun = 1e4; % exception of max thrust exceeded
                 %                         obj_fun = 10+1e3*(abs(max(T))-0.015)^2;
                 %                         disp('max T error')
-                                        obj_fun = obj_fun + 21;
+                                          obj_fun = obj_fun + 21;
                                     end
-                                else
-                %                     disp('4th leg error') % exception of 4th leg wrong
-                                    obj_fun = obj_fun + 32;
-                                end
-                            else
-                %                 disp('3rd leg error') % exception of 3rd leg wrong
-                                obj_fun = obj_fun + 43;
-                            end
+%                                 else
+%                 %                     disp('4th leg error') % exception of 4th leg wrong
+%                                     obj_fun = obj_fun + 32;
+%                                 end
+%                             else
+%                 %                 disp('3rd leg error') % exception of 3rd leg wrong
+%                                 obj_fun = obj_fun + 43;
+%                             end
                         else
                 %             disp('2nd leg error') % exception of 2nd leg wrong
                             obj_fun = obj_fun + 54;
@@ -192,17 +207,21 @@ if (TOFGA+TOF1+TOF2+TOF3+TOF4) < max_duration % 12 years max mission time
                 else
                     obj_fun = obj_fun + 76;
                 end
-            else
-            %     obj_fun = 1e4; % exception of too long mission
-            %     obj_fun = 1e2*(TOF1+CT1+TOF2+CT2+TOF3 - max_duration)^2;
-                disp('max mission duration error')
-                obj_fun = obj_fun + 87;
+    else
+            obj_fun = obj_fun + 87;
     end
-
-
-    end
-   
+        
+                               
+%             else
+%             %     obj_fun = 1e4; % exception of too long mission
+%             %     obj_fun = 1e2*(TOF1+CT1+TOF2+CT2+TOF3 - max_duration)^2;
+%                 disp('max mission duration error')
+%                 obj_fun = obj_fun + 87;
+%     end
+    
 
 end
+   
+
 
 

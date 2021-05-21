@@ -1,6 +1,4 @@
 %% --------------------------------------------------------------------- %%
-%% ----------------------- Fixed Adim Points Transfer ------------------ %%
-%% ------------------------- ARCH 1+4, LT FLYBY ------------------------ %%
 %% --------------------------------------------------------------------- %%
 %% Setup for default options
 set(0, 'DefaultTextFontSize', 20)
@@ -50,7 +48,7 @@ sim.mu_dim    = 132712440018          ; % actractor parameter [km^3 s^-2] -- sun
 sim.DU    = 149597870.7           ; % distance unit [km]
 sim.TU    = (sim.DU^3/sim.mu_dim )^0.5; % time unit [s]
 sim.mu    = 1;                      % non-dimensional attractor parameter [DU^3/TU^2]
-sim.n_sol = 1000;                    % number of computational nodes %% 100 initially
+sim.n_sol = 100;                    % number of computational nodes %% 100 initially
 sim.x = linspace(0,1,sim.n_sol)';   % 
 sim.out_shape = 2;                  % out-of-plane shape (2:CONWAY)
 sim.g0 = 9.81*(sim.TU^2/(1000*sim.DU)); % non-dimensional g0
@@ -110,6 +108,13 @@ ylabel('Mass [kg]')
 R_sdrp  = [output.r.*cos(output.l) output.r.*sin(output.l) output.z];
 Rglobal = rotate_local2ecplitic(RI,R_sdrp,sim.n_sol,output.h_ref_v);
 
+Tlocal  = [-output.u(:,1).*sin(output.l) output.u(:,1).*cos(output.l) output.u(:,3)];
+Tglobal = rotate_local2ecplitic(RI,Tlocal,sim.n_sol,output.h_ref_v);
+
+% for i = 1:length(Rglobal(:,1))
+%     Tglobal = rotate_local2ecplitic(Rglobal(i,:),Tlocal,sim.n_sol,output.h_ref_v)
+% end
+%     
 figure()
 plot3(Rglobal(:,1),Rglobal(:,2),Rglobal(:,3))
 axis equal
@@ -117,6 +122,12 @@ grid on
 hold on
 plot3(RI(1), RI(2), RI(3),'*m')
 plot3(RF(1), RF(2), RF(3),'*b')
+quiver3(Rglobal(:,1), Rglobal(:,2), Rglobal(:,3),Tglobal(:,1),Tglobal(:,2),Tglobal(:,3),3)
+
+figure;
+quiver(Rglobal(:,1), Rglobal(:,2),Tglobal(:,1),Tglobal(:,2),3)
+axis equal
+
 
 %% Non linear interpolator
 output2 = NL_interpolator( RI , RF , VI , VF , N_rev , TOF ,M ,PS.Is ,sim );
@@ -150,6 +161,12 @@ ylabel('Mass [kg]')
 R_sdrp2  = [output2.r.*cos(output2.theta) output2.r.*sin(output2.theta) output2.z];
 Rglobal2 = rotate_local2ecplitic(RI,R_sdrp2,sim.n_sol,output2.Href);
 
+Tlocal2  = [-output2.Thrust(:,1).*sin(output2.theta), ...
+          output2.Thrust(:,1).*cos(output2.theta), output2.Thrust(:,3)];
+Tglobal2 = rotate_local2ecplitic(RI,Tlocal2,sim.n_sol,output2.Href);
+
+
+
 figure()
 plot3(Rglobal2(:,1),Rglobal2(:,2),Rglobal2(:,3),'Color',colors(1,:),'DisplayName','Trajectory')
 axis equal
@@ -158,7 +175,13 @@ hold on
 plot3(RI(1), RI(2), RI(3),'*','Color',colors(2,:),'DisplayName','Start')
 plot3(RF(1), RF(2), RF(3),'*','Color',colors(3,:),'DisplayName','End')
 legend('show')
+quiver3(Rglobal2(:,1), Rglobal2(:,2), Rglobal2(:,3),Tglobal(:,1),Tglobal2(:,2),Tglobal2(:,3),3)
 
+figure;
+quiver(Rglobal(:,1), Rglobal(:,2),Tglobal(:,1),Tglobal(:,2),3)
+axis equal
+
+return
 %% NLI2
 % problem, HI e h_ref sono troppo diversi non so perchè
 output3 = NLI2( RI , RF , VI , VF , N_rev , TOF ,M ,PS.Is ,sim );
@@ -191,16 +214,8 @@ ylabel('Mass [kg]')
 R_sdrp3  = [output3.r.*cos(output3.theta) output3.r.*sin(output3.theta) output3.z];
 Rglobal3 = rotate_local2ecplitic(RI,R_sdrp3,sim.n_sol,output3.Href);
 
-figure()
-plot3(Rglobal3(:,1),Rglobal3(:,2),Rglobal3(:,3),'Color',colors(1,:),'DisplayName','Trajectory')
-axis equal
-grid on
-hold on
-plot3(RI(1), RI(2), RI(3),'*','Color',colors(2,:),'DisplayName','Start')
-plot3(RF(1), RF(2), RF(3),'*','Color',colors(3,:),'DisplayName','End')
-legend('show')
 
-TOF
-output.t(end)
-output2.t(end)
-output3.t(end)
+% TOF
+% output.t(end)
+% output2.t(end)
+% output3.t(end)

@@ -40,21 +40,21 @@ x_t_2 = sim.mu*r./(s.^3.*(r*psi^2 - r_xx + 2*r_x.^2./r));  % \dot{x}^2
 x_t   = sqrt(x_t_2); % \dot{x}
 
 % step zero di newton
-% dx = x(2) - x(1);
-% %dx = 1e-8;
-% j = 3:2:sim.n_sol-2;
-% k = 2:2:sim.n_sol-1;
-% 
-% dTOF1 = 1./x_t(1);
-% dTOFend = 1./x_t(sim.n_sol);
-% 
-% dTOFk = 1./x_t(k); %dTOFm
-% dTOFj = 1./x_t(j);
-% 
-% TOFc1 = (dTOF1 + dTOFend)/6 + sum(dTOFj)/3;
-% TOFc1 = 2*dx*(TOFc1 + 2/3*sum(dTOFk))
-integrand = 1./x_t;
-TOFc1 = trapz(x,integrand);
+dx = x(2) - x(1);
+%dx = 1e-8;
+j = 3:2:sim.n_sol-2;
+k = 2:2:sim.n_sol-1;
+
+dTOF1 = 1./x_t(1);
+dTOFend = 1./x_t(sim.n_sol);
+
+dTOFk = 1./x_t(k); %dTOFm
+dTOFj = 1./x_t(j);
+
+TOFc1 = (dTOF1 + dTOFend)/6 + sum(dTOFj)/3;
+TOFc1 = 2*dx*(TOFc1 + 2/3*sum(dTOFk));
+% integrand = 1./x_t;
+% TOFc1 = trapz(x,integrand);
 
 error = (TOF - TOFc1)/TOF;
 
@@ -89,28 +89,28 @@ while abs(error) > 1e-6 && count <=100
     x_t_2 = sim.mu*r./(s.^3.*(r*psi^2 - r_xx + 2*r_x.^2./r)); 
     x_t   = sqrt(x_t_2);
     
-%     dTOF1 = 1./x_t(1); % first term 1/\dot{x}
-%     dTOFend = 1./x_t(sim.n_sol); % last term
-%     
-%     dTOFk = 1./x_t(k); %dTOFm
-%     dTOFj = 1./x_t(j);
-%     
-%     TOFc = (dTOF1 + dTOFend)/6 + sum(dTOFj)/3;
-%     TOFc = 2*dx*(TOFc + 2/3*sum(dTOFk))
-    integrand = 1./x_t;
-    TOFc = trapz(x,integrand);
+    dTOF1 = 1./x_t(1); % first term 1/\dot{x}
+    dTOFend = 1./x_t(sim.n_sol); % last term
+    
+    dTOFk = 1./x_t(k); %dTOFm
+    dTOFj = 1./x_t(j);
+    
+    TOFc = (dTOF1 + dTOFend)/6 + sum(dTOFj)/3;
+    TOFc = 2*dx*(TOFc + 2/3*sum(dTOFk));
+%     integrand = 1./x_t;
+%     TOFc = trapz(x,integrand);
     error_old = error;
     error = (TOF - TOFc)/TOF;
-   % d_error = (error - error_old)/(a - a_old)
-    d_error = (error - error_old)/dx; %%% giusto????
+   d_error = (error - error_old)/(a - a_old);
+    %d_error = (error - error_old)/dx; %%% giusto????
     
     % newton
     a_old = a;
     a = a_old - error/d_error; 
     
-    count = count + 1
+    count = count + 1;
 end
-find_d
+
 % if count >= 99
 %     T = 9999999 + 0*x;
 

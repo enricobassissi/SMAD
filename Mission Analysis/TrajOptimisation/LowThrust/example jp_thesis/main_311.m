@@ -10,6 +10,7 @@ sim.x = linspace(0,1,sim.n_sol)';         %
 sim.g0 = 9.81*(sim.TU^2/(1000*sim.DU));   % non-dimensional g0
 sim.direction = -1;                       % direction of integration (1 FW, -1 BW)
 
+sim.TOF_imposed_flag = 0;
 %% Propulsive system parameters
 PS.Is = 3800/sim.TU;  % non-dimensional specific impulse
 
@@ -32,7 +33,7 @@ VF = VF/sim.DU*sim.TU;
 
 
 N_rev = 0; % number of revolution
-TOF = 24.02*3600/sim.TU; % TOF [TU] 
+TOF = 23.05*3600/sim.TU; % TOF [TU] 
 M = 1000; % SC mass [kg]
 
 IC1 = [RI*sim.DU; VI*sim.DU/sim.TU];
@@ -47,52 +48,52 @@ sim.out_shape = 2;                  % out-of-plane shape (2:CONWAY)
 hp = 3; %3 OUT OF PLANE SHAPE PARAMETERS
 kp = 3; %3
 
-%% CONWAY
-[output] = CW_LowLambert( RI , RF , VI , VF , N_rev , TOF ,M ,hp , kp , PS,sim );
-
-output.m(1)
-
-%%
-figure()
-subplot(5,1,1)
-plot(output.t*sim.TU/86400,output.u(:,1));
-xlabel('Time [days]')
-ylabel('In-plane Thrust [N]')
-
-subplot(5,1,2)
-plot(output.t*sim.TU/86400,180/pi*output.u(:,2));
-xlabel('Time [days]')
-ylabel('In-plane Thrust angle [deg]')
-
-subplot(5,1,3)
-plot(output.t*sim.TU/86400,output.u(:,3));
-xlabel('Time [days]')
-ylabel('out-of-plane Thrust [N]')
-
-subplot(5,1,4)
-plot(output.t*sim.TU/86400,sqrt(output.u(:,1).^2 + output.u(:,3).^2));
-xlabel('Time [days]')
-ylabel('Thrust [N]')
-
-subplot(5,1,5)
-plot(output.t*sim.TU/86400,output.m);
-xlabel('Time [days]')
-ylabel('Mass [kg]')
-
-R_sdrp  = [output.r.*cos(output.l) output.r.*sin(output.l) output.z];
-Rglobal = rotate_local2ecplitic(RI,R_sdrp,sim.n_sol,output.h_ref_v)
-
-figure()
-plot3(Rglobal(:,1),Rglobal(:,2),Rglobal(:,3))
-axis equal
-grid on
-hold on
-plot3(RI(1), RI(2), RI(3),'*m')
-plot3(RF(1), RF(2), RF(3),'*b')
-
-fuel_mass1 = output.m(1)-output.m(end)
-max_thrust1 = max(sqrt(output.u(:,1).^2 + output.u(:,3).^2))
-TOF_hours1 = output.t(end)*sim.TU/3600
+% %% CONWAY
+% [output] = CW_LowLambert( RI , RF , VI , VF , N_rev , TOF ,M ,hp , kp , PS,sim );
+% 
+% output.m(1)
+% 
+% %%
+% figure()
+% subplot(5,1,1)
+% plot(output.t*sim.TU/86400,output.u(:,1));
+% xlabel('Time [days]')
+% ylabel('In-plane Thrust [N]')
+% 
+% subplot(5,1,2)
+% plot(output.t*sim.TU/86400,180/pi*output.u(:,2));
+% xlabel('Time [days]')
+% ylabel('In-plane Thrust angle [deg]')
+% 
+% subplot(5,1,3)
+% plot(output.t*sim.TU/86400,output.u(:,3));
+% xlabel('Time [days]')
+% ylabel('out-of-plane Thrust [N]')
+% 
+% subplot(5,1,4)
+% plot(output.t*sim.TU/86400,sqrt(output.u(:,1).^2 + output.u(:,3).^2));
+% xlabel('Time [days]')
+% ylabel('Thrust [N]')
+% 
+% subplot(5,1,5)
+% plot(output.t*sim.TU/86400,output.m);
+% xlabel('Time [days]')
+% ylabel('Mass [kg]')
+% 
+% R_sdrp  = [output.r.*cos(output.l) output.r.*sin(output.l) output.z];
+% Rglobal = rotate_local2ecplitic(RI,R_sdrp,sim.n_sol,output.h_ref_v)
+% 
+% figure()
+% plot3(Rglobal(:,1),Rglobal(:,2),Rglobal(:,3))
+% axis equal
+% grid on
+% hold on
+% plot3(RI(1), RI(2), RI(3),'*m')
+% plot3(RF(1), RF(2), RF(3),'*b')
+% 
+% fuel_mass1 = output.m(1)-output.m(end)
+% max_thrust1 = max(sqrt(output.u(:,1).^2 + output.u(:,3).^2))
+% TOF_hours1 = output.t(end)*sim.TU/3600
 
 
 %% NLI
@@ -100,31 +101,34 @@ output2 = NL_interpolator( RI , RF , VI , VF , N_rev , TOF ,M ,PS.Is ,sim );
  
 
 figure()
-subplot(2,3,1)
-plot(rad2deg(output2.theta),output2.Thrust(:,1));
-grid on
-xlabel('Theta[deg]')
-ylabel('In-plane Thrust [N]')
+% subplot(2,3,1)
+% plot(rad2deg(output2.theta),output2.Thrust(:,1));
+% grid on
+% xlabel('Theta[deg]')
+% ylabel('In-plane Thrust [N]')
 
-subplot(2,3,2)
+%subplot(2,3,2)
+subplot(3,1,1)
 plot(rad2deg(output2.theta),180/pi*output2.Thrust(:,2));
 grid on
 xlabel('Theta [deg]')
 ylabel('In-plane Thrust angle [deg]')
 
-subplot(2,3,3)
-plot(rad2deg(output2.theta),output2.Thrust(:,3));
-grid on
-xlabel('Theta [deg]')
-ylabel('out-of-plane Thrust [N]')
+%subplot(2,3,3)
+% plot(rad2deg(output2.theta),output2.Thrust(:,3));
+% grid on
+% xlabel('Theta [deg]')
+% ylabel('out-of-plane Thrust [N]')
 
-subplot(2,3,4)
+%subplot(2,3,4)
+subplot(3,1,2)
 plot(rad2deg(output2.theta),sqrt(output2.Thrust(:,1).^2 + output2.Thrust(:,3).^2));
 grid on
 xlabel('Theta [deg]')
 ylabel('Thrust [N]')
 
-subplot(2,3,5)
+%subplot(2,3,5)
+subplot(3,1,3)
 plot(rad2deg(output2.theta),output2.m);
 grid on
 xlabel('Theta [deg]')

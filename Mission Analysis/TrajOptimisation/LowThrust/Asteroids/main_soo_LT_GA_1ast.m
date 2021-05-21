@@ -92,7 +92,7 @@ bound.date_ld =  [2028, 1, 1, 0, 0, 0];
 bound.mjd2000_ed = date2mjd2000(bound.date_ed)*3600*24/sim.TU;
 bound.mjd2000_ld = date2mjd2000(bound.date_ld)*3600*24/sim.TU;
 % TOFGA (2)
-bound.TOFGA_min = 400*3600*24/sim.TU; %600
+bound.TOFGA_min = 50*3600*24/sim.TU; %400
 bound.TOFGA_max = 900*3600*24/sim.TU; 
 % TOF1 (3)
 bound.TOF1_min = 500*3600*24/sim.TU; %600
@@ -105,15 +105,15 @@ bound.N_REV2_min = 0; %0
 bound.N_REV2_max = 1; %3
 % C3 stuff
 % Constraint on C3 Launcher (6)
-sim.C3_max = 10; % km^2/s^2
+sim.C3_max = 40; % km^2/s^2 %%%
 bound.v_inf_magn_min = 0;
 bound.v_inf_magn_max = sqrt(sim.C3_max)/sim.DU*sim.TU;
 % azimuth (7)
 bound.az_min = -pi;
 bound.az_max = pi;
 % elevation (8)
-bound.el_min = -pi;
-bound.el_max = pi;
+bound.el_min = -pi/2;
+bound.el_max = pi/2;
 % GA Stuff in
 % v_inf_magn2 (9)
 bound.v_inf_magn2_min = 0;
@@ -169,7 +169,7 @@ options.Display = 'iter';
 % options.HybridFcn = 'fgoalattain';
 
 options.PopulationSize = 1000; % ideal 1000
-options.MaxGenerations = 30; % ideal 100
+options.MaxGenerations = 60; % ideal 100
 
 options.FunctionTolerance = 1e-6; %1e-9
 options.MaxStallGenerations = ceil(options.MaxGenerations/5);

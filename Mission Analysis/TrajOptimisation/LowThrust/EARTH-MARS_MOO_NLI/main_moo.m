@@ -1,6 +1,5 @@
 %% --------------------------------------------------------------------- %%
 %% ------------------------- Earth Mars Transfer ----------------------- %%
-%% ------------------------- ARCH 1+4, LT FLYBY ------------------------ %%
 %% ----------------------------- MOO ----------------------------------- %%
 %% --------------------------------------------------------------------- %%
 %% Setup for default options
@@ -73,7 +72,7 @@ sim.soo_lim.date_ld =  [2031, 1, 1, 0, 0, 0];
 sim.soo_lim.mjd2000_ed = date2mjd2000(sim.soo_lim.date_ed)*3600*24/sim.TU;
 sim.soo_lim.mjd2000_ld = date2mjd2000(sim.soo_lim.date_ld)*3600*24/sim.TU;
 % TOF1
-sim.soo_lim.TOF1_min = 900*3600*24/sim.TU; 
+sim.soo_lim.TOF1_min = 600*3600*24/sim.TU; 
 sim.soo_lim.TOF1_max = 1000*3600*24/sim.TU; 
 % N REV
 sim.soo_lim.N_REV_min = 0;
