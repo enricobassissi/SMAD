@@ -1,4 +1,4 @@
-function obj_fun = ff_ea_2SC_LT_FB_soo_NLI(x,sim,data)
+function obj_fun = ff_ea_2SC_LT_FB_EXT_soo_NLI(x,sim,data)
 %{ 
 input variable vector
 x = [(1) MJD0,
@@ -108,7 +108,7 @@ if max(TOF1+TOF2,TOFa+TOFb) < max_duration % 12 years max mission time
     rb = rb/sim.DU;
     vb = vb/sim.DU*sim.TU;
 
-    %% Launcher departure variable
+	%% Launcher departure variable
 %     z = r .* sin(elev);
 %     rcoselev = r .* cos(elev);
 %     x = rcoselev .* cos(az);
@@ -116,22 +116,47 @@ if max(TOF1+TOF2,TOFa+TOFb) < max_duration % 12 years max mission time
     v_launcher = v_inf_magn*[cos(elev)*cos(az); cos(elev)*sin(az); sin(elev)];
     v_dep = v_EA + v_launcher;  %if parabolic escape (v_extra = 0)
    
+    %% modified velocity at each leg
+	% ASTEROID 1
+    az_ast1_in = x(15);
+    el_ast1_in = x(16);
+    v_FB_1_in = norm(v1)*[cos(el_ast1_in)*cos(az_ast1_in); cos(el_ast1_in)*sin(az_ast1_in); sin(el_ast1_in)];
+    az_ast1_out = x(17);
+    el_ast1_out = x(18);
+    v_FB_1_out = norm(v1)*[cos(el_ast1_out)*cos(az_ast1_out); cos(el_ast1_out)*sin(az_ast1_out); sin(el_ast1_out)];
+    % ASTEROID 2
+    az_ast2_in = x(19);
+    el_ast2_in = x(20);
+    v_FB_2_in = norm(v2)*[cos(el_ast2_in)*cos(az_ast2_in); cos(el_ast2_in)*sin(az_ast2_in); sin(el_ast2_in)];
+    
+    % ASTEROID a
+    az_asta_in = x(21);
+    el_asta_in = x(22);
+    v_FB_a_in = norm(va)*[cos(el_asta_in)*cos(az_asta_in); cos(el_asta_in)*sin(az_asta_in); sin(el_asta_in)];
+    az_asta_out = x(23);
+    el_asta_out = x(24);
+    v_FB_a_out = norm(va)*[cos(el_asta_out)*cos(az_asta_out); cos(el_asta_out)*sin(az_asta_out); sin(el_asta_out)];
+    % ASTEROID b
+    az_astb_in = x(25);
+    el_astb_in = x(26);
+    v_FB_b_in = norm(vb)*[cos(el_astb_in)*cos(az_astb_in); cos(el_astb_in)*sin(az_astb_in); sin(el_astb_in)];
+    
     %% NLI
     tol_TOF = 1; % 1 TU means approx 60 days
     % SC1 
     % 1st leg - Earth -> Ast 1
-    [output_1] = NL_interpolator( r_EA , r1 , v_dep , v1 , N_rev1 , TOF1 , sim.M1 ,sim.PS.Isp , sim );
+    [output_1] = NL_interpolator( r_EA , r1 , v_dep , v_FB_1_in , N_rev1 , TOF1 , sim.M1 ,sim.PS.Isp , sim );
     if ~isnan(output_1.Thrust(1,1)) && abs(output_1.t(end) - TOF1) < tol_TOF % if is not nan -> it's a valid solution
         % 2nd leg - Ast1 -> Ast2
         M_start_2nd_leg = output_1.m(end); %  - sim.M_pods
-        [output_2] = NL_interpolator( r1 , r2 , v1 , v2 , N_rev2 , TOF2 , M_start_2nd_leg ,sim.PS.Isp , sim );
-        if ~isnan(output_2.Thrust(1,1)) && abs(output_2.t(end) - TOF2) < tol_TOF  % if is not nan -> it's a valid solution
+        [output_2] = NL_interpolator( r1 , r2 , v_FB_1_out , v_FB_2_in , N_rev2 , TOF2 , M_start_2nd_leg ,sim.PS.Isp , sim );
+        if ~isnan(output_2.Thrust(1,1)) && abs(output_2.t(end) - TOF2) < tol_TOF % if is not nan -> it's a valid solution
             % SC 2
-            [output_a] = NL_interpolator( r_EA , ra , v_dep , va , N_reva , TOFa , sim.M2 ,sim.PS.Isp , sim );
+            [output_a] = NL_interpolator( r_EA , ra , v_dep , v_FB_a_in , N_reva , TOFa , sim.M2 ,sim.PS.Isp , sim );
             if ~isnan(output_a.Thrust(1,1)) && abs(output_a.t(end) - TOFa) < tol_TOF % if is not nan -> it's a valid solution
                 % a_th leg - Earth -> Ast_a
                 M_start_b_th_leg = output_a.m(end); %  - sim.M_pods
-                [output_b] = NL_interpolator( ra , rb , va , vb , N_revb , TOFb , M_start_b_th_leg ,sim.PS.Isp , sim );
+                [output_b] = NL_interpolator( ra , rb , v_FB_a_out , v_FB_b_in , N_revb , TOFb , M_start_b_th_leg ,sim.PS.Isp , sim );
                 if ~isnan(output_b.Thrust(1,1)) && abs(output_b.t(end) - TOFb) < tol_TOF % if is not nan -> it's a valid solution
                     % mass fractions
                     mass_fract_SC1 = (output_1.m(1) - output_2.m(end))/output_1.m(1);

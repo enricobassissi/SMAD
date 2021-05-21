@@ -10,6 +10,8 @@ sim.x = linspace(0,1,sim.n_sol)';         %
 sim.g0 = 9.81*(sim.TU^2/(1000*sim.DU));   % non-dimensional g0
 sim.direction = -1;                       % direction of integration (1 FW, -1 BW)
 
+sim.TOF_imposed_flag = 0;
+
 %% Propulsive system parameters
 PS.Is = 3800/sim.TU;  % non-dimensional specific impulse
 
@@ -96,7 +98,7 @@ TOF_hours1 = output.t(end)*sim.TU/3600
 
 
 %% NLI
-output2 = NL_interpolator( RI , RF , VI , VF , N_rev , TOF ,M ,PS.Is ,sim );
+output2 = NL_interpolator( RI , RF , VI , VF , N_rev , TOF ,nan ,PS.Is ,sim );
  
 
 figure()

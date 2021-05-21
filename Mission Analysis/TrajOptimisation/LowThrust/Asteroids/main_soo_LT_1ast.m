@@ -56,13 +56,13 @@ catch
 end
 
 %% Asteroids
-% load('data_elements_matrix.mat')
+% load('data_elements_matrix_42.mat')
 % [data.asteroid_names, data.PermutationMatrix, data.HowMany] = ...
 %             sequences_local_pruning(data_elements_matrix);
 % 
 % [data.y_interp_ft, data.t_vector] = find_eph_neo(data.asteroid_names);
 
-load('data_processed_9_1.mat')
+load('data_processed_9_42.mat')
 
 %% simulation parameters
 sim.mu_dim    = 132712440018              ; % actractor parameter [km^3 s^-2]
@@ -79,9 +79,10 @@ sim.direction = 1;                     % direction of integration (1 FW, -1 BW)
 
 sim.TOF_imposed_flag = 1;
 
-sim.PS.Isp = 3000/sim.TU;  % non-dimensional specific impulse
-
+sim.PS.Isp = 3200/sim.TU;  % non-dimensional specific impulse
 sim.M = 100; % SC mass [kg]
+% sim.M = 80; % SC mass [kg]
+sim.max_Available_Thrust = 0.05; % [N]
 
 %% Boundaries
 % Departure dates (1)
@@ -97,15 +98,15 @@ bound.N_REV_min = 0; %0
 bound.N_REV_max = 1; %3
 % C3 stuff
 % Constraint on C3 Launcher (4)
-sim.C3_max = 10; % km^2/s^2
+sim.C3_max = 20; % km^2/s^2
 bound.v_inf_magn_min = 0;
 bound.v_inf_magn_max = sqrt(sim.C3_max)/sim.DU*sim.TU;
 % azimuth (5)
 bound.az_min = -pi;
 bound.az_max = pi;
 % elevation (6)
-bound.el_min = -pi;
-bound.el_max = pi;
+bound.el_min = -pi/2;
+bound.el_max = pi/2;
 % ID Permutation (7)
 bound.IDP_min = 1; 
 % bound.IDP_max = data.HowMany; 
@@ -140,11 +141,11 @@ options.Display = 'iter';
 % multiobjective genetic algorithm terminates
 % options.HybridFcn = 'fgoalattain';
 
-options.PopulationSize = 600; % ideal 1000
-options.MaxGenerations = 30; % ideal 100
+options.PopulationSize = 1000; % ideal 1000
+options.MaxGenerations = 50; % ideal 100
 
 options.FunctionTolerance = 1e-6; %1e-9
-options.MaxStallGenerations = ceil(options.MaxGenerations/10);
+options.MaxStallGenerations = ceil(options.MaxGenerations/5);
 
 % Parallel pool
 % Open the parallel pool
@@ -173,25 +174,28 @@ asteroid_1 = data.asteroid_names(x(7))
 %% plot
 [output, r_encounter, v_encounter] = plot_ff_ea_1ast_LT_soo_NLI(x,sim,data);
 
+fine_del_tempo = output.t(end)
+TOF = x(2)
+
 figure()
 subplot(5,1,1)
 plot(output.t*sim.TU/86400,output.Thrust(:,1));
-xlabel('Time [days]')
+% xlabel('Time [days]')
 ylabel('In-plane Thrust [N]')
 
 subplot(5,1,2)
 plot(output.t*sim.TU/86400,180/pi*output.Thrust(:,2));
-xlabel('Time [days]')
+% xlabel('Time [days]')
 ylabel('In-plane Thrust angle [deg]')
 
 subplot(5,1,3)
 plot(output.t*sim.TU/86400,output.Thrust(:,3));
-xlabel('Time [days]')
+% xlabel('Time [days]')
 ylabel('out-of-plane Thrust [N]')
 
 subplot(5,1,4)
 plot(output.t*sim.TU/86400,sqrt(output.Thrust(:,1).^2 + output.Thrust(:,3).^2));
-xlabel('Time [days]')
+% xlabel('Time [days]')
 ylabel('Thrust [N]')
 
 subplot(5,1,5)
@@ -245,3 +249,13 @@ plot3(r_ast1(:,1),r_ast1(:,2),r_ast1(:,3),'--b','DisplayName','Ast1');
 plot3(0,0,0,'oy','DisplayName','Sun')
 legend('show')
 
+%% thrust angles
+Thrust_vect_3  = [output.Thrust(:,1).*cos(output.theta), output.Thrust(:,1).*sin(output.theta), output.Thrust(:,3)];
+T_VECT = rotate_local2ecplitic(r_encounter.EA, Thrust_vect_3,sim.n_sol, output.Href);
+
+for i = 1:length(R3)
+    R3_norm(i,1) = norm(R3(i,:));
+end
+
+max(R3_norm)
+min(R3_norm)

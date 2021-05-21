@@ -84,7 +84,7 @@ sim.PS.Isp = 3200/sim.TU;  % non-dimensional specific impulse
 sim.M1 = 50; % SC wet mass [kg]
 sim.M2 = 50; % SC wet mass [kg]
 sim.M_pods = 5; % mass of the payloads+landing stuff [kg]
-sim.max_Thrust = 0.05; % 50 [mN], BepiColombo is 250 mN but it's much bigger
+sim.max_Available_Thrust = 0.05; % 50 [mN], BepiColombo is 250 mN but it's much bigger
 
 %% Boundaries
 % Departure dates (1)
@@ -93,17 +93,17 @@ bound.date_ld =  [2028, 1, 1, 0, 0, 0];
 bound.mjd2000_ed = date2mjd2000(bound.date_ed)*3600*24/sim.TU;
 bound.mjd2000_ld = date2mjd2000(bound.date_ld)*3600*24/sim.TU;
 % TOF1 (2)
-bound.TOF1_min = 500*3600*24/sim.TU; %600
-bound.TOF1_max = 900*3600*24/sim.TU; 
+bound.TOF1_min = 1*365*3600*24/sim.TU; %600
+bound.TOF1_max = 3*365*3600*24/sim.TU; 
 % TOF2 (3)
 bound.TOF2_min = 0.5*365*3600*24/sim.TU; %600
-bound.TOF2_max = 4*365*3600*24/sim.TU; 
+bound.TOF2_max = 3*365*3600*24/sim.TU; 
 % TOFa (4)
-bound.TOFa_min = 500*3600*24/sim.TU; %600
-bound.TOFa_max = 900*3600*24/sim.TU; 
+bound.TOFa_min = 1*365*3600*24/sim.TU; %600
+bound.TOFa_max = 3*365*3600*24/sim.TU; 
 % TOFb (5)
 bound.TOFb_min = 0.5*365*3600*24/sim.TU; %600
-bound.TOFb_max = 4*365*3600*24/sim.TU; 
+bound.TOFb_max = 3*365*3600*24/sim.TU; 
 % N REV 1 (6)
 bound.N_REV1_min = 1; %0
 bound.N_REV1_max = 1; %3

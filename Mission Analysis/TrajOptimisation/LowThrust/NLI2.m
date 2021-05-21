@@ -286,7 +286,7 @@ cosL11 = cosDL1*cosL1 - sinDL1*sinL1; % L11 = DL1 + L1;
 sinL11 = sinDL1*cosL1 + cosDL1*sinL1;
 
 cosL22 = cosL2*cosDL2 + sinL2*sinDL2; % L22 = L2 - DL2;
-sinL22 = sinL2*cosDL2 + cosL2*sinDL2;
+sinL22 = sinL2*cosDL2 - cosL2*sinDL2;
 
 %% Parametrisation of Attractor distance
 % True long on the initial and final orbit: l1(x) l1_x(x) l2(x) l2_x(x)
