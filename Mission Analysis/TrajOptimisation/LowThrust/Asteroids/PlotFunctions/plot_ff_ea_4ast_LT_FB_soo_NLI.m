@@ -89,6 +89,8 @@ M_start_3rd_leg = output_2.m(end); %  - sim.M_pods;
 M_start_4th_leg = output_3.m(end); %  - sim.M_pods;
 [output_4] = NL_interpolator( r3 , r4 , v3 , v4 , N_rev4 , TOF4 , M_start_4th_leg ,sim.PS.Isp , sim );
 
+sol.mass_fract = (output_1.m(1) - output_4.m(end))/output_1.m(1);
+
 %% Output encounter states
 r_encounter.EA = r_EA;
 r_encounter.ast1 = r1;

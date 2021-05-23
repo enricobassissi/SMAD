@@ -12,6 +12,7 @@ set(0, 'DefaultAxesTickLabelInterpreter', 'latex')
 set(0, 'DefaultTextInterpreter', 'latex')
 set(0, 'DefaultLineLineWidth', 2)
 format short
+
 %% Initialise the environment
 clear; close all; clc;
 path_str=split(pwd, 'NeoEph');
@@ -107,8 +108,9 @@ TF_i = str2double(data_elements_matrix(:,4))<4; % check i
 data_elements_matrix_cut = data_elements_matrix(and(and(and(TF_a_up,TF_e),TF_a_low),TF_i),:);
 
 clearvars TF_a_up TF_a_low TF_e TF_i
+
 %% Local Pruning on i and w_up
-p_number = 4;
+p_number = 2;
 [asteroid_names, PermutationMatrix_after, HowMany_after] = ...
             sequences_local_pruning2(data_elements_matrix_cut, p_number);
 
@@ -121,7 +123,7 @@ data.p_number = p_number;
 
 %% check on param of the pruned sequence
 for i = 1:HowMany_after
-    for j = 1:4
+    for j = 1:p_number
         idx_ast_considered = find(PermutationMatrix_after(i,j)==data_elements_matrix(:,1));
         a_perm_mat(i,j) = data_elements_matrix(idx_ast_considered,2);
         e_perm_mat(i,j) = data_elements_matrix(idx_ast_considered,3);

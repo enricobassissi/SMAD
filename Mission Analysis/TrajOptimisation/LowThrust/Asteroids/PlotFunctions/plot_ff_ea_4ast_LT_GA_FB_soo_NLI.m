@@ -104,16 +104,18 @@ if sim.ID_FLYBY == 3
     RPlanet_flyby = astroConstants(23); % Radius_Earth, km
     muPlanet_flyby = astroConstants(13); % muEarth, km^3/s^2
     R_lim_from_planet = 500; % km, for earth is ok to avoid atmosphere
+    R_SOI_PL = 0.929*1e6; % km
 elseif sim.ID_FLYBY == 4
     RPlanet_flyby = astroConstants(24); % Radius_mars, km
     muPlanet_flyby = astroConstants(14); % mu mars, km^3/s^2
     R_lim_from_planet = 200; % km, for mars is ok to avoid atmosphere
+    R_SOI_PL = 0.578*1e6; %km
 end
 MJDPGA_dim = MJDPGA*sim.TU/(3600*24);
 v_arr_GA_dim = v_arr_GA.*sim.DU./sim.TU;
 v_dep_GA_dim = v_dep_GA.*sim.DU./sim.TU;
 [delta_v_p, rp] = flyby(RPlanet_flyby, muPlanet_flyby,R_lim_from_planet, ...
-                  MJDPGA_dim, v_arr_GA_dim, v_dep_GA_dim, sim.ID_FLYBY);
+                  MJDPGA_dim, v_arr_GA_dim, v_dep_GA_dim, sim.ID_FLYBY, R_SOI_PL);
 if strcmp(string(delta_v_p), 'Not found')
     disp('Flyby  didn t converged')
 end
@@ -135,6 +137,8 @@ M_start_3rd_leg = output_2.m(end); %  - sim.M_pods;
 % 5th leg - Ast3 -> Ast4
 M_start_4th_leg = output_3.m(end); %  - sim.M_pods;
 [output_4] = NL_interpolator( r3 , r4 , v3 , v4 , N_rev4 , TOF4 , M_start_4th_leg ,sim.PS.Isp , sim );
+
+sol.mass_fract = (output_GA.m(1) - output_4.m(end))/output_GA.m(1);
 
 %% Output encounter states
 r_encounter.EA = r_EA;

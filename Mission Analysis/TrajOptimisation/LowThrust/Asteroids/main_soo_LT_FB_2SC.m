@@ -57,7 +57,7 @@ catch
 end
 
 %% Asteroids
-% load('data_elements_matrix_9.mat')
+% load('data_elements_matrix_42_61_2SC.mat')
 % data.p_number = 2;
 % [data.asteroid_names, data.PermutationMatrix, data.HowMany] = ...
 %             sequences_local_pruning(data_elements_matrix, data.p_number);
@@ -66,14 +66,14 @@ end
 % 
 % [data.y_interp_ft, data.t_vector] = find_eph_neo(data.asteroid_names);
 
-load('data_processed_9_2.mat')
+load('data_processed_42_61_2SC.mat')
 
 %% simulation parameters
 sim.mu_dim    = 132712440018              ; % actractor parameter [km^3 s^-2]
 sim.DU        = 149597870.7               ; % distance unit [km]
 sim.TU        = (sim.DU^3/sim.mu_dim )^0.5; % time unit [s]
 sim.mu        = 1;                      % non-dimensional attractor parameter [DU^3/TU^2]
-sim.n_sol     = 200;                    % number of computational nodes
+sim.n_sol     = 100;                    % number of computational nodes
 sim.x = linspace(0,1,sim.n_sol)';   % 
 
 sim.g0 = 9.81*(sim.TU^2/(1000*sim.DU)); % non-dimensional g0
@@ -84,7 +84,7 @@ sim.PS.Isp = 3200/sim.TU;  % non-dimensional specific impulse
 sim.M1 = 50; % SC wet mass [kg]
 sim.M2 = 50; % SC wet mass [kg]
 sim.M_pods = 5; % mass of the payloads+landing stuff [kg]
-sim.max_Available_Thrust = 0.05; % 50 [mN], BepiColombo is 250 mN but it's much bigger
+sim.max_Available_Thrust = 0.005; % 50 [mN], BepiColombo is 250 mN but it's much bigger
 
 %% Boundaries
 % Departure dates (1)
@@ -201,14 +201,15 @@ sol.asteroid_1 = data.PermutationMatrix(x(10),1);
 sol.asteroid_2 = data.PermutationMatrix(x(10),2);
 IDP_temp_2 = x(11); % index for 2nd permutation matrix to be built inside depending on the first 2 selected asteroids
 TF = contains(data.asteroid_names,[sol.asteroid_1,sol.asteroid_1]);
-data_elements_matrix_2SC = data.data_element_matrix(~TF,:);
+data_elements_matrix_2SC = data.data_elements_matrix(~TF,:);
 [~, PermutationMatrix_2SC, HowMany_2SC] = ...
-            sequences_local_pruning(data_elements_matrix_2SC, data.p_number);
+            sequences_local_pruning2(data_elements_matrix_2SC, data.p_number);
 IDP2 = ceil(IDP_temp_2*HowMany_2SC/100);
 sol.asteroid_a = PermutationMatrix_2SC(IDP2,1);
 sol.asteroid_b = PermutationMatrix_2SC(IDP2,2);
 
 sol.departure_date = mjd20002date(x(1)*sim.TU/(3600*24));
+sol.departure_mjd2000 = x(1)*sim.TU/86400;
 sol.TOF1 = x(2)*sim.TU/86400;
 sol.TOF2 = x(3)*sim.TU/86400;
 sol.TOFa = x(4)*sim.TU/86400;
@@ -347,3 +348,32 @@ plot3(0,0,0,'o','Color',colors(4,:),'DisplayName','Sun')
 legend('show')
 view(2)
 
+%% post analysis
+Traj_SC1 = [R_transf_orbit_1;R_transf_orbit_2];
+max_dist_sun_SC1 = max(vecnorm(Traj_SC1,2,2));
+min_dist_sun_SC1 = min(vecnorm(Traj_SC1,2,2));
+
+Traj_SC2 = [R_transf_orbit_a;R_transf_orbit_b];
+max_dist_sun_SC2 = max(vecnorm(Traj_SC2,2,2));
+min_dist_sun_SC2 = min(vecnorm(Traj_SC2,2,2));
+
+mjd_earth_plot_SC1 = output.t_SC1*sim.TU/86400 + sol.departure_mjd2000;
+mjd_earth_plot_SC2 = output.t_SC2*sim.TU/86400 + sol.departure_mjd2000;
+for k=1:length(output.t_SC1)
+    [kep_SC1,ksun] = uplanet(mjd_earth_plot_SC1(k), 3);
+    [r__E_SC1, ~] = sv_from_coe(kep_SC1,ksun);  
+    R__E_SC1(k,:)=r__E_SC1/sim.DU; % it's in km it becomes AU, to be plotted
+    
+    [kep_SC2,ksun] = uplanet(mjd_earth_plot_SC2(k), 3);
+    [r__E_SC2, ~] = sv_from_coe(kep_SC2,ksun);  
+    R__E_SC2(k,:)=r__E_SC2/sim.DU; % it's in km it becomes AU, to be plotted
+end
+clearvars k r__E_SC1 r__E_SC2
+
+dist_sc_earth_SC1 = Traj_SC1 - R__E_SC1;
+max_dist_earth_SC1 = max(vecnorm(dist_sc_earth_SC1,2,2));
+min_dist_earth_SC1 = min(vecnorm(dist_sc_earth_SC1,2,2));
+
+dist_sc_earth_SC2 = Traj_SC2 - R__E_SC2;
+max_dist_earth_SC2 = max(vecnorm(dist_sc_earth_SC2,2,2));
+min_dist_earth_SC2 = min(vecnorm(dist_sc_earth_SC2,2,2));
