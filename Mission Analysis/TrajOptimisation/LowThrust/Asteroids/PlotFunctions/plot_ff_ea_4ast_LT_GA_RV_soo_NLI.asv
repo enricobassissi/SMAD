@@ -215,7 +215,7 @@ r_departure.ast1 = r1d;
 
 arr = MJD01 + (sol.output_GA.t(end) + sol.output_1.t(end))*sim.TU/(3600*24);
 dep = arr + TOC1*sim.TU/(3600*24);
-R_coasting.ast1 = coasting_asteroids(arr,dep,asteroid_1);
+R_coasting.ast1 = coasting_asteroids(arr,dep,asteroid_2);
 
 r_encounter.ast2 = r2;
 r_departure.ast2 = r2d;
