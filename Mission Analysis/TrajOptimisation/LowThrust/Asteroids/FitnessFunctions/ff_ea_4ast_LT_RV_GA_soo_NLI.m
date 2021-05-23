@@ -186,9 +186,10 @@ if ~isnan(output_GA.Thrust) % if is not nan -> it's a valid solution
                                             
                                     T = sqrt(T_append(:,1).^2 + T_append(:,3).^2);
 
-                                     if abs(max(T)) <= 0.025 % bepi colombo is 250 mN
+ %                                    if abs(max(T)) <= 0.025 % bepi colombo is 250 mN
                                         if mass_fract > 0 && mass_fract < 1 %17 kg of payload
-                                            obj_fun = mass_fract;
+                                            %obj_fun = mass_fract;
+                                            obj_fun = mass_fract + 1e3*(abs(max(T))-0.015)^2;
                                             disp('success')
                                         else
                 %                           bj_fun = 1e4; % exception of mass fraction wrong
@@ -196,12 +197,12 @@ if ~isnan(output_GA.Thrust) % if is not nan -> it's a valid solution
                 %                           disp('mass_fract error')
                                             obj_fun = obj_fun + 10;
                                         end
-                                    else
-                %                         obj_fun = 1e4; % exception of max thrust exceeded
-                %                         obj_fun = 10+1e3*(abs(max(T))-0.015)^2;
-                %                         disp('max T error')
-                                          obj_fun = obj_fun + 21;
-                                    end
+%                                     else
+%                 %                         obj_fun = 1e4; % exception of max thrust exceeded
+%                                           obj_fun = 10+1e3*(abs(max(T))-0.025)^2;
+%                 %                         disp('max T error')
+%                                          %obj_fun = obj_fun + 21;
+%                                     end
                                 else
                 %                   disp('4th leg error') % exception of 4th leg wrong
                                     obj_fun = obj_fun + 32;
