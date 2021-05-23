@@ -210,8 +210,6 @@ theta = psi*x;
  DL2_xxx  = (delta2_xxx + 2*psi*sin_alpha2*sin(psi*(1-x)).*DL2_xx ...
             + psi^2*sin_alpha2*cos(psi*(1-x)).*DL2_x)./(sin_alpha2*cos(psi*(1-x))); 
  
-
- 
 %-- Attractor distance
  %- True long on the initial and final orbit: l1(x) l1_x(x) l2(x) l2_x(x)
  l1 = L1 + DL1; %%%% L1 è 1x1 e DL1 è 100x1
@@ -223,6 +221,7 @@ theta = psi*x;
  l2_x = - DL2_x;
  l2_xx = - DL2_xx;
  l2_xxx = - DL2_xxx;
+
  
  cosl1 = cos(DL1)*cos(L1) - sin(DL1)*sin(L1);
  cosl2 = cos(DL2)*cos(L2) + sin(DL2)*sin(L2);
@@ -341,12 +340,11 @@ De_x = 3*s_x./s.*De + s.^3.*(r_x*psi^2 - r_xxx + (2*r.*r_x.*r_xx - r_x.^3)./(r.^
 x_t_2 = Nu./De; % \dot{x}^2
 x_t   = sqrt(x_t_2);
 
-
 %- Second derivative of x wrt time: x_tt
 x_tt = 0.5*(Nu_x - x_t_2.*De_x)./De;
-   
+
 % ----------------------------------------------------------------------- %
-if isreal(a)
+if isreal(a) && isreal(x_t)
 %- Thrust angle gamma -> It is imposed equal to the flight path angle in
 %  order to have the in-plane thrust imposed as tangential only. In this way
 %  the x time derivative can be analytically computed removing the dependency
@@ -355,7 +353,7 @@ if isreal(a)
 gamma = atan2(r_x,(r*psi)); % || atan
 
 %- In plane thrust per unit mass
-Tin2m  = 1./cos(gamma) .* (2*psi*r_x.*x_t_2 + r.*psi.*x_tt);
+Tin2m = 1./cos(gamma) .* (2*psi*r_x.*x_t_2 + r.*psi.*x_tt);
 
 %- Out of plane thrust per unit mass
 Tout2m = z_xx.*x_t_2 + z_x.*x_tt + sim.mu./(s.^3).*z;
@@ -403,7 +401,6 @@ theta_t = psi*x_t;
         
     end
 
-   
 % time vector
 d_time = 1./x_t;
 dx = x(2) - x(1);

@@ -79,7 +79,7 @@ sim.direction = 1;                     % direction of integration (1 FW, -1 BW),
                                        % 1 is like imposing wet mass at beginning
 sim.TOF_imposed_flag = 1;
 sim.PS.Isp = 3200/sim.TU;  % non-dimensional specific impulse  
-sim.M = 70; % SC wet mass [kg]
+sim.M = 100; % SC wet mass [kg]
 %sim.M_pods = 5; % mass of the payloads+landing stuff [kg]
 
 sim.ID_FLYBY = 3; % flyby planet
