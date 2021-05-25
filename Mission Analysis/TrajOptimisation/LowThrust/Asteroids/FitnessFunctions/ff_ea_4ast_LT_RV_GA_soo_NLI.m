@@ -189,7 +189,7 @@ if ~isnan(output_GA.Thrust) % if is not nan -> it's a valid solution
  %                                    if abs(max(T)) <= 0.025 % bepi colombo is 250 mN
                                         if mass_fract > 0 && mass_fract < 1 %17 kg of payload
                                             %obj_fun = mass_fract;
-                                            obj_fun = mass_fract + 1e3*(abs(max(T))-0.015)^2;
+                                            obj_fun = mass_fract + sim.c*(abs(max(T))-sim.maxT)^2;
                                             disp('success')
                                         else
                 %                           bj_fun = 1e4; % exception of mass fraction wrong

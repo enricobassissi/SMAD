@@ -132,7 +132,7 @@ asteroid_4 = data.PermutationMatrix(IDP,4);
 %     options = odeset ('RelTol', 1e-13, 'AbsTol', 1e-14); 
 %     [~,rc3] = ode113(@rates, time_int3, y03,options,'sun');
 %     R_coasting.ast3 = rc3(:,[1 2 3]);
-    R_coasting.ast3 = coasting_asteroids(MJDP3_dim,MJDD3_dim,asteroid_3);
+   % R_coasting.ast3 = coasting_asteroids(MJDP3_dim,MJDD3_dim,asteroid_3);
 
     % Arrival at 4th ast
     MJDP4_dim = MJDP4*sim.TU/(3600*24);
@@ -213,9 +213,18 @@ r_encounter.GA = r_GA;
 r_encounter.ast1 = r1;
 r_departure.ast1 = r1d;
 
-arr = MJD01 + (sol.output_GA.t(end) + sol.output_1.t(end))*sim.TU/(3600*24);
+% arr = MJD01 + (sol.output_GA.t(end) + sol.output_1.t(end))*sim.TU/(3600*24);
+% dep = arr + TOC1*sim.TU/(3600*24);
+arr = MJD01 + (TOFGA + TOF1)*sim.TU/(3600*24);
 dep = arr + TOC1*sim.TU/(3600*24);
-R_coasting.ast1 = coasting_asteroids(arr,dep,asteroid_1);
+time_int = [arr*24*3600, dep*24*3600];
+y0 = [r1*sim.DU v1*sim.DU/sim.TU]; %km, km/s; 
+options = odeset ('RelTol', 1e-13, 'AbsTol', 1e-14); 
+[~,rc1] = ode113(@rates, time_int, y0,options,'sun');
+AU = astroConstants(2);
+R_coasting.ast1 = rc1(:,[1 2 3])./AU;
+% R_coasting.ast1 = coasting_asteroids(MJDP1_dim,MJDD1_dim,asteroid_1);
+%R_coasting.ast1 = coasting_asteroids(arr,dep,asteroid_1);
 
 r_encounter.ast2 = r2;
 r_departure.ast2 = r2d;
@@ -223,11 +232,22 @@ r_departure.ast2 = r2d;
 
 arr = MJD01 + (sol.output_GA.t(end) + sol.output_1.t(end) + TOC1 + sol.output_2.t(end))*sim.TU/(3600*24);
 dep = arr + TOC2*sim.TU/(3600*24);
+time_int = [arr*24*3600, dep*24*3600];
+y0 = [r2*sim.DU v2*sim.DU/sim.TU]; %km, km/s; 
+[~,rc2] = ode113(@rates, time_int, y0,options,'sun');
+%R_coasting.ast2 = rc2(:,[1 2 3])./AU;
 R_coasting.ast2 = coasting_asteroids(arr,dep,asteroid_2);
 
 
 r_encounter.ast3 = r3;
 r_departure.ast3 = r3d;
+
+arr = MJD01 + (sol.output_GA.t(end) + sol.output_1.t(end) + TOC1 + sol.output_2.t(end) + TOC2 + sol.output_1.t(end))*sim.TU/(3600*24);
+dep = arr + TOC3*sim.TU/(3600*24);
+time_int = [arr*24*3600, dep*24*3600];
+y0 = [r3*sim.DU v3*sim.DU/sim.TU]; %km, km/s; 
+[~,rc3] = ode113(@rates, time_int, y0,options,'sun');
+R_coasting.ast3 = rc3(:,[1 2 3])./AU;
 
 r_encounter.ast4 = r4;
 

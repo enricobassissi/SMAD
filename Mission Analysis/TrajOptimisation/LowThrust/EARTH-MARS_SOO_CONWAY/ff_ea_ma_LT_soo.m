@@ -35,8 +35,17 @@ varr = v2; %since we want to rendez-vous
 
 [output] = CW_LowLambert( r1 , r2 , vdep , varr , N_rev , TOF1 , sim.M , sim.hp , sim.kp , sim.PS , sim );
 
+if ~isnan(output.u) % if is not nan
+    T = sqrt(output.u(:,1).^2 + output.u(:,3).^2);
+    CHECK_TERM_T = 0;
+    if abs(max(T)) > 0.22 %0.22
+        CHECK_TERM_T = 100;
+    end
+    obj_fun = (output.m(1) - output.m(end))/output.m(1) + CHECK_TERM_T;
+else
+    obj_fun = 1e+2;
+end
    
-obj_fun = (output.m(1) - output.m(end))/output.m(1); % la massa è dimenionale
 
 end
 

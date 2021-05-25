@@ -74,7 +74,7 @@ while error > toll && abs(fun_x) > toll  && nite < nmax
     fun_x = fun(x);
     dfun_x = (fun(x+h) - fun_x)/h;
     
-    error = abs(fun_x/dfun_x)
+    error = abs(fun_x/dfun_x);
     nite = nite + 1;
     
 end

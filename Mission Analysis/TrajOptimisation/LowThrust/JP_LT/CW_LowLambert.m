@@ -110,7 +110,7 @@ if sim.TOF_imposed_flag == 1
     plan_d = 0;
     %opt = optimset('Display','off');
     %plan_d = fzero(fun,plan_d,opt);
-    plan_d = JP_secant_solver( fun , plan_d , 1e-8 , 1e-6 , 100)
+    plan_d = JP_secant_solver( fun , plan_d , 1e-8 , 1e-6 , 100);
 else
     plan_d = 0;
 end

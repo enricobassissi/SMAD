@@ -2,7 +2,6 @@ function obj_fun = ff_ea_ma_LT_soo_NLI(x,sim)
 % setting the input times
 MJD01 = x(1);
 TOF1 = x(2);
-%TOF1 = 1000;
 MJDF1 = MJD01 + TOF1;
 
 % Computing position and velocity of the planets in that days
@@ -35,10 +34,11 @@ Isp = sim.PS.Isp;
 if ~isnan(output.Thrust) % if is not nan
     T = sqrt(output.Thrust(:,1).^2 + output.Thrust(:,3).^2);
     CHECK_TERM_T = 0;
-    if abs(max(T)) > 0.22 
+    if abs(max(T)) > 0.24 %0.22
         CHECK_TERM_T = 100;
     end
-    obj_fun = (output.m(1) - output.m(end))/output.m(1) + CHECK_TERM_T; % la massa è dimenionale
+    obj_fun = (output.m(1) - output.m(end))/output.m(1) + CHECK_TERM_T;
+    %obj_fun = (output.m(1) - output.m(end))/output.m(1) + 1e3*(abs(max(T)) - 0.22)^2; 
 else
     obj_fun = 1e2;
 end

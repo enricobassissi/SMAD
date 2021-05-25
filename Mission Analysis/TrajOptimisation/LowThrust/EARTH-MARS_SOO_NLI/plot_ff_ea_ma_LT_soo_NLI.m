@@ -2,7 +2,6 @@ function [output, r1, r2,v1,v2] = plot_ff_ea_ma_LT_soo_NLI(x,sim)
 % setting the input times
 MJD01 = x(1);
 TOF1 = x(2);
-%TOF1 = 1000;
 MJDF1 = MJD01 + TOF1;
 
 % Computing position and velocity of the planets in that days
@@ -32,6 +31,7 @@ Isp = sim.PS.Isp;
 
 [output] = NL_interpolator( r1 , r2 , vdep , varr , N_rev , TOF1 , sim.M ,Isp ,sim );
 
+output.mass_fract = (output.m(1) - output.m(end))/output.m(1);
 
 end
 

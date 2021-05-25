@@ -161,9 +161,9 @@ R3 = rotate_local2ecplitic(r1_true,r3,sim.n_sol,output.Href);
 v3  = [output.vin.*sin(output.theta) -output.vin.*cos(output.theta) output.vout];
 V3  = rotate_local2ecplitic(r1_true,v3,sim.n_sol,output.Href);
 
-Tlocal  = [-output.Thrust(:,1).*sin(output.theta), ...
-            output.Thrust(:,1).*cos(output.theta), output.Thrust(:,3)];
-Tglobal = rotate_local2ecplitic(r1_true,Tlocal,sim.n_sol,output.Href);
+Tlocal  = [-sol.output.Thrust(:,1).*sin(output.theta), ...
+            sol.output.Thrust(:,1).*cos(output.theta), sol.output.Thrust(:,3)];
+Tglobal = rotate_local2ecplitic(r1_true,Tlocal_transf_orbit_GA,sim.n_sol,output.Href);
 
 
 %%
@@ -202,53 +202,90 @@ plot3(r1(:,1),r1(:,2),r1(:,3),'--g'); % geocentric equatorial frame
 % Mars
 hold on
 plot3(r2(:,1),r2(:,2),r2(:,3),'--r');
-% Sun
 plot3(0,0,0,'oy')
 
-%% Plot thrust vectors
+%%
+%% Plot with thrust vectors
+
+Tlocal_transf_orbit_GA  = [-sol.output_GA.Thrust(:,1).*sin(output.theta.GA), ...
+    sol.output_GA.Thrust(:,1).*cos(output.theta.GA), sol.output_GA.Thrust(:,3)];
+T_transf_orbit_GA = rotate_local2ecplitic(r_encounter.EA,Tlocal_transf_orbit_GA,sim.n_sol,output.Href.GA);
+
+
+Tlocal_transf_orbit_1  = [-sol.output_1.Thrust(:,1).*sin(output.theta.leg1), ...
+    sol.output_1.Thrust(:,1).*cos(output.theta.leg1), sol.output_1.Thrust(:,3)];
+T_transf_orbit_1 = rotate_local2ecplitic(r_encounter.GA,Tlocal_transf_orbit_1,sim.n_sol,output.Href.leg1);
+
+
+T_coasting_1 = zeros(size(R_coasting.ast1));
+
+Tlocal_transf_orbit_2  = [-sol.output_2.Thrust(:,1).*sin(output.theta.leg2), ...
+    sol.output_2.Thrust(:,1).*cos(output.theta.leg2), sol.output_2.Thrust(:,3)];
+T_transf_orbit_2 = rotate_local2ecplitic(r_departure.ast1,Tlocal_transf_orbit_2,sim.n_sol,output.Href.leg2);
+
 
 figure()
-plot(R3(:,1),R3(:,2))
+plot3(R_transf_orbit_GA(:,1),R_transf_orbit_GA(:,2),R_transf_orbit_GA(:,3),...
+    'Color',colors(7,:),'DisplayName','Traj GA')
 hold on
-plot(r1_true(1),r1_true(2),'*m')
-plot(r2_true(1),r2_true(2),'*c')
-axis equal
-grid on
+plot3(R_transf_orbit_1(:,1),R_transf_orbit_1(:,2),R_transf_orbit_1(:,3),...
+    'Color',colors(1,:),'DisplayName','Traj')
+% 
+% plot3( R_coasting.ast1(:,1)./AU, R_coasting.ast1(:,2)./AU, R_coasting.ast1(:,3)./AU,...
+%     '--','Color',colors(1,:),'DisplayName','Coast')
+
+hpt2 = plot3(R_transf_orbit_2(:,1),R_transf_orbit_2(:,2),R_transf_orbit_2(:,3),...
+    'Color',colors(1,:));
+hpt2.Annotation.LegendInformation.IconDisplayStyle = 'off';
+
+plot3(r_encounter.EA(1),r_encounter.EA(2),r_encounter.EA(3),...
+    '*','Color',colors(8,:),'DisplayName','Dep Earth')
+plot3(r_encounter.GA(1),r_encounter.GA(2),r_encounter.GA(3),...
+    '*','Color',colors(9,:),'DisplayName','Gravity assist')
+plot3(r_encounter.ast1(1),r_encounter.ast1(2),r_encounter.ast1(3),...
+    '^','Color',colors(3,:),'DisplayName',sol.asteroid_1)
+plot3(r_departure.ast1(1),r_departure.ast1(2),r_departure.ast1(3),...
+    '^','Color',colors(5,:),'DisplayName','Dep ast1')
+plot3(r_encounter.ast2(1),r_encounter.ast2(2),r_encounter.ast2(3),...
+    '^','Color',colors(4,:),'DisplayName',sol.asteroid_2)
+
+quiver3(R_transf_orbit_GA(:,1),R_transf_orbit_GA(:,2),R_transf_orbit_GA(:,3),T_transf_orbit_GA(:,1),T_transf_orbit_GA(:,2),T_transf_orbit_GA(:,3),2)
 hold on
-% Earth
-hold on
-plot(r1(:,1),r1(:,2),'--g'); % geocentric equatorial frame 
-% Mars
-hold on
-plot(r2(:,1),r2(:,2),'--r');
-quiver(R3(:,1),R3(:,2),Tglobal(:,1),Tglobal(:,2),2)
+quiver3(R_transf_orbit_1(:,1),R_transf_orbit_1(:,2),R_transf_orbit_1(:,3),T_transf_orbit_1(:,1),T_transf_orbit_1(:,2),T_transf_orbit_1(:,3),2)
+quiver3(R_coasting.ast1(:,1)./AU,R_coasting.ast1(:,2)./AU,R_coasting.ast1(:,3)./AU,T_coasting_1(:,1),T_coasting_1(:,2),T_coasting_1(:,3),2)
+quiver3(R_transf_orbit_2(:,1),R_transf_orbit_2(:,2),R_transf_orbit_2(:,3),T_transf_orbit_2(:,1),T_transf_orbit_2(:,2),T_transf_orbit_2(:,3),2)
+
+axis equal; grid on;
 xlabel('x [AU]'); ylabel('y [AU]'); ylabel('y [AU]'); 
-title('In-plane Thrust (shall be tangential)')
+title('In-plane + out-of-plane Thrust')
+% Sun
+plot3(0,0,0,'o','Color',colors(4,:),'DisplayName','Sun')
+legend('show')
+%view(2)
+
+figure;
+plot(R_transf_orbit_GA(:,1),R_transf_orbit_GA(:,2),...
+    'Color',colors(7,:),'DisplayName','Traj GA')
+hold on
+plot(R_transf_orbit_1(:,1),R_transf_orbit_1(:,2),...
+    'Color',colors(1,:),'DisplayName','Traj')
+
+plot( R_coasting.ast1(:,1)./AU, R_coasting.ast1(:,2)./AU,...
+    '--','Color',colors(1,:),'DisplayName','Coast')
+
+hpt2 = plot(R_transf_orbit_2(:,1),R_transf_orbit_2(:,2),...
+    'Color',colors(1,:));
+hpt2.Annotation.LegendInformation.IconDisplayStyle = 'off';
+
+plot(r_encounter.EA(1),r_encounter.EA(2),...
+    '*','Color',colors(8,:),'DisplayName','Dep Earth')
+
+quiver(R_transf_orbit_GA(:,1),R_transf_orbit_GA(:,2),T_transf_orbit_GA(:,1),T_transf_orbit_GA(:,2),2)
+hold on
+axis equal; grid on;
+xlabel('x [AU]'); ylabel('y [AU]');
+title('In-plane Thrust(shall be tangential)')
 % Sun
 plot(0,0,'o','Color',colors(4,:),'DisplayName','Sun')
 legend('show')
-
-
-figure()
-plot3(R3(:,1),R3(:,2),R3(:,3))
-hold on
-plot3(r1_true(1),r1_true(2),r1_true(3),'*m')
-plot3(r2_true(1),r2_true(2),r2_true(3),'*c')
-axis equal
-grid on
-hold on
-% Earth
-hold on
-plot3(r1(:,1),r1(:,2),r1(:,3),'--g'); % geocentric equatorial frame 
-% Mars
-hold on
-plot3(r2(:,1),r2(:,2),r2(:,3),'--r');
-% Sun
-plot3(0,0,0,'oy')
-quiver3(R3(:,1),R3(:,2),R3(:,3),Tglobal(:,1),Tglobal(:,2),Tglobal(:,3),2)
-xlabel('x [AU]'); ylabel('y [AU]'); ylabel('y [AU]'); 
-title('In-plane + out-of-plane Thrust')
-legend('show')
-
-
-
+view(2)
