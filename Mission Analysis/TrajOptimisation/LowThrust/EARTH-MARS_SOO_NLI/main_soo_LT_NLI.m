@@ -157,13 +157,16 @@ ylabel('Mass [kg]')
 
 r3  = [output.r.*cos(output.theta) output.r.*sin(output.theta) output.z];
 R3 = rotate_local2ecplitic(r1_true,r3,sim.n_sol,output.Href);
+R3_dim = R3*sim.DU; %km
 
-v3  = [output.vin.*sin(output.theta) -output.vin.*cos(output.theta) output.vout];
-V3  = rotate_local2ecplitic(r1_true,v3,sim.n_sol,output.Href);
+beta = pi/2 - output.theta - output.Thrust(:,2);
+v3  = [output.vin.*cos(beta) -output.vin.*sin(beta), output.vout]; 
+V3  = rotate_local2ecplitic(r1_true,v3,sim.n_sol,output.Href); 
+V3_dim = V3*sim.DU/sim.TU; %km/s
 
 Tlocal  = [-output.Thrust(:,1).*sin(output.theta), ...
             output.Thrust(:,1).*cos(output.theta), output.Thrust(:,3)];
-Tglobal = rotate_local2ecplitic(r1_true,Tlocal,sim.n_sol,output.Href);
+Tglobal = rotate_local2ecplitic(r1_true,Tlocal,sim.n_sol,output.Href); %N
 
 
 %%
