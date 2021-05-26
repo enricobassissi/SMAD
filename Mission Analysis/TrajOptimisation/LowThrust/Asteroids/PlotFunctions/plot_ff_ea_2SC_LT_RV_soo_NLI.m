@@ -84,12 +84,14 @@ v_EA = v_EA/sim.DU*sim.TU;
 % ARRIVAL at 1st ast
 MJDA1_dim = MJDA1*sim.TU/(3600*24);
 [kep_ast_A1] = uNEO2(MJDA1_dim,asteroid_1,data); % [km,-,rad,rad,rad,wrapped rad]
+% [rA1,vA1] = uNEO(MJDA1_dim,asteroid_1); % [km,-,rad,rad,rad,wrapped rad]
 [rA1, vA1] = sv_from_coe(kep_ast_A1,ksun); % km, km/s
 rA1 = rA1/sim.DU;
 vA1 = vA1/sim.DU*sim.TU;
 % DEPARTURE at 1st ast
 MJDD1_dim = MJDD1*sim.TU/(3600*24);
 [kep_ast_D1] = uNEO2(MJDD1_dim,asteroid_1,data); % [km,-,rad,rad,rad,wrapped rad]
+% [rD1,vD1] = uNEO(MJDD1_dim,asteroid_1); % [km,-,rad,rad,rad,wrapped rad]
 [rD1, vD1] = sv_from_coe(kep_ast_D1,ksun); % km, km/s
 rD1 = rD1/sim.DU;
 vD1 = vD1/sim.DU*sim.TU;
@@ -97,6 +99,7 @@ vD1 = vD1/sim.DU*sim.TU;
 % ARRIVAL at 2nd ast
 MJDA2_dim = MJDA2*sim.TU/(3600*24);
 [kep_ast_A2] = uNEO2(MJDA2_dim,asteroid_2,data); % [km,-,rad,rad,rad,wrapped rad]
+% [rA2,vA2] = uNEO(MJDA2_dim,asteroid_2); % [km,-,rad,rad,rad,wrapped rad]
 [rA2, vA2] = sv_from_coe(kep_ast_A2,ksun); % km, km/s
 rA2 = rA2/sim.DU;
 vA2 = vA2/sim.DU*sim.TU;
@@ -104,12 +107,14 @@ vA2 = vA2/sim.DU*sim.TU;
 % ARRIVAL at a_th ast
 MJDAa_dim = MJDAa*sim.TU/(3600*24);
 [kep_ast_Aa] = uNEO2(MJDAa_dim,asteroid_a,data); % [km,-,rad,rad,rad,wrapped rad]
+% [rAa,vAa] = uNEO(MJDAa_dim,asteroid_a); % [km,-,rad,rad,rad,wrapped rad]
 [rAa, vAa] = sv_from_coe(kep_ast_Aa,ksun); % km, km/s
 rAa = rAa/sim.DU;
 vAa = vAa/sim.DU*sim.TU;
 % DEPARTURE at a_th ast
 MJDDa_dim = MJDDa*sim.TU/(3600*24);
 [kep_ast_Da] = uNEO2(MJDDa_dim,asteroid_a,data); % [km,-,rad,rad,rad,wrapped rad]
+% [rDa,vDa] = uNEO(MJDDa_dim,asteroid_a); % [km,-,rad,rad,rad,wrapped rad]
 [rDa, vDa] = sv_from_coe(kep_ast_Da,ksun); % km, km/s
 rDa = rDa/sim.DU;
 vDa = vDa/sim.DU*sim.TU;
@@ -117,6 +122,7 @@ vDa = vDa/sim.DU*sim.TU;
 % passage at b_th ast
 MJDAb_dim = MJDAb*sim.TU/(3600*24);
 [kep_ast_Ab] = uNEO2(MJDAb_dim,asteroid_b,data); % [km,-,rad,rad,rad,wrapped rad]
+% [rAb,vAb] = uNEO(MJDAb_dim,asteroid_b); % [km,-,rad,rad,rad,wrapped rad]
 [rAb, vAb] = sv_from_coe(kep_ast_Ab,ksun); % km, km/s
 rAb = rAb/sim.DU;
 vAb = vAb/sim.DU*sim.TU;

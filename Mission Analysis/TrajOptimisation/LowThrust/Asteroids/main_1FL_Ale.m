@@ -1,6 +1,6 @@
 %% --------------------------------------------------------------------- %%
 %% --------------- Earth Ast1 Ast2 Ast3 Ast4 Transfer ------------------ %%
-%% ---------------------- ARCH 1+4, LT GA FB --------------------------- %%
+%% ---------------------- ARCH 1+4, LT FB ------------------------------ %%
 %% --------------------- FREEDOM AT EACH AST --------------------------- %%
 %% ------------------------------ SOO ---------------------------------- %%
 %% --------------------------------------------------------------------- %%
@@ -85,26 +85,26 @@ sim.M = 100; % SC wet mass [kg]
 sim.M_pods = 5; % mass of the payloads+landing stuff [kg]
 
 sim.c = 1e+3; %case 12: 1e+3
-sim.maxT = 0.025; %case 12: 0.02
+sim.max_Available_Thrust = 0.01; %case 12: 0.02
 
 %% Boundaries
 % Departure dates (1)
-bound.date_ed = [2026, 1, 1, 0, 0, 0]; %2024
-bound.date_ld = [2027, 1, 1, 0, 0, 0]; %2028
+bound.date_ed = [2024, 1, 1, 0, 0, 0]; %2024
+bound.date_ld = [2028, 1, 1, 0, 0, 0]; %2028
 bound.mjd2000_ed = date2mjd2000(bound.date_ed)*3600*24/sim.TU;
 bound.mjd2000_ld = date2mjd2000(bound.date_ld)*3600*24/sim.TU;
 % TOF1 (2)
 bound.TOF1_min = 0*3600*24/sim.TU; %0.3*365
-bound.TOF1_max = 2*365*3600*24/sim.TU; %2*365
+bound.TOF1_max = 3*365*3600*24/sim.TU; %2*365
 % TOF2 (3)
 bound.TOF2_min = 0*3600*24/sim.TU; 
-bound.TOF2_max = 2*365*3600*24/sim.TU; 
+bound.TOF2_max = 3*365*3600*24/sim.TU; 
 % TOF3 (4)
 bound.TOF3_min = 0*365*3600*24/sim.TU; 
-bound.TOF3_max = 2*365*3600*24/sim.TU; 
+bound.TOF3_max = 3*365*3600*24/sim.TU; 
 % TOF4 (5)
 bound.TOF4_min = 0*365*3600*24/sim.TU; 
-bound.TOF4_max = 2*365*3600*24/sim.TU; 
+bound.TOF4_max = 3*365*3600*24/sim.TU; 
 % N REV 1 (6)
 bound.N_REV1_min = 0; %0
 bound.N_REV1_max = 2; %3
@@ -225,11 +225,11 @@ options.Display = 'iter';
 % multiobjective genetic algorithm terminates
 % options.HybridFcn = 'fgoalattain';
 
-options.PopulationSize = 1500; % ideal 1000
+options.PopulationSize = 1000; % ideal 1000
 options.MaxGenerations = 300; % ideal 100
 
 options.FunctionTolerance = 1e-6; %1e-9
-options.MaxStallGenerations = ceil(options.MaxGenerations/5);
+options.MaxStallGenerations = ceil(options.MaxGenerations/10);
 
 % Parallel pool
 % Open the parallel pool
@@ -243,7 +243,7 @@ end
 options.UseParallel = true;
 
 %% Build the soo
-FitnessFunction = @(x) ff_1FL_Ale(x,sim,data); % Function handle to the fitness function
+FitnessFunction = @(x) ff_1FL_Ale_Enri(x,sim,data); % Function handle to the fitness function
 numberOfVariables = length(bound.ub); % Number of decision variables
 
 tic
@@ -257,10 +257,6 @@ sol.asteroid_1 = data.PermutationMatrix(x(10),1);
 sol.asteroid_2 = data.PermutationMatrix(x(10),2);
 sol.asteroid_3 = data.PermutationMatrix(x(10),3);
 sol.asteroid_4 = data.PermutationMatrix(x(10),4);
-% sol.asteroid_1 = "2021DR";
-% sol.asteroid_2 = "2012BK14";
-% sol.asteroid_3 = "2021JE1";
-% sol.asteroid_4 = "2010UH";
 
 sol.departure_date = mjd20002date(x(1)*sim.TU/(3600*24));
 sol.TOF1  = x(2);
@@ -372,16 +368,16 @@ r_transf_orbit_4  = [output.r.leg4.*cos(output.theta.leg4), ...
 R_transf_orbit_4 = rotate_local2ecplitic(r_encounter.ast3,r_transf_orbit_4,sim.n_sol,output.Href.leg4);
 
 figure()
-% hpt1 = plot3(R_transf_orbit_1(:,1),R_transf_orbit_1(:,2),R_transf_orbit_1(:,3),...
-%     'Color',colors(1,:));
+hpt1 = plot3(R_transf_orbit_1(:,1),R_transf_orbit_1(:,2),R_transf_orbit_1(:,3),...
+    'Color',colors(1,:));
 hold on
-% hpt1.Annotation.LegendInformation.IconDisplayStyle = 'off';
-% hpt2 = plot3(R_transf_orbit_2(:,1),R_transf_orbit_2(:,2),R_transf_orbit_2(:,3),...
-%     'Color',colors(1,:));
-% hpt2.Annotation.LegendInformation.IconDisplayStyle = 'off';
-% hpt3 = plot3(R_transf_orbit_3(:,1),R_transf_orbit_3(:,2),R_transf_orbit_3(:,3),...
-%     'Color',colors(1,:));
-% hpt3.Annotation.LegendInformation.IconDisplayStyle = 'off';
+hpt1.Annotation.LegendInformation.IconDisplayStyle = 'off';
+hpt2 = plot3(R_transf_orbit_2(:,1),R_transf_orbit_2(:,2),R_transf_orbit_2(:,3),...
+    'Color',colors(1,:));
+hpt2.Annotation.LegendInformation.IconDisplayStyle = 'off';
+hpt3 = plot3(R_transf_orbit_3(:,1),R_transf_orbit_3(:,2),R_transf_orbit_3(:,3),...
+    'Color',colors(1,:));
+hpt3.Annotation.LegendInformation.IconDisplayStyle = 'off';
 hpt4 = plot3(R_transf_orbit_4(:,1),R_transf_orbit_4(:,2),R_transf_orbit_4(:,3),...
     'Color',colors(1,:));
 hpt4.Annotation.LegendInformation.IconDisplayStyle = 'off';

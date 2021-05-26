@@ -83,10 +83,10 @@ sim.TOF_imposed_flag = 1;
 sim.PS.Isp = 3200/sim.TU;  % non-dimensional specific impulse
 sim.M = 100; % SC wet mass [kg]
 sim.M_pods = 5; % mass of the payloads+landing stuff [kg]
-sim.ID_FLYBY = 3; % flyby planet
+sim.ID_FLYBY = 4; % flyby planet
 
 sim.c = 1e+3; %case 12: 1e+3
-sim.maxT = 0.01; %case 12: 0.02
+sim.max_Available_Thrust = 0.01; %case 12: 0.02
 
 %% Boundaries
 % Departure dates (1)
@@ -95,20 +95,20 @@ bound.date_ld = [2028, 1, 1, 0, 0, 0];
 bound.mjd2000_ed = date2mjd2000(bound.date_ed)*3600*24/sim.TU;
 bound.mjd2000_ld = date2mjd2000(bound.date_ld)*3600*24/sim.TU;
 % TOFGA (14)
-bound.TOFGA_min = 0.8*365*3600*24/sim.TU; %%
-bound.TOFGA_max = 2*365*3600*24/sim.TU; 
+bound.TOFGA_min = 0.5*365*3600*24/sim.TU; %%
+bound.TOFGA_max = 3*365*3600*24/sim.TU; 
 % TOF1 (2)
 bound.TOF1_min = 0.3*365*3600*24/sim.TU; 
 bound.TOF1_max = 3*365*3600*24/sim.TU; 
 % TOF2 (3)
 bound.TOF2_min = 0.3*365*3600*24/sim.TU; 
-bound.TOF2_max = 2*365*3600*24/sim.TU; 
+bound.TOF2_max = 3*365*3600*24/sim.TU; 
 % TOF3 (4)
 bound.TOF3_min = 0.3*365*3600*24/sim.TU; 
-bound.TOF3_max = 2*365*3600*24/sim.TU; 
+bound.TOF3_max = 3*365*3600*24/sim.TU; 
 % TOF4 (5)
 bound.TOF4_min = 0.3*365*3600*24/sim.TU; 
-bound.TOF4_max = 2*365*3600*24/sim.TU; 
+bound.TOF4_max = 3*365*3600*24/sim.TU; 
 % N REV 1 (6)
 bound.N_REV1_min = 0; %0
 bound.N_REV1_max = 2; %3
@@ -253,11 +253,11 @@ options.Display = 'iter';
 % multiobjective genetic algorithm terminates
 % options.HybridFcn = 'fgoalattain';
 
-options.PopulationSize = 1500; % ideal 1000
+options.PopulationSize = 1000; % ideal 1000
 options.MaxGenerations = 300; % ideal 100
 
 options.FunctionTolerance = 1e-6; %1e-9
-options.MaxStallGenerations = ceil(options.MaxGenerations/5);
+options.MaxStallGenerations = ceil(options.MaxGenerations/10);
 
 % Parallel pool
 % Open the parallel pool
@@ -271,7 +271,7 @@ end
 options.UseParallel = true;
 
 %% Build the soo
-FitnessFunction = @(x) ff_1FL_GA_Ale(x,sim,data); % Function handle to the fitness function
+FitnessFunction = @(x) ff_1FL_GA_Ale_Enri(x,sim,data); % Function handle to the fitness function
 numberOfVariables = length(bound.ub); % Number of decision variables
 
 tic
@@ -279,6 +279,29 @@ tic
     constr.b,constr.Aeq,constr.beq,bound.lb,...
     bound.ub,constr.nonlcon,constr.IntCon,options);
 el_time_min_pp = toc/60;
+
+% % Build soo with ps
+% options = optimoptions('particleswarm');
+% options.HybridFcn = @fmincon;
+% options.SwarmSize = 1000; % Default is min(100,10*nvars),
+% options.MaxIterations = 300; %  Default is 200*nvars
+% options.MaxStallIterations = 50; % Default 20
+% options.Display = 'iter';
+% options.FunctionTolerance = 1e-6;
+% 
+% Parallel pool
+% Open the parallel pool
+% par_pool = gcp; 
+% if isempty(par_pool)
+%     poolsize = 0;
+% else
+%     poolsize = par_pool.NumWorkers;
+% end
+% 
+% FitnessFunction = @(x) ff_1FL_GA_Ale_Enri(x,sim,data); % Function handle to the fitness function
+% numberOfVariables = length(bound.ub); % Number of decision variables
+% [x,Fval,exitFlag,Output] = particleswarm(FitnessFunction,numberOfVariables,...
+%     bound.lb,bound.ub,options)
 
 %% Building the solution structure
 sol.asteroid_1 = data.PermutationMatrix(x(10),1);
