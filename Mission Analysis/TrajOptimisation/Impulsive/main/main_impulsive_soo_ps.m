@@ -61,25 +61,27 @@ catch
 end
 
 %% Asteroids
-AU = astroConstants(2);
-muSun = astroConstants(4);
-
-% data extraction section
-data.asteroid_names = ["2006HX57";"2008XU2";"2008KN11";"2012SY49";"2012QD8";"2020UE";...
-                  "2006SC";"2005WG57";"2012BY1"];
-
-% Number of possible combination of 4 asteroids among the ones in the list
-data.HowMany = factorial(length(data.asteroid_names)) / factorial(length(data.asteroid_names) - 4);
-[data.PermutationMatrix, ~] = permnUnique(data.asteroid_names, 4);
+% AU = astroConstants(2);
+% muSun = astroConstants(4);
+% 
+% % data extraction section
+% data.asteroid_names = ["2006HX57";"2008XU2";"2008KN11";"2012SY49";"2012QD8";"2020UE";...
+%                   "2006SC";"2005WG57";"2012BY1"];
+% 
+% % Number of possible combination of 4 asteroids among the ones in the list
+% data.HowMany = factorial(length(data.asteroid_names)) / factorial(length(data.asteroid_names) - 4);
+% [data.PermutationMatrix, ~] = permnUnique(data.asteroid_names, 4);
 
 %% uNEO
 % try 
-    load('data.mat')
+%     load('data.mat')
 % catch
     % if the asteroid have changed, run the find_eph_neo below, it takes about 1 min
 %     [data.y_interp_ft, data.t_vector] = find_eph_neo(data.asteroid_names);
 %     save('data.mat', data);
 % end
+
+load('data_processed_42_475.mat')
 
 %% Boundaries
 % Departure dates (1)
@@ -132,7 +134,7 @@ sim.C3_max = 30; % km^2/s^2
 options = optimoptions('particleswarm');
 options.HybridFcn = @fmincon;
 options.SwarmSize = 1000; % Default is min(100,10*nvars),
-options.MaxIterations = 200; %  Default is 200*nvars
+options.MaxIterations = 300; %  Default is 200*nvars
 options.MaxStallIterations = 50; % Default 20
 options.Display = 'iter';
 options.FunctionTolerance = 1e-6;
@@ -180,11 +182,17 @@ sol.buffer_time3 = x(8);
 sol.TOF4 = x(9);
 
 %% Mass Consumption for High Thrust Impulsive Case
-% g0 = 9.81; %m/s^2
+g0 = 9.81; %m/s^2
 % % https://www.space-propulsion.com/spacecraft-propulsion/hydrazine-thrusters/20n-hydrazine-thruster.html
-% Isp = 230; %s 
+Isp = 230; %s 
 % m_dry = 100; %kg
-% m_prop = m_dry*(exp(sol.dV_tot*1e3/(g0*Isp)) - 1); %kg
+% % m_prop = m_dry*(exp(sol.dV_tot*1e3/(g0*Isp)) - 1); %kg
+% wet/dry = (prop + dry)/dry = prop/dry - 1 = exp(sol.dV_tot*1e3/(g0*Isp))
+% prop/wet = prop/(dry+prop) = ((dry+prop)/prop)^-1 = (dry/prop+1)^-1 = 
+% = exp(sol.dV_tot*1e3/(g0*Isp))^-1 -1
+prop_wet = exp(2200/(g0*Isp)); 
+1/(prop_wet-1)
+
 %% Plot trajectories
 sol = plot_mission_4neo_rendezvous(sol,asteroid_sequence,data,sim,colors)
 [sol_dates] = sol_to_dates_of_mission(sol,'1SC_RV')

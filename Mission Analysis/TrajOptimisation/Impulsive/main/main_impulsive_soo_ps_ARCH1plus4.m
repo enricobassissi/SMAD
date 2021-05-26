@@ -84,18 +84,20 @@ muSun = astroConstants(4);
 % data.asteroid_names = asteroid_names;
 % % data.HowMany = length(data.PermutationMatrix);
 
-load('data_elements_matrix.mat')
-[data.asteroid_names, data.PermutationMatrix, data.HowMany] = ...
-            sequences_local_pruning(data_elements_matrix);
+% load('data_elements_matrix.mat')
+% [data.asteroid_names, data.PermutationMatrix, data.HowMany] = ...
+%             sequences_local_pruning(data_elements_matrix);
 
 %% uNEO
 % try 
 %     load('data.mat')
 % catch
     % if the asteroid have changed, run the find_eph_neo below, it takes about 1 min
-    [data.y_interp_ft, data.t_vector] = find_eph_neo(data.asteroid_names);
+%     [data.y_interp_ft, data.t_vector] = find_eph_neo(data.asteroid_names);
 %     save('data.mat', data);
 % end
+
+load('data_processed_42_475.mat')
 
 %% Boundaries
 % Departure dates (1)
@@ -182,7 +184,7 @@ numberOfVariables = length(sim.soo_bound.ub); % Number of decision variables
 %% Options ps
 options = optimoptions('particleswarm');
 options.HybridFcn = @fmincon;
-options.SwarmSize = 600; % Default is min(100,10*nvars),
+options.SwarmSize = 1000; % Default is min(100,10*nvars),
 options.MaxIterations = 300; %  Default is 200*nvars
 options.MaxStallIterations = 50; % Default 20
 options.Display = 'iter';
@@ -191,7 +193,7 @@ options.UseParallel = true;
 
 %% Run Optimisation ps
 Fval = 200;
-while Fval > 110
+while Fval > 90
 tic
 [x,Fval,exitFlag,Output] = particleswarm(FitnessFunction,numberOfVariables...
     ,sim.soo_bound.lb,sim.soo_bound.ub,options);
@@ -217,17 +219,18 @@ sol.TOF2 = x(3);
 sol.TOF3 = x(4);
 sol.TOF4 = x(5);
 
-%% Mass Consumption for High Thrust Impulsive Case
-% g0 = 9.81; %m/s^2
-% % https://www.space-propulsion.com/spacecraft-propulsion/hydrazine-thrusters/20n-hydrazine-thruster.html
-% Isp = 230; %s 
-% m_dry = 100; %kg
-% m_prop = m_dry*(exp(sol.dV_tot*1e3/(g0*Isp)) - 1); %kg
 %% Plot trajectories
 % sol = plot_mission_4neo_flyby_GA(sol,asteroid_sequence,data,sim,colors)
 
 sol = plot_mission_4neo_flyby(sol,asteroid_sequence,data,sim,colors)
 [sol_dates] = sol_to_dates_of_mission(sol,'1SC_FB')
+
+%% Mass Consumption for High Thrust Impulsive Case
+g0 = 9.81; %m/s^2
+% % https://www.space-propulsion.com/spacecraft-propulsion/hydrazine-thrusters/20n-hydrazine-thruster.html
+Isp = 230; %s 
+% m_dry = 100; %kg
+fuel_wet = 1-(exp(-sol.dV_tot*1e3/(g0*Isp))); %kg
 
 %% Plot Angles
 figure()

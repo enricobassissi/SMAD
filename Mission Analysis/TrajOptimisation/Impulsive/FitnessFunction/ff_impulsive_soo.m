@@ -83,27 +83,30 @@ tot_TOF = TOF1+TOF2+TOF3+TOF4;
 if tot_TOF > 12*365
     CHECK_TERM_A = 100;
 end
-if dv_tot34 > 6
+if dv_tot34 > 5
 %     CHECK_TERM_B = 50;
     CHECK_TERM_B = (dv_tot34 - 6)^2;
 end
-if dv_tot56 > 6
+if dv_tot56 > 5
 %     CHECK_TERM_C = 50;
     CHECK_TERM_C = (dv_tot56 - 6)^2;
 end
-if dv_tot78 > 6
+if dv_tot78 > 5
 %     CHECK_TERM_D = 50;
     CHECK_TERM_D = (dv_tot78 - 6)^2;
 end
 
 CHECK_TERM = CHECK_TERM_A+CHECK_TERM_B+CHECK_TERM_C+CHECK_TERM_D;
+% 
+% pen_212 = 2;
+% pen_34 = 1.5;
+% pen_56 = 1;
+% pen_78 = 0.8;
+% obj_fun = dv_extra_launch + pen_212*dv2_12 + pen_34*dv_tot34 + ...
+%     pen_56*dv_tot56 + pen_78*dv_tot78 + CHECK_TERM;
 
-pen_212 = 2;
-pen_34 = 1.5;
-pen_56 = 1;
-pen_78 = 0.8;
-obj_fun = dv_extra_launch + pen_212*dv2_12 + pen_34*dv_tot34 + ...
-    pen_56*dv_tot56 + pen_78*dv_tot78 + CHECK_TERM;
+obj_fun = dv_extra_launch + dv2_12 + dv_tot34 + ...
+    dv_tot56 + dv_tot78 + CHECK_TERM;
 
 end
 
