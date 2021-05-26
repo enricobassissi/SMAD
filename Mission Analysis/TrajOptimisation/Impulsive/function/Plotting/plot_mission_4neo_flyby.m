@@ -92,7 +92,7 @@ function [sol] = plot_mission_4neo_flyby(sol,asteroid_names_sequence,data,sim,co
     plot_earth_orbit(MJD01,3,colors,8);
     hold on
     % Asteroids
-    Frac_Orbit = 1/6;
+    Frac_Orbit = 1;
     plot_asteorid_orbit(MJDP1,Frac_Orbit,ast1,colors,2);
     plot_asteorid_orbit(MJDP2,Frac_Orbit,ast2,colors,3);
     plot_asteorid_orbit(MJDP3,Frac_Orbit,ast3,colors,4);

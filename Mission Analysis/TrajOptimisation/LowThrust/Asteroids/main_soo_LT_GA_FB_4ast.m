@@ -81,7 +81,7 @@ sim.PS.Isp = 3200/sim.TU;  % non-dimensional specific impulse
 sim.M = 100; % SC wet mass [kg]
 sim.M_pods = 5; % mass of the payloads+landing stuff [kg]
 sim.ID_FLYBY = 4; % flyby planet
-sim.max_Available_Thrust = 100*1e-3; % [N]
+sim.max_Available_Thrust = 0.03; % [N]
 
 %% Boundaries
 % Departure dates (1)
@@ -247,6 +247,8 @@ sol.asteroid_3 = data.PermutationMatrix(x(10),3);
 sol.asteroid_4 = data.PermutationMatrix(x(10),4);
 
 sol.departure_date = mjd20002date(x(1)*sim.TU/(3600*24));
+sol.departure_mjd2000 = x(1)*sim.TU/86400;
+sol.TOFGA = x(14)*sim.TU/86400;
 sol.TOF1 = x(2)*sim.TU/86400;
 sol.TOF2 = x(3)*sim.TU/86400;
 sol.TOF3 = x(4)*sim.TU/86400;
@@ -374,3 +376,21 @@ xlabel('x [AU]'); ylabel('y [AU]'); ylabel('y [AU]');
 legend('show')
 view(2)
 
+%% post analysis
+Traj = [R_transf_orbit_GA;R_transf_orbit_1;R_transf_orbit_2;R_transf_orbit_3;R_transf_orbit_4];
+max_dist_sun = max(vecnorm(Traj,2,2));
+min_dist_sun = min(vecnorm(Traj,2,2));
+
+mjd_earth_plot = output.t*sim.TU/86400 + sol.departure_mjd2000;
+for k=1:length(output.t)
+    [kep,ksun] = uplanet(mjd_earth_plot(k), 3);
+    [r__E, ~] = sv_from_coe(kep,ksun);  
+    R__E(k,:)=r__E/sim.DU; % it's in km it becomes AU, to be plotted
+end
+clearvars k r__E
+
+dist_sc_earth = Traj - R__E;
+max_dist_earth = max(vecnorm(dist_sc_earth,2,2));
+min_dist_earth = min(vecnorm(dist_sc_earth,2,2));
+
+max_Thrust = max(sqrt(output.Thrust(:,1).^2+output.Thrust(:,3).^2));

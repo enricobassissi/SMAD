@@ -92,25 +92,25 @@ tot_TOF = TOF1+TOF2+TOF3+TOF4;
 if tot_TOF > 12*365
     CHECK_TERM_TOF = 100;
 end
-if dv2_EAast1 > 7
+if dv2_EAast1 > 2
 %     CHECK_TERM_A = 0.8*dv2_EAast1^2;
 %     CHECK_TERM_A = 40;
     CHECK_TERM_A = 20 + dv2_EAast1^2;
 end
-if dv2_ast12 > 7
+if dv2_ast12 > 2
 %     CHECK_TERM_B = 0.8*dv2_ast12^2;
 %     CHECK_TERM_B = 40;
     CHECK_TERM_B = 20 + dv2_ast12^2;
 end
-if dv2_ast23 > 7
+if dv2_ast23 > 2
 %     CHECK_TERM_C = 0.8*dv2_ast23^2;
 %     CHECK_TERM_C = 40;
     CHECK_TERM_C = 20 + dv2_ast23^2;
 end
-if dv2_ast34 > 7
+if dv2_ast34 > 2
 %     CHECK_TERM_D = 0.8*dv2_ast34^2;
 %     CHECK_TERM_D = 40;
-    CHECK_TERM_D = 40 + dv2_ast34^2;
+    CHECK_TERM_D = 20 + dv2_ast34^2;
 end
 CHECK_TERM = CHECK_TERM_TOF+CHECK_TERM_A+CHECK_TERM_B+CHECK_TERM_C+CHECK_TERM_D;
 
