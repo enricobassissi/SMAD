@@ -38,7 +38,7 @@ if ~isnan(output.Thrust) % if is not nan
         CHECK_TERM_T = 100;
     end
     obj_fun = (output.m(1) - output.m(end))/output.m(1) + CHECK_TERM_T;
-    %obj_fun = (output.m(1) - output.m(end))/output.m(1) + 1e3*(abs(max(T)) - 0.22)^2; 
+   % obj_fun = (output.m(1) - output.m(end))/output.m(1) + 1e3*(abs(max(T)) - 0.2)^2; %lim 0.22
 else
     obj_fun = 1e2;
 end
