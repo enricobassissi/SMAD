@@ -264,7 +264,7 @@ if sim.TOF_imposed_flag == 1
 %     options=optimoptions('fsolve','Display','off');
 %     [a,fsolve_err] = fsolve(fun,a0,options); %% alternative: fzero 
     a  = find_a_prof(x,psi,TOF,sim,s1,s1_x,s1_xx,s2,s2_x,s2_xx,delta1,delta1_x,delta1_xx,delta2,delta2_x,delta2_xx); % prof
-else
+elseif sim.TOF_imposed_flag == 0
     a = 0;
 end
 
@@ -353,7 +353,7 @@ if isreal(a) && isreal(x_t)
 gamma = atan2(r_x,(r*psi)); % || atan
 
 %- In plane thrust per unit mass
-Tin2m = 1./cos(gamma) .* (2*psi*r_x.*x_t_2 + r.*psi.*x_tt);
+Tin2m = (2*psi*r_x.*x_t_2 + r.*psi.*x_tt)./cos(gamma);
 
 %- Out of plane thrust per unit mass
 Tout2m = z_xx.*x_t_2 + z_x.*x_tt + sim.mu./(s.^3).*z;
@@ -415,8 +415,8 @@ t(n_sol) = t(n_sol-1) + d_time(n_sol-1)*dx ;
 
 
 % Thrust
-Tin = Tin2m.*m * 1000* DU/TU^2;
-Tout = Tout2m.*m * 1000* DU/TU^2;
+Tin = Tin2m.*m * 1000* DU/(TU^2);
+Tout = Tout2m.*m * 1000* DU/(TU^2);
 
 % Velocity
 r_t = r_x.*x_t;

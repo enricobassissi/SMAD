@@ -44,7 +44,7 @@ sim.direction = -1;                     % direction of integration (1 FW, -1 BW)
 
 sim.vinf = 0;
 
-sim.TOF_imposed_flag = 1;
+sim.TOF_imposed_flag = 0;
 
 %% Propulsive system parameters
 sim.PS.Is = 3000/sim.TU;  % non-dimensional specific impulse
@@ -64,7 +64,7 @@ sim.soo_lim.TOF1_min = 600*3600*24/sim.TU;
 sim.soo_lim.TOF1_max = 1000*3600*24/sim.TU; 
 % N REV
 sim.soo_lim.N_REV_min = 0;
-sim.soo_lim.N_REV_max = 3;
+sim.soo_lim.N_REV_max = 1; %3
 % vinf_mag
 sim.soo_lim.vinf_mag_min = 0.75;
 sim.soo_lim.vinf_mag_max = 2;

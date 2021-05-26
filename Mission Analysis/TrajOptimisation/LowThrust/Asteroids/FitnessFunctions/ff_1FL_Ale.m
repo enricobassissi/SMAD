@@ -24,8 +24,7 @@ N_rev2 = x(7);
 N_rev3 = x(8);
 % N REV4
 N_rev4 = x(9);
-% N REV GA
-N_revGA = x(20);
+
 
 % C3 launcher
 v_inf_magn = x(11);
@@ -156,7 +155,7 @@ v_abs_ast4 = v4 + v_rel_ast4;
 
                             if mass_fract > 0 && mass_fract < 1 %17 kg of payload
                                 %obj_fun = mass_fract;
-                                obj_fun = mass_fract + sim.c*(abs(max(T))-sim.maxT)^2;
+                                obj_fun = mass_fract + sim.c*(max(abs(T))-sim.maxT)^2;
                                 %disp('success')
                             else
                                 obj_fun = obj_fun + 11;

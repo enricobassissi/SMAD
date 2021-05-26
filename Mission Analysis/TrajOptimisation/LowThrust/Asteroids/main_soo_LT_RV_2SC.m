@@ -5,15 +5,15 @@
 %% ------------------------------ SOO ---------------------------------- %%
 %% --------------------------------------------------------------------- %%
 %% Setup for default options
-set(0, 'DefaultTextFontSize', 20)
-set(0, 'DefaultAxesFontSize', 20)
-set(0, 'DefaultLegendFontSize', 20)
+set(0, 'DefaultTextFontSize', 11)
+set(0, 'DefaultAxesFontSize', 11)
+set(0, 'DefaultLegendFontSize', 11)
 set(0, 'DefaultAxesXGrid', 'on')
 set(0, 'DefaultAxesYGrid', 'on')
 set(0, 'DefaultLegendInterpreter', 'latex')
 set(0, 'DefaultAxesTickLabelInterpreter', 'latex')
 set(0, 'DefaultTextInterpreter', 'latex')
-set(0, 'DefaultLineLineWidth', 1.8)
+set(0, 'DefaultLineLineWidth', 1.2)
 format short
 
 %% Initializing the Environment
@@ -302,6 +302,11 @@ plot(output.t_SC2*sim.TU/86400,output.m_SC2,'Color',colors(2,:));
 % xline(sol.TOF1+sol.CT1+sol.TOF2+sol.CT2+sol.TOF3,'LineWidth',2);
 xlabel('Time [days]')
 ylabel('Mass [kg]')
+
+Propulsion.Magnitude_Thrust = [output.T_magn_SC1 output.T_magn_SC2];
+Propulsion.InPlane_Thrust   = [output.Thrust_SC1(:,1) output.Thrust_SC2(:,1)];
+Propulsion.gamma_angle      = [output.Thrust_SC1(:,2) output.Thrust_SC2(:,2)];
+Propulsion.OutofPlane_Thrust = [output.Thrust_SC1(:,3) output.Thrust_SC2(:,3)];
 
 %% orbit plots
 % transfer orbits

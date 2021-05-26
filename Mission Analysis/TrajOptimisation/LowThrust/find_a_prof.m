@@ -101,7 +101,7 @@ while abs(error) > 1e-6 && count <=100
 %     TOFc = trapz(x,integrand);
     error_old = error;
     error = (TOF - TOFc)/TOF;
-   d_error = (error - error_old)/(a - a_old);
+    d_error = (error - error_old)/(a - a_old);
     %d_error = (error - error_old)/dx; %%% giusto????
     
     % newton

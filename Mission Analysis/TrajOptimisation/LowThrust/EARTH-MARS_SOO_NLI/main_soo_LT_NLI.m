@@ -50,7 +50,7 @@ sim.mu_dim    = 132712440018          ; % actractor parameter [km^3 s^-2]
 sim.DU        = 149597870.7           ; % distance unit [km]
 sim.TU        = (sim.DU^3/sim.mu_dim )^0.5; % time unit [s]
 sim.mu        = 1;                      % non-dimensional attractor parameter [DU^3/TU^2]
-sim.n_sol     = 200;                    % number of computational nodes
+sim.n_sol     = 300;                    % number of computational nodes
 sim.x = linspace(0,1,sim.n_sol)';   % 
 
 sim.g0 = 9.81*(sim.TU^2/(1000*sim.DU)); % non-dimensional g0
@@ -76,7 +76,7 @@ sim.soo_lim.TOF1_min = 600*3600*24/sim.TU; %600
 sim.soo_lim.TOF1_max = 1000*3600*24/sim.TU; 
 % N REV
 sim.soo_lim.N_REV_min = 0; %0
-sim.soo_lim.N_REV_max = 3; %3
+sim.soo_lim.N_REV_max = 1; %3
 
 sim.soo_bound.lb = [sim.soo_lim.mjd2000_ed, sim.soo_lim.TOF1_min, sim.soo_lim.N_REV_min]; % Lower bound
 sim.soo_bound.ub = [sim.soo_lim.mjd2000_ld, sim.soo_lim.TOF1_max, sim.soo_lim.N_REV_max]; % Upper bound
@@ -168,7 +168,8 @@ Tlocal  = [-output.Thrust(:,1).*sin(output.theta), ...
             output.Thrust(:,1).*cos(output.theta), output.Thrust(:,3)];
 Tglobal = rotate_local2ecplitic(r1_true,Tlocal,sim.n_sol,output.Href); %N
 
-
+T_abs_local_max = max(sqrt(Tlocal(:,1).^2 + Tlocal(:,2).^2 + Tlocal(:,3).^2))
+T_abs_max = max(sqrt(Tglobal(:,1).^2 + Tglobal(:,2).^2 + Tglobal(:,3).^2))
 %%
 %JD_departure = x(knee_sol,1);
 day1 = [2028 1 1 0 0 0];
