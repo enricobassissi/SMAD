@@ -136,24 +136,60 @@ v_launcher = v_inf_magn*[cos(elev)*cos(az); cos(elev)*sin(az); sin(elev)];
 v_dep = v_EA + v_launcher;  %if parabolic escape (v_extra = 0)
 
 %% 1st leg - Earth -> Ast 1
+tol_TOF = 1; % 1 TU means approx 60 days
+penalty_T_leg1 = 0; penalty_T_leg2 = 0; penalty_T_lega = 0; penalty_T_legb = 0; 
+penalty_TOF_leg1 = 0; penalty_TOF_leg2 = 0; penalty_TOF_lega = 0; penalty_TOF_legb = 0;
+
 % SC1
 % 1st leg - Earth -> Ast1
-[output_1] = NL_interpolator( r_EA , rA1 , v_dep , vA1 , N_rev1 , TOF1 , sim.M1 ,sim.PS.Isp , sim );
+[output_1] = NL_interpolator_of( r_EA , rA1 , v_dep , vA1 , N_rev1 , TOF1 , sim.M1 ,sim.PS.Isp , sim );
 sol.output_1 = output_1;
+if abs(max(output_1.T_magn)) > sim.max_Available_Thrust
+    penalty_T_leg1 = abs(max(output_1.T_magn)) - sim.max_Available_Thrust;
+end
+if abs(output_1.t(end) - TOF1) > tol_TOF
+    penalty_TOF_leg1 = abs(output_1.t(end) - TOF1);
+end
 % 2nd leg - Ast1 -> Ast2
 M_start_2nd_leg = output_1.m(end); %  - sim.M_pods
-[output_2] = NL_interpolator( rD1 , rA2 , vD1 , vA2 , N_rev2 , TOF2 , M_start_2nd_leg ,sim.PS.Isp , sim );
+[output_2] = NL_interpolator_of( rD1 , rA2 , vD1 , vA2 , N_rev2 , TOF2 , M_start_2nd_leg ,sim.PS.Isp , sim );
 sol.output_2 = output_2;
+if abs(max(output_2.T_magn)) > sim.max_Available_Thrust
+    penalty_T_leg2 = abs(max(output_2.T_magn)) - sim.max_Available_Thrust;
+end
+if abs(output_2.t(end) - TOF2) > tol_TOF
+    penalty_TOF_leg2 = abs(output_2.t(end) - TOF2);
+end
 % SC 2
-[output_a] = NL_interpolator( r_EA , rAa , v_dep , vAa , N_reva , TOFa , sim.M2 ,sim.PS.Isp , sim );
+[output_a] = NL_interpolator_of( r_EA , rAa , v_dep , vAa , N_reva , TOFa , sim.M2 ,sim.PS.Isp , sim );
 sol.output_a = output_a;
+if abs(max(output_a.T_magn)) > sim.max_Available_Thrust
+    penalty_T_lega = 10*abs(max(output_a.T_magn)) - sim.max_Available_Thrust;
+end
+if abs(output_a.t(end) - TOFa) > tol_TOF
+    penalty_TOF_lega = abs(output_a.t(end) - TOFa);
+end
 % a_th leg - Earth -> Ast_a
 M_start_b_th_leg = output_a.m(end); %  - sim.M_pods
 [output_b] = NL_interpolator_of( rDa , rAb , vDa , vAb , N_revb , TOFb , M_start_b_th_leg ,sim.PS.Isp , sim );
 sol.output_b = output_b;
+if abs(max(output_b.T_magn)) > sim.max_Available_Thrust
+    penalty_T_legb = 10*abs(max(output_b.T_magn)) - sim.max_Available_Thrust;
+end
+if abs(output_b.t(end) - TOFb) > tol_TOF
+    penalty_TOF_legb = abs(output_b.t(end) - TOFb);
+end
 % mass fractions
 sol.mass_fract_SC1 = (output_1.m(1) - output_2.m(end))/output_1.m(1);
 sol.mass_fract_SC2 = (output_a.m(1) - output_b.m(end))/output_a.m(1);
+
+avg_mass_fraction = (sol.mass_fract_SC1+sol.mass_fract_SC2)/2;
+MF = max(sol.mass_fract_SC1,sol.mass_fract_SC2) + abs(sol.mass_fract_SC1 - avg_mass_fraction) + ...
+        abs(sol.mass_fract_SC2 - avg_mass_fraction); % cosi sono piu o meno uguali
+
+sol.obj_fun = MF + ...
+    10*(penalty_T_leg1 + penalty_T_leg2 + penalty_T_lega + penalty_T_legb) + ...
+    penalty_TOF_leg1 + penalty_TOF_leg2 + penalty_TOF_lega + penalty_TOF_legb;
 
 %% Output encounter states
 r_encounter.EA = r_EA;

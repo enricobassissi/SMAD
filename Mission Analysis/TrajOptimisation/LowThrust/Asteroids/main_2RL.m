@@ -303,11 +303,6 @@ plot(output.t_SC2*sim.TU/86400,output.m_SC2,'Color',colors(2,:));
 xlabel('Time [days]')
 ylabel('Mass [kg]')
 
-Propulsion.Magnitude_Thrust = [output.T_magn_SC1 output.T_magn_SC2];
-Propulsion.InPlane_Thrust   = [output.Thrust_SC1(:,1) output.Thrust_SC2(:,1)];
-Propulsion.gamma_angle      = [output.Thrust_SC1(:,2) output.Thrust_SC2(:,2)];
-Propulsion.OutofPlane_Thrust = [output.Thrust_SC1(:,3) output.Thrust_SC2(:,3)];
-
 %% orbit plots
 % transfer orbits
 r_transf_orbit_1  = [output.r.leg1.*cos(output.theta.leg1), ...
@@ -410,3 +405,10 @@ min_dist_earth_SC2 = min(vecnorm(dist_sc_earth_SC2,2,2));
 % Thrust
 max_T_SC1 = max(output.T_magn_SC1);
 max_T_SC2 = max(output.T_magn_SC2);
+
+% Propulsion for NIKITA
+Propulsion.Magnitude_Thrust = [output.T_magn_SC1 output.T_magn_SC2];
+Propulsion.InPlane_Thrust   = [output.Thrust_SC1(:,1) output.Thrust_SC2(:,1)];
+Propulsion.gamma_angle      = [output.Thrust_SC1(:,2) output.Thrust_SC2(:,2)];
+Propulsion.OutofPlane_Thrust = [output.Thrust_SC1(:,3) output.Thrust_SC2(:,3)];
+
