@@ -36,13 +36,15 @@ sim.mu_dim    = 132712440018          ; % actractor parameter [km^3 s^-2]
 sim.DU        = 149597870.7           ; % distance unit [km]
 sim.TU        = (sim.DU^3/sim.mu_dim)^0.5; % time unit [s]
 sim.mu        = 1;                      % non-dimensional attractor parameter [DU^3/TU^2]
-sim.n_sol     = 100;                    % number of computational nodes
+sim.n_sol     = 200;                    % number of computational nodes
 sim.x         = linspace(0,1,sim.n_sol)';   % 
 sim.out_shape = 2;                  % out-of-plane shape, 2 = Conway-Wall shape
 sim.g0 = 9.81*(sim.TU^2/(1000*sim.DU)); % non-dimensional g0
 sim.direction = -1;                     % direction of integration (1 FW, -1 BW)
 
 sim.vinf = 0;
+
+sim.TOF_imposed_flag = 1;
 
 %% Propulsive system parameters
 sim.PS.Is = 3000/sim.TU;  % non-dimensional specific impulse

@@ -65,7 +65,9 @@ end
 
 %load('data_processed_9_4.mat')
 
-load('data_processed_9_42_475.mat') 
+%load('data_processed_9_42_475.mat') 
+
+load('data_processed_42_475.mat')
 %% simulation parameters
 sim.mu_dim    = 132712440018              ; % actractor parameter [km^3 s^-2]
 sim.DU        = 149597870.7               ; % distance unit [km]
@@ -83,12 +85,14 @@ sim.M = 100; % SC wet mass [kg]
 %sim.M_pods = 5; % mass of the payloads+landing stuff [kg]
 
 sim.ID_FLYBY = 3; % flyby planet
+sim.c = 1e+3;
+sim.maxT = 0.025;
 
 AU = astroConstants(2);
 %% Boundaries
 % Departure dates (1)
 bound.date_ed = [2024, 1, 1, 0, 0, 0]; %2024
-bound.date_ld =  [2028, 1, 1, 0, 0, 0]; 
+bound.date_ld = [2028, 1, 1, 0, 0, 0]; 
 bound.mjd2000_ed = date2mjd2000(bound.date_ed)*3600*24/sim.TU;
 bound.mjd2000_ld = date2mjd2000(bound.date_ld)*3600*24/sim.TU;
 % TOFGA (2)
@@ -197,7 +201,7 @@ options.Display = 'iter';
 % options.HybridFcn = 'fgoalattain';
 
 options.PopulationSize = 1000; % ideal 1000
-options.MaxGenerations = 400; % ideal 100
+options.MaxGenerations = 10; % ideal 100
 
 options.FunctionTolerance = 1e-6; %1e-9
 options.MaxStallGenerations = ceil(options.MaxGenerations/5);
@@ -333,27 +337,27 @@ figure()
 plot3(R_transf_orbit_GA(:,1),R_transf_orbit_GA(:,2),R_transf_orbit_GA(:,3),...
     'Color',colors(7,:),'DisplayName','Traj GA')
 hold on
-plot3(R_transf_orbit_1(:,1),R_transf_orbit_1(:,2),R_transf_orbit_1(:,3),...
-    'Color',colors(1,:),'DisplayName','Traj')
-
-% plot3( R_coasting.ast1(:,1), R_coasting.ast1(:,2), R_coasting.ast1(:,3),...
-%     '--','Color',colors(1,:),'DisplayName','Coast 1')
-
-hpt2 = plot3(R_transf_orbit_2(:,1),R_transf_orbit_2(:,2),R_transf_orbit_2(:,3),...
-    'Color',colors(1,:));
-hpt2.Annotation.LegendInformation.IconDisplayStyle = 'off';
-
-% plot3( R_coasting.ast2(:,1), R_coasting.ast2(:,2), R_coasting.ast2(:,3),...
-%      '--','Color',colors(1,:),'DisplayName','Coast 2')
+% plot3(R_transf_orbit_1(:,1),R_transf_orbit_1(:,2),R_transf_orbit_1(:,3),...
+%     'Color',colors(1,:),'DisplayName','Traj')
 % 
+plot3( R_coasting.ast1(:,1), R_coasting.ast1(:,2), R_coasting.ast1(:,3),...
+    '--','Color',colors(1,:),'DisplayName','Coast 1')
+
+% hpt2 = plot3(R_transf_orbit_2(:,1),R_transf_orbit_2(:,2),R_transf_orbit_2(:,3),...
+%     'Color',colors(1,:));
+% hpt2.Annotation.LegendInformation.IconDisplayStyle = 'off';
+
+plot3( R_coasting.ast2(:,1), R_coasting.ast2(:,2), R_coasting.ast2(:,3),...
+     '--','Color',colors(1,:),'DisplayName','Coast 2')
+% % 
 plot3(R_transf_orbit_3(:,1),R_transf_orbit_3(:,2),R_transf_orbit_3(:,3),...
      'Color',colors(1,:));
-% 
-% % plot3( R_coasting.ast3(:,1), R_coasting.ast3(:,2), R_coasting.ast3(:,3),...
-% %      '--','Color',colors(1,:),'DisplayName','Coast 3')
-% 
-plot3(R_transf_orbit_4(:,1),R_transf_orbit_4(:,2),R_transf_orbit_4(:,3),...
-     'Color',colors(1,:));
+
+plot3( R_coasting.ast3(:,1), R_coasting.ast3(:,2), R_coasting.ast3(:,3),...
+     '--','Color',colors(1,:),'DisplayName','Coast 3')
+% % 
+% plot3(R_transf_orbit_4(:,1),R_transf_orbit_4(:,2),R_transf_orbit_4(:,3),...
+%      'Color',colors(1,:));
 
 
 plot3(r_encounter.EA(1),r_encounter.EA(2),r_encounter.EA(3),...
@@ -381,12 +385,12 @@ xlabel('x [AU]'); ylabel('y [AU]'); ylabel('y [AU]');
 % PLANETS
 plot_planet_orbit(x(1)*sim.TU/(3600*24),3,colors,8); % earth
 plot_planet_orbit(x(1)*sim.TU/(3600*24),4,colors,2); % mars
-% % Asteroids
-% fraction_of_the_orbit = 1;
-% plot_asteorid_orbit(sol.output_1.t(end)*sim.TU/(3600*24),fraction_of_the_orbit,sol.asteroid_1,colors,3);
-% plot_asteorid_orbit(sol.output_2.t(end)*sim.TU/(3600*24),fraction_of_the_orbit,sol.asteroid_2,colors,4);
-% plot_asteorid_orbit(sol.output_3.t(end)*sim.TU/(3600*24),fraction_of_the_orbit,sol.asteroid_3,colors,5);
-% plot_asteorid_orbit(sol.output_4.t(end)*sim.TU/(3600*24),fraction_of_the_orbit,sol.asteroid_4,colors,6);
+% Asteroids
+fraction_of_the_orbit = 1/6;
+plot_asteorid_orbit(sol.output_1.t(end)*sim.TU/(3600*24),fraction_of_the_orbit,sol.asteroid_1,colors,3);
+plot_asteorid_orbit(sol.output_2.t(end)*sim.TU/(3600*24),fraction_of_the_orbit,sol.asteroid_2,colors,4);
+plot_asteorid_orbit(sol.output_3.t(end)*sim.TU/(3600*24),fraction_of_the_orbit,sol.asteroid_3,colors,5);
+plot_asteorid_orbit(sol.output_4.t(end)*sim.TU/(3600*24),fraction_of_the_orbit,sol.asteroid_4,colors,6);
 
 % Sun
 plot3(0,0,0,'o','Color',colors(4,:),'DisplayName','Sun')

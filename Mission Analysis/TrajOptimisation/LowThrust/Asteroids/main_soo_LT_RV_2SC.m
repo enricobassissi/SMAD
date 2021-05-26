@@ -81,8 +81,8 @@ sim.direction = 1;                     % direction of integration (1 FW, -1 BW),
                                        % 1 is like imposing wet mass at beginning
 sim.TOF_imposed_flag = 1;
 sim.PS.Isp = 3200/sim.TU;  % non-dimensional specific impulse
-sim.M1 = 50; % SC wet mass [kg]
-sim.M2 = 50; % SC wet mass [kg]
+sim.M1 = 70; % SC wet mass [kg]
+sim.M2 = 70; % SC wet mass [kg]
 sim.M_pods = 1; % mass of the payloads + landing stuff [kg]
 sim.max_Available_Thrust = 0.005; % 50 [mN], BepiColombo is 250 mN but it's much bigger
 
@@ -105,13 +105,13 @@ bound.TOFa_max = 3*365*3600*24/sim.TU;
 bound.TOFb_min = 0.5*365*3600*24/sim.TU; %600
 bound.TOFb_max = 3*365*3600*24/sim.TU; 
 % N REV 1 (6)
-bound.N_REV1_min = 1; %0
+bound.N_REV1_min = 0; %0
 bound.N_REV1_max = 1; %3
 % N REV 2 (7)
 bound.N_REV2_min = 0; %0
 bound.N_REV2_max = 1; %3
 % N REV a (8)
-bound.N_REVa_min = 1; %0
+bound.N_REVa_min = 0; %0
 bound.N_REVa_max = 1; %3
 % N REV b (9)
 bound.N_REVb_min = 0; %0
@@ -325,19 +325,19 @@ figure()
 plot3(R_transf_orbit_1(:,1),R_transf_orbit_1(:,2),R_transf_orbit_1(:,3),...
     'Color',colors(1,:),'DisplayName','Traj SC1')
 hold on
-% R_AST = coasting_asteroids_2(sol.departure_mjd2000+output.CT1(1)*sim.TU/86400, ...
-%     sol.departure_mjd2000+output.CT1(end)*sim.TU/86400,sol.asteroid_1);
-% h_ct1 = plot3(R_AST(:,1),R_AST(:,2),R_AST(:,3),'*','Color',colors(1,:),'LineWidth',8);
-% %         'DisplayName',strcat('Full ',ast_name)
-% h_ct1.Annotation.LegendInformation.IconDisplayStyle = 'off';
-hpt2 = plot3(R_transf_orbit_2(:,1),R_transf_orbit_2(:,2),R_transf_orbit_2(:,3),...
-    'Color',colors(1,:));
-hpt2.Annotation.LegendInformation.IconDisplayStyle = 'off';
-plot3(R_transf_orbit_a(:,1),R_transf_orbit_a(:,2),R_transf_orbit_a(:,3),...
-    'Color',colors(2,:),'DisplayName','Traj SC2');
+% % R_AST = coasting_asteroids_2(sol.departure_mjd2000+output.CT1(1)*sim.TU/86400, ...
+% %     sol.departure_mjd2000+output.CT1(end)*sim.TU/86400,sol.asteroid_1);
+% % h_ct1 = plot3(R_AST(:,1),R_AST(:,2),R_AST(:,3),'*','Color',colors(1,:),'LineWidth',8);
+% % %         'DisplayName',strcat('Full ',ast_name)
+% % h_ct1.Annotation.LegendInformation.IconDisplayStyle = 'off';
+% hpt2 = plot3(R_transf_orbit_2(:,1),R_transf_orbit_2(:,2),R_transf_orbit_2(:,3),...
+%     'Color',colors(1,:));
+% hpt2.Annotation.LegendInformation.IconDisplayStyle = 'off';
+% plot3(R_transf_orbit_a(:,1),R_transf_orbit_a(:,2),R_transf_orbit_a(:,3),...
+%     'Color',colors(2,:),'DisplayName','Traj SC2');
 hpt4 = plot3(R_transf_orbit_b(:,1),R_transf_orbit_b(:,2),R_transf_orbit_b(:,3),...
     'Color',colors(2,:));
-hpt4.Annotation.LegendInformation.IconDisplayStyle = 'off';
+% hpt4.Annotation.LegendInformation.IconDisplayStyle = 'off';
 plot3(r_encounter.EA(1),r_encounter.EA(2),r_encounter.EA(3),...
     '*','Color',colors(8,:),'DisplayName','Earth Dep')
 plot3(r_encounter.astA1(1),r_encounter.astA1(2),r_encounter.astA1(3),...

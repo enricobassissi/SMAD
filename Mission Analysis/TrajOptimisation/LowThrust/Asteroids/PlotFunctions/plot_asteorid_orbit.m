@@ -17,7 +17,7 @@ function [R_AST, h] = plot_asteorid_orbit(mjd2000,fraction_of_the_orbit,ast_name
     
     epoch_start = mjd20002pystr(mjd2000-round(T_ast_days*fraction_of_the_orbit/2)); 
     epoch_stop = mjd20002pystr(mjd2000+round(T_ast_days*fraction_of_the_orbit/2));
-    step = '5d'; 
+    step = '1d'; 
     type_elements = 'Vectors';
     PointOfView = 'Sun';
     py_data = py.neo_api_function.get_horizons_ephemerides(py.str(ast_name),py.str(PointOfView),...

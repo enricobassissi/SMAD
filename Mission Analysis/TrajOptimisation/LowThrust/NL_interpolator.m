@@ -218,8 +218,8 @@ theta = psi*x;
  l1_xxx = DL1_xxx;
  
  l2 = L2 - DL2; %%%% L2 è 1x1 e DL2 è 100x1
- l2_x = - DL2_x;
- l2_xx = - DL2_xx;
+ l2_x =  - DL2_x;
+ l2_xx =  - DL2_xx;
  l2_xxx = - DL2_xxx;
 
  
@@ -418,6 +418,10 @@ t(n_sol) = t(n_sol-1) + d_time(n_sol-1)*dx ;
 Tin = Tin2m.*m * 1000* DU/TU^2;
 Tout = Tout2m.*m * 1000* DU/TU^2;
 
+% Velocity
+r_t = r_x.*x_t;
+z_t = z_x.*x_t;
+
     % Output
     output.m       = m ;
     output.t       = t ;
@@ -427,6 +431,8 @@ Tout = Tout2m.*m * 1000* DU/TU^2;
     output.z       = z;
     output.a       = a;
     output.Href    = Href;
+    output.vin     = r_t;
+    output.vout    = z_t;
 
 else
     % Output in case a is complex -> no solution with that tof
