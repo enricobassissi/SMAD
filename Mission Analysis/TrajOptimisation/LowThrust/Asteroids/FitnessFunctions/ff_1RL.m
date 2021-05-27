@@ -1,4 +1,4 @@
-function obj_fun = ff_ea_4ast_LT_soo_NLI(x,sim,data)
+function obj_fun = ff_1RL(x,sim,data)
 %{ 
 input variable vector
 x = [(1) MJD0,

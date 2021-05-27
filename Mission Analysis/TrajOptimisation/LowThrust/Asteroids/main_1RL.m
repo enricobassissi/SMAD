@@ -189,7 +189,7 @@ end
 options.UseParallel = true;
 
 %% Build the soo
-FitnessFunction = @(x) ff_ea_4ast_LT_soo_NLI(x,sim,data); % Function handle to the fitness function
+FitnessFunction = @(x) ff_1RL(x,sim,data); % Function handle to the fitness function
 numberOfVariables = length(bound.ub); % Number of decision variables
 
 tic

@@ -1,6 +1,4 @@
-function obj_fun = ff_ea_4ast_LT_RV_GA_soo_NLI(x,sim,data)
-
-
+function obj_fun = ff_1RL_GA(x,sim,data)
 %% setting the input times
 MJD01 = x(1); % departure time from earth
 TOFGA = x(2);

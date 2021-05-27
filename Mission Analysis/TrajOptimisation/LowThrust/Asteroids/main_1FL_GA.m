@@ -271,7 +271,7 @@ end
 options.UseParallel = true;
 
 %% Build the soo
-FitnessFunction = @(x) ff_1FL_GA_Ale_Enri(x,sim,data); % Function handle to the fitness function
+FitnessFunction = @(x) ff_1FL_GA(x,sim,data); % Function handle to the fitness function
 numberOfVariables = length(bound.ub); % Number of decision variables
 
 tic
