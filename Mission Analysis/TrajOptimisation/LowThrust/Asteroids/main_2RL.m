@@ -1,6 +1,6 @@
 %% --------------------------------------------------------------------- %%
 %% ------------------------ Earth Ast1 Ast2  --------------------------- %%
-%% ------------------------- Earth Asta Astb --------------------------- %%
+%% ------------------------ Earth Asta Astb ---------------------------- %%
 %% ------------------------- ARCH 2SC, LT RV --------------------------- %%
 %% ------------------------------ SOO ---------------------------------- %%
 %% --------------------------------------------------------------------- %%
@@ -81,10 +81,10 @@ sim.direction = 1;                     % direction of integration (1 FW, -1 BW),
                                        % 1 is like imposing wet mass at beginning
 sim.TOF_imposed_flag = 1;
 sim.PS.Isp = 3200/sim.TU;  % non-dimensional specific impulse
-sim.M1 = 70; % SC wet mass [kg]
-sim.M2 = 70; % SC wet mass [kg]
-sim.M_pods = 1; % mass of the payloads + landing stuff [kg]
-sim.max_Available_Thrust = 0.005; % 50 [mN], BepiColombo is 250 mN but it's much bigger
+sim.M1 = 75; % SC wet mass [kg] %%
+sim.M2 = 75; % SC wet mass [kg] %%
+sim.M_pods = 1.5; % mass of the payloads + landing stuff [kg] %%
+sim.max_Available_Thrust = 0.005; % 5 [mN], BepiColombo is 250 mN but it's much bigger
 
 %% Boundaries
 % Departure dates (1)
@@ -93,16 +93,16 @@ bound.date_ld =  [2028, 1, 1, 0, 0, 0];
 bound.mjd2000_ed = date2mjd2000(bound.date_ed)*3600*24/sim.TU;
 bound.mjd2000_ld = date2mjd2000(bound.date_ld)*3600*24/sim.TU;
 % TOF1 (2)
-bound.TOF1_min = 1*365*3600*24/sim.TU; %600
-bound.TOF1_max = 3*365*3600*24/sim.TU; 
+bound.TOF1_min = 0.2*365*3600*24/sim.TU; %1*365
+bound.TOF1_max = 3*365*3600*24/sim.TU; %3*365
 % TOF2 (3)
-bound.TOF2_min = 0.5*365*3600*24/sim.TU; %600
+bound.TOF2_min = 0.2*365*3600*24/sim.TU; %600
 bound.TOF2_max = 3*365*3600*24/sim.TU; 
 % TOFa (4)
-bound.TOFa_min = 1*365*3600*24/sim.TU; %600
+bound.TOFa_min = 0.2*365*3600*24/sim.TU; %600
 bound.TOFa_max = 3*365*3600*24/sim.TU; 
 % TOFb (5)
-bound.TOFb_min = 0.5*365*3600*24/sim.TU; %600
+bound.TOFb_min = 0.2*365*3600*24/sim.TU; %0.5*365
 bound.TOFb_max = 3*365*3600*24/sim.TU; 
 % N REV 1 (6)
 bound.N_REV1_min = 0; %0
@@ -127,7 +127,7 @@ bound.IDP2_max = 100;
 % bound.IDP_max = length(data.asteroid_names);
 % C3 stuff
 % Constraint on C3 Launcher (12)
-sim.C3_max = 20; % km^2/s^2
+sim.C3_max = 30; % km^2/s^2
 bound.v_inf_magn_min = 0;
 bound.v_inf_magn_max = sqrt(sim.C3_max)/sim.DU*sim.TU;
 % azimuth (13)
@@ -178,7 +178,7 @@ options.Display = 'iter';
 % options.HybridFcn = 'fgoalattain';
 
 options.PopulationSize = 1000; % ideal 1000
-options.MaxGenerations = 50; % ideal 100
+options.MaxGenerations = 300; % ideal 100
 
 options.FunctionTolerance = 1e-6; %1e-9
 options.MaxStallGenerations = ceil(options.MaxGenerations/5);
@@ -216,6 +216,7 @@ IDP2 = ceil(IDP_temp_2*HowMany_2SC/100);
 sol.asteroid_a = PermutationMatrix_2SC(IDP2,1);
 sol.asteroid_b = PermutationMatrix_2SC(IDP2,2);
 
+
 sol.departure_date = mjd20002date(x(1)*sim.TU/(3600*24));
 sol.departure_mjd2000 = x(1)*sim.TU/86400;
 sol.TOF1 = x(2)*sim.TU/86400;
@@ -244,6 +245,10 @@ sol.el = x(14);
 
 %% characteristic quantities plot
 [output, r_encounter, v_encounter, sol] = plot_ff_ea_2SC_LT_RV_soo_NLI(x,sim,data,sol);
+% Thrust
+sol.max_T_SC1 = max(output.T_magn_SC1);
+sol.max_T_SC2 = max(output.T_magn_SC2);
+
 
 figure()
 subplot(5,1,1)
@@ -325,11 +330,11 @@ figure()
 plot3(R_transf_orbit_1(:,1),R_transf_orbit_1(:,2),R_transf_orbit_1(:,3),...
     'Color',colors(1,:),'DisplayName','Traj SC1')
 hold on
-% R_AST = coasting_asteroids_2(sol.departure_mjd2000+output.CT1(1)*sim.TU/86400, ...
-%     sol.departure_mjd2000+output.CT1(end)*sim.TU/86400,sol.asteroid_1);
-% h_ct1 = plot3(R_AST(:,1),R_AST(:,2),R_AST(:,3),'*','Color',colors(1,:),'LineWidth',8);
-% %         'DisplayName',strcat('Full ',ast_name)
-% h_ct1.Annotation.LegendInformation.IconDisplayStyle = 'off';
+% R_AST = coasting_asteroids_2(sol.departure_mjd2000+output.t1(end)+ output.CT1(1)*sim.TU/86400, ...
+%     sol.departure_mjd2000+output.t1(end)+output.CT1(end)*sim.TU/86400,sol.asteroid_1);
+% h_ct1 = plot3(R_AST(:,1),R_AST(:,2),R_AST(:,3),'--','Color',colors(1,:),'LineWidth',2);
+%        %  'DisplayName',strcat('Full ',ast_name)
+h_ct1.Annotation.LegendInformation.IconDisplayStyle = 'off';
 hpt2 = plot3(R_transf_orbit_2(:,1),R_transf_orbit_2(:,2),R_transf_orbit_2(:,3),...
     'Color',colors(1,:));
 hpt2.Annotation.LegendInformation.IconDisplayStyle = 'off';
@@ -373,38 +378,50 @@ legend('show')
 view(2)
 
 %% post analysis
-Traj_SC1 = [R_transf_orbit_1;R_transf_orbit_2];
-max_dist_sun_SC1 = max(vecnorm(Traj_SC1,2,2));
-min_dist_sun_SC1 = min(vecnorm(Traj_SC1,2,2));
+% Traj_SC1 = [R_transf_orbit_1;R_transf_orbit_2];
+% max_dist_sun_SC1 = max(vecnorm(Traj_SC1,2,2));
+% min_dist_sun_SC1 = min(vecnorm(Traj_SC1,2,2));
+% 
+% Traj_SC2 = [R_transf_orbit_a;R_transf_orbit_b];
+% max_dist_sun_SC2 = max(vecnorm(Traj_SC2,2,2));
+% min_dist_sun_SC2 = min(vecnorm(Traj_SC2,2,2));
+% 
+% mjd_earth_plot_SC1 = [output.t1;output.t2].*sim.TU/86400 + sol.departure_mjd2000;
+% mjd_earth_plot_SC2 = [output.ta;output.tb].*sim.TU/86400 + sol.departure_mjd2000;
+% for k=1:length(mjd_earth_plot_SC1)
+%     [kep_SC1,ksun] = uplanet(mjd_earth_plot_SC1(k), 3);
+%     [r__E_SC1, ~] = sv_from_coe(kep_SC1,ksun);  
+%     R__E_SC1(k,:)=r__E_SC1/sim.DU; % it's in km it becomes AU, to be plotted
+%     
+%     [kep_SC2,ksun] = uplanet(mjd_earth_plot_SC2(k), 3);
+%     [r__E_SC2, ~] = sv_from_coe(kep_SC2,ksun);  
+%     R__E_SC2(k,:)=r__E_SC2/sim.DU; % it's in km it becomes AU, to be plotted
+% end
+% clearvars k r__E_SC1 r__E_SC2
+% 
+% dist_sc_earth_SC1 = Traj_SC1 - R__E_SC1;
+% max_dist_earth_SC1 = max(vecnorm(dist_sc_earth_SC1,2,2));
+% min_dist_earth_SC1 = min(vecnorm(dist_sc_earth_SC1,2,2));
+% 
+% dist_sc_earth_SC2 = Traj_SC2 - R__E_SC2;
+% max_dist_earth_SC2 = max(vecnorm(dist_sc_earth_SC2,2,2));
+% min_dist_earth_SC2 = min(vecnorm(dist_sc_earth_SC2,2,2));
 
-Traj_SC2 = [R_transf_orbit_a;R_transf_orbit_b];
-max_dist_sun_SC2 = max(vecnorm(Traj_SC2,2,2));
-min_dist_sun_SC2 = min(vecnorm(Traj_SC2,2,2));
+sol.TOF1
+output.t1(end)
+transf1_check = abs(sol.TOF1- output.t1(end)*sim.TU/(3600*24))
 
-mjd_earth_plot_SC1 = [output.t1;output.t2].*sim.TU/86400 + sol.departure_mjd2000;
-mjd_earth_plot_SC2 = [output.ta;output.tb].*sim.TU/86400 + sol.departure_mjd2000;
-for k=1:length(mjd_earth_plot_SC1)
-    [kep_SC1,ksun] = uplanet(mjd_earth_plot_SC1(k), 3);
-    [r__E_SC1, ~] = sv_from_coe(kep_SC1,ksun);  
-    R__E_SC1(k,:)=r__E_SC1/sim.DU; % it's in km it becomes AU, to be plotted
-    
-    [kep_SC2,ksun] = uplanet(mjd_earth_plot_SC2(k), 3);
-    [r__E_SC2, ~] = sv_from_coe(kep_SC2,ksun);  
-    R__E_SC2(k,:)=r__E_SC2/sim.DU; % it's in km it becomes AU, to be plotted
-end
-clearvars k r__E_SC1 r__E_SC2
+sol.TOF2
+output.t2(end)
+transf2_check = abs(sol.TOF2- output.t2(end)*sim.TU/(3600*24))
 
-dist_sc_earth_SC1 = Traj_SC1 - R__E_SC1;
-max_dist_earth_SC1 = max(vecnorm(dist_sc_earth_SC1,2,2));
-min_dist_earth_SC1 = min(vecnorm(dist_sc_earth_SC1,2,2));
+sol.TOFa
+output.ta(end)
+transfa_check = abs(sol.TOFa - output.ta(end)*sim.TU/(3600*24))
 
-dist_sc_earth_SC2 = Traj_SC2 - R__E_SC2;
-max_dist_earth_SC2 = max(vecnorm(dist_sc_earth_SC2,2,2));
-min_dist_earth_SC2 = min(vecnorm(dist_sc_earth_SC2,2,2));
-
-% Thrust
-max_T_SC1 = max(output.T_magn_SC1);
-max_T_SC2 = max(output.T_magn_SC2);
+sol.TOFb
+output.tb(end)
+transfb_check = abs(sol.TOFb - output.tb(end)*sim.TU/(3600*24))
 
 % Propulsion for NIKITA
 Propulsion.Magnitude_Thrust = [output.T_magn_SC1 output.T_magn_SC2];
