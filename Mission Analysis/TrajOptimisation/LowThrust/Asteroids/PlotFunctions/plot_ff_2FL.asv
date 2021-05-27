@@ -1,5 +1,4 @@
-function [output, r_encounter, sol] = plot_ff_2FL_Ale(x,sim,data, sol)
-
+function [output, r_encounter, sol] = plot_ff_2FL(x,sim,data, sol)
 %% setting the input times
 MJD01 = x(1); % departure time from earth
 TOF1 = x(2);
@@ -11,7 +10,6 @@ TOFa = x(4);
 MJDPa = MJD01 + TOFa; % passage ast 3
 TOFb = x(5);
 MJDPb = MJDPa + TOFb; % passage ast 4
-
 
 % N REV1
 N_rev1 = x(6);
@@ -26,7 +24,6 @@ N_revb = x(9);
 v_inf_magn = x(12);
 az = x(13);
 el = x(14);
-
 
 % chosing which asteroids to visit
 
@@ -133,11 +130,13 @@ v_abs_astb = vb + v_rel_astb;
 
 
 % 2nd leg - Ast1 -> Ast2
-M_start_2nd_leg = output_1.m(end)- sim.M_pods; %  
+M_start_2nd_leg = output_1.m(end) - sim.M_pods; %  
 [output_2] = NL_interpolator( r1 , r2 , v_abs_ast1 , v_abs_ast2 , N_rev2 , TOF2 , M_start_2nd_leg ,sim.PS.Isp , sim );
 
 
 sol.mass_fract_SC1 = (output_1.m(1) - output_2.m(end))/output_1.m(1);
+
+output_1.Thrust(:,1),output_1.Thrust(:,2),output_1.Thrust(:,3);
 
 T_append1 = [output_1.Thrust(:,1),output_1.Thrust(:,2),output_1.Thrust(:,3);
              output_2.Thrust(:,1),output_2.Thrust(:,2),output_2.Thrust(:,3)];
@@ -151,7 +150,7 @@ T1 = sqrt(T_append1(:,1).^2 + T_append1(:,3).^2);
 
 
 % 2nd leg - Asta -> Astb
-M_start_b_leg = output_a.m(end)- sim.M_pods; % 
+M_start_b_leg = output_a.m(end) - sim.M_pods; % 
 [output_b] = NL_interpolator( ra , rb , v_abs_asta , v_abs_astb , N_revb , TOFb , M_start_b_leg ,sim.PS.Isp , sim );
 
 
@@ -170,7 +169,6 @@ r_encounter.ast1 = r1;
 r_encounter.ast2 = r2;
 r_encounter.asta = ra;
 r_encounter.astb = rb;
-
 
 %% Output
 output.t_SC1            = [output_1.t; output_1.t(end)+output_2.t];

@@ -275,25 +275,13 @@ sol.el = x(13);
 
 
 sol.v_inf_ast1_magn = x(14)*sim.DU/sim.TU;
-
 sol.v_inf_ast2_magn = x(17)*sim.DU/sim.TU;
-
 sol.v_inf_ast3_magn = x(20)*sim.DU/sim.TU;
-
 sol.v_inf_ast4_magn = x(23)*sim.DU/sim.TU;
-
 
 %% characteristic quantities plot and Checks
 [output, r_encounter, sol] = plot_ff_1FL_Ale(x,sim,data,sol);
 
-max_Thrust = max(sqrt(output.Thrust(:,1).^2 + output.Thrust(:,3).^2))*1000 %[mN]
-
-transf1_check = abs(sol.TOF1- output.t1(end))*sim.TU/(3600*24)
-transf2_check = abs(sol.TOF2- output.t2(end))*sim.TU/(3600*24)
-transf3_check = abs(sol.TOF3 - output.t3(end))*sim.TU/(3600*24)
-transf4_check = abs(sol.TOF4 - output.t4(end))*sim.TU/(3600*24)
-
-%%
 figure('Name','Time Evolution of Stuff')
 subplot(5,1,1)
 plot(output.t*sim.TU/86400,output.Thrust(:,1));
@@ -385,13 +373,47 @@ plot_planet_orbit(x(1)*sim.TU/(3600*24),3,colors,8); % earth
 plot_planet_orbit(x(1)*sim.TU/(3600*24),4,colors,2); % mars
 % Asteroids
 fraction_of_the_orbit = 1;
-plot_asteorid_orbit(output.t1(end)*sim.TU/(3600*24),fraction_of_the_orbit,sol.asteroid_1,colors,3);
-plot_asteorid_orbit(output.t2(end)*sim.TU/(3600*24),fraction_of_the_orbit,sol.asteroid_2,colors,4);
-plot_asteorid_orbit(output.t3(end)*sim.TU/(3600*24),fraction_of_the_orbit,sol.asteroid_3,colors,5);
-plot_asteorid_orbit(output.t4(end)*sim.TU/(3600*24),fraction_of_the_orbit,sol.asteroid_4,colors,6);
+hello_orbit1 = sol.departure_mjd2000 + output.t1(end)*sim.TU/(3600*24);
+hello_orbit2 = sol.departure_mjd2000 + output.t2(end)*sim.TU/(3600*24);
+hello_orbit3 = sol.departure_mjd2000 + output.t3(end)*sim.TU/(3600*24);
+hello_orbit4 = sol.departure_mjd2000 + output.t4(end)*sim.TU/(3600*24);
+plot_asteorid_orbit(hello_orbit1,fraction_of_the_orbit,sol.asteroid_1,colors,3);
+plot_asteorid_orbit(hello_orbit2,fraction_of_the_orbit,sol.asteroid_2,colors,4);
+plot_asteorid_orbit(hello_orbit3,fraction_of_the_orbit,sol.asteroid_3,colors,5);
+plot_asteorid_orbit(hello_orbit4,fraction_of_the_orbit,sol.asteroid_4,colors,6);
 % Sun
 plot3(0,0,0,'o','Color',colors(4,:),'DisplayName','Sun')
 axis equal; grid on;
 xlabel('x [AU]'); ylabel('y [AU]'); ylabel('y [AU]'); 
 legend('show')
 view(2)
+
+%% post analysis and checks
+max_Thrust = max(sqrt(output.Thrust(:,1).^2 + output.Thrust(:,3).^2))*1000; %[mN]
+
+transf1_check = abs(sol.TOF1- output.t1(end))*sim.TU/(3600*24);
+transf2_check = abs(sol.TOF2- output.t2(end))*sim.TU/(3600*24);
+transf3_check = abs(sol.TOF3 - output.t3(end))*sim.TU/(3600*24);
+transf4_check = abs(sol.TOF4 - output.t4(end))*sim.TU/(3600*24);
+
+Traj = [R_transf_orbit_1;R_transf_orbit_2;R_transf_orbit_3;R_transf_orbit_4];
+max_dist_sun = max(vecnorm(Traj,2,2));
+min_dist_sun = min(vecnorm(Traj,2,2));
+
+mjd_earth_plot = [output.t1;output.t2;output.t3;output.t4].*sim.TU/86400 + sol.departure_mjd2000;
+for k=1:length(mjd_earth_plot)
+    [kep,ksun] = uplanet(mjd_earth_plot(k), 3);
+    [r__E, ~] = sv_from_coe(kep,ksun);  
+    R__E(k,:)=r__E/sim.DU; % it's in km it becomes AU, to be plotted
+end
+clearvars k r__E
+
+dist_sc_earth = Traj - R__E;
+max_dist_earth = max(vecnorm(dist_sc_earth,2,2));
+min_dist_earth = min(vecnorm(dist_sc_earth,2,2));
+
+% Propulsion for NIKITA
+Propulsion.Magnitude_Thrust = output.T_magn;
+Propulsion.InPlane_Thrust   = output.Thrust(:,1);
+Propulsion.gamma_angle      = output.Thrust(:,2);
+Propulsion.OutofPlane_Thrust = output.Thrust(:,3);

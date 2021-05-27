@@ -1,5 +1,4 @@
-function obj_fun = ff_1FL_Ale_Enri(x,sim,data)
-
+function obj_fun = ff_1FL(x,sim,data)
 %% setting the input times
 MJD01 = x(1); % departure time from earth
 TOF1 = x(2);

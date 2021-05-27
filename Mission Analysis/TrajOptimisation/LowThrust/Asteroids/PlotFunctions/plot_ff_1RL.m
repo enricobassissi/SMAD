@@ -1,4 +1,4 @@
-function [output, r_encounter, v_encounter, sol] = plot_ff_ea_4ast_LT_RV_soo_NLI(x,sim,data, sol)
+function [output, r_encounter, v_encounter, sol] = plot_ff_1RL(x,sim,data, sol)
 %% setting the input times
 MJD01 = x(1); % departure time from earth
 TOF1 = x(2);
@@ -27,8 +27,8 @@ N_rev4 = x(16);
 
 % C3 launcher
 v_inf_magn = x(7);
-alpha = x(8);
-beta = x(9);
+az = x(8);
+el = x(9);
 
 % chosing which asteroid to visit
 IDP = x(6); %index of permutation, the column of the Permutation Matrix of the asteroids
@@ -95,32 +95,26 @@ rA4 = rA4/sim.DU;
 vA4 = vA4/sim.DU*sim.TU;
 
 %% launcher
-% v_launcher = v_inf_magn*[cos(alpha)*cos(beta); sin(alpha)*cos(beta); sin(beta)] ;
-% v_launcher = v_inf_magn*v_EA./norm(v_EA);
-% v_dep = v_EA + v_launcher;  %since parabolic escape (v_launcher = 0)
-[azimuthv,elevationv,radiusv] = cart2sph(v_EA(1),v_EA(2),v_EA(3)); 
-azimuthv2 = azimuthv + alpha;
-elevationv2 = elevationv + beta;
-radiusv2 = radiusv + v_inf_magn;
-[v2x,v2y,v2z] = sph2cart(azimuthv2,elevationv2,radiusv2);
-v2 = [v2x;v2y;v2z];
-v_dep = v2;  %if parabolic escape (v_extra = 0)
-sol.v_launcher = (v_dep-v_EA)*sim.DU/sim.TU;
+v_launcher = v_inf_magn*[cos(el)*cos(az); cos(el)*sin(az); sin(el)];
+v_dep = v_EA + v_launcher;  %if parabolic escape (v_extra = 0)
+sol.v_launcher = v_launcher;
 
 %% 1st leg - Earth -> Ast 1
 [output_1] = NL_interpolator( r_EA , rA1 , v_dep , vA1 , N_rev1 , TOF1 , sim.M ,sim.PS.Isp , sim );
 
 % 2nd leg - Ast1 -> Ast2
-M_start_2nd_leg = output_1.m(end);
+M_start_2nd_leg = output_1.m(end) - sim.M_pods;
 [output_2] = NL_interpolator( rD1 , rA2 , vD1 , vA2 , N_rev2 , TOF2 , M_start_2nd_leg ,sim.PS.Isp , sim );
 
 % 3rd leg - Ast2 -> Ast3
-M_start_3rd_leg = output_2.m(end);
+M_start_3rd_leg = output_2.m(end) - sim.M_pods;
 [output_3] = NL_interpolator( rD2 , rA3 , vD2 , vA3 , N_rev3 , TOF3 , M_start_3rd_leg ,sim.PS.Isp , sim );
 
 % 4th leg - Ast3 -> Ast4
-M_start_4th_leg = output_3.m(end);
+M_start_4th_leg = output_3.m(end) - sim.M_pods;
 [output_4] = NL_interpolator( rD3 , rA4 , vD3 , vA4 , N_rev4 , TOF4 , M_start_4th_leg ,sim.PS.Isp , sim );
+
+sol.mass_fract = (output_1.m(1) - output_4.m(end))/output_1.m(1);
 
 %% Output encounter states
 r_encounter.EA = r_EA;
@@ -175,5 +169,19 @@ output.Href.leg2    = output_2.Href;
 output.Href.leg3    = output_3.Href;
 output.Href.leg4    = output_4.Href;
 
+%% single legs outputs
+output.t1 = output_1.t;
+output.t2 = output_2.t;
+output.t3 = output_3.t;
+output.t4 = output_4.t;
+
+output.tEnd.Leg11 = output.t1(end)*sim.TU/86400; 
+output.tEnd.Leg12 = (output.t1(end)+CT1)*sim.TU/86400;
+output.tEnd.Leg21 = t_span_CT1(end)*sim.TU/86400;
+output.tEnd.Leg22 = (t_span_CT1(end)+output_2.t(end))*sim.TU/86400;
+output.tEnd.Leg31 = t_span_CT2(end)*sim.TU/86400;
+output.tEnd.Leg32 = (t_span_CT2(end)+output_3.t(end))*sim.TU/86400;
+output.tEnd.Leg41 = t_span_CT3(end)*sim.TU/86400;
+output.tEnd.Leg42 = (t_span_CT3(end)+output_4.t(end))*sim.TU/86400;
 end
 

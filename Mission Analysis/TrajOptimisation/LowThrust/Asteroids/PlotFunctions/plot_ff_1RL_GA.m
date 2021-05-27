@@ -1,4 +1,4 @@
-function [output, r_encounter,r_departure,R_coasting,v_encounter, sol] = plot_ff_ea_4ast_LT_GA_RV_soo_NLI(x,sim,data, sol)
+function [output, r_encounter,r_departure,R_coasting,v_encounter, sol] = plot_ff_1RL_GA(x,sim,data, sol)
 
 %% setting the inputs
 MJD01 = x(1); % departure time from earth
@@ -53,58 +53,58 @@ asteroid_3 = data.PermutationMatrix(IDP,3);
 asteroid_4 = data.PermutationMatrix(IDP,4);
 
 %%  Computing position and velocity of the planets in that days
- % Departure from Earth
-    MJD01_dim = MJD01*sim.TU/(3600*24);
-    [kep_EA,ksun] = uplanet(MJD01_dim, 3);
-    [r_EA, v_EA] = sv_from_coe(kep_EA,ksun);
-    r_EA = r_EA/sim.DU;
-    v_EA = v_EA/sim.DU*sim.TU;
+% Departure from Earth
+MJD01_dim = MJD01*sim.TU/(3600*24);
+[kep_EA,ksun] = uplanet(MJD01_dim, 3);
+[r_EA, v_EA] = sv_from_coe(kep_EA,ksun);
+r_EA = r_EA/sim.DU;
+v_EA = v_EA/sim.DU*sim.TU;
 
-    % GA
-    MJDPGA_dim = MJDPGA*sim.TU/(3600*24);
-    [kep_GA,ksun] = uplanet(MJDPGA_dim, sim.ID_FLYBY);
-    [r_GA, v_GA] = sv_from_coe(kep_GA,ksun);
-    r_GA = r_GA/sim.DU;
-    v_GA = v_GA/sim.DU*sim.TU;
-    
-    % Arrival at 1st ast
-    MJDP1_dim = MJDP1*sim.TU/(3600*24);
-    [kep_ast_1] = uNEO2(MJDP1_dim,asteroid_1,data); % [km,-,rad,rad,rad,wrapped rad]
-    [r1, v1] = sv_from_coe(kep_ast_1,ksun); % km, km/s
-    r1 = r1/sim.DU;
-    v1 = v1/sim.DU*sim.TU;
-    
-    
-    % Departure from 1st ast
-    MJDD1_dim = MJDD1*sim.TU/(3600*24);
-    [kep_ast_1d] = uNEO2(MJDD1_dim,asteroid_1,data); % [km,-,rad,rad,rad,wrapped rad]
-    [r1d, v1d] = sv_from_coe(kep_ast_1d,ksun); % km, km/s
-    r1d = r1d/sim.DU;
-    v1d = v1d/sim.DU*sim.TU;
-    
-    % Coasting 1 on 1st ast 
+% GA
+MJDPGA_dim = MJDPGA*sim.TU/(3600*24);
+[kep_GA,ksun] = uplanet(MJDPGA_dim, sim.ID_FLYBY);
+[r_GA, v_GA] = sv_from_coe(kep_GA,ksun);
+r_GA = r_GA/sim.DU;
+v_GA = v_GA/sim.DU*sim.TU;
+
+% Arrival at 1st ast
+MJDP1_dim = MJDP1*sim.TU/(3600*24);
+[kep_ast_1] = uNEO2(MJDP1_dim,asteroid_1,data); % [km,-,rad,rad,rad,wrapped rad]
+[r1, v1] = sv_from_coe(kep_ast_1,ksun); % km, km/s
+r1 = r1/sim.DU;
+v1 = v1/sim.DU*sim.TU;
+
+
+% Departure from 1st ast
+MJDD1_dim = MJDD1*sim.TU/(3600*24);
+[kep_ast_1d] = uNEO2(MJDD1_dim,asteroid_1,data); % [km,-,rad,rad,rad,wrapped rad]
+[r1d, v1d] = sv_from_coe(kep_ast_1d,ksun); % km, km/s
+r1d = r1d/sim.DU;
+v1d = v1d/sim.DU*sim.TU;
+
+% Coasting 1 on 1st ast 
 %     time_int = [MJDP1_dim*24*3600, MJDD1_dim*24*3600];
 %     y0 = [r1*sim.DU v1*sim.DU/sim.TU]; %km, km/s; 
 %     options = odeset ('RelTol', 1e-13, 'AbsTol', 1e-14); 
 %     [~,rc1] = ode113(@rates, time_int, y0,options,'sun');
 %     R_coasting.ast1 = rc1(:,[1 2 3]);
-   % R_coasting.ast1 = coasting_asteroids(MJDP1_dim,MJDD1_dim,asteroid_1);
-    
-    % Arrival at 2nd ast
-    MJDP2_dim = MJDP2*sim.TU/(3600*24);
-    [kep_ast_2] = uNEO2(MJDP2_dim,asteroid_2,data); % [km,-,rad,rad,rad,wrapped rad]
-    [r2, v2] = sv_from_coe(kep_ast_2,ksun); % km, km/s
-    r2 = r2/sim.DU;
-    v2 = v2/sim.DU*sim.TU;
-    
-    % Departure from 2nd ast
-    MJDD2_dim = MJDD2*sim.TU/(3600*24);
-    [kep_ast_2d] = uNEO2(MJDD2_dim,asteroid_2,data); % [km,-,rad,rad,rad,wrapped rad]
-    [r2d, v2d] = sv_from_coe(kep_ast_2d,ksun); % km, km/s
-    r2d = r2d/sim.DU;
-    v2d = v2d/sim.DU*sim.TU;
-    
-    % Coasting 2 on 2nd ast 
+% R_coasting.ast1 = coasting_asteroids(MJDP1_dim,MJDD1_dim,asteroid_1);
+
+% Arrival at 2nd ast
+MJDP2_dim = MJDP2*sim.TU/(3600*24);
+[kep_ast_2] = uNEO2(MJDP2_dim,asteroid_2,data); % [km,-,rad,rad,rad,wrapped rad]
+[r2, v2] = sv_from_coe(kep_ast_2,ksun); % km, km/s
+r2 = r2/sim.DU;
+v2 = v2/sim.DU*sim.TU;
+
+% Departure from 2nd ast
+MJDD2_dim = MJDD2*sim.TU/(3600*24);
+[kep_ast_2d] = uNEO2(MJDD2_dim,asteroid_2,data); % [km,-,rad,rad,rad,wrapped rad]
+[r2d, v2d] = sv_from_coe(kep_ast_2d,ksun); % km, km/s
+r2d = r2d/sim.DU;
+v2d = v2d/sim.DU*sim.TU;
+
+% Coasting 2 on 2nd ast 
 %     time_int2 = [MJDP2_dim*24*3600, MJDD2_dim*24*3600];
 %     y02 = [r2*sim.DU v2*sim.DU/sim.TU]; %km, km/s; 
 %     options = odeset ('RelTol', 1e-13, 'AbsTol', 1e-14); 
@@ -112,41 +112,41 @@ asteroid_4 = data.PermutationMatrix(IDP,4);
 %     R_coasting.ast2 = rc2(:,[1 2 3]);
 %      R_coasting.ast2 = coasting_asteroids(MJDP2_dim,MJDD2_dim,asteroid_2);
 
-    % Arrival at 3rd ast
-    MJDP3_dim = MJDP3*sim.TU/(3600*24);
-    [kep_ast_3] = uNEO2(MJDP3_dim,asteroid_3,data); % [km,-,rad,rad,rad,wrapped rad]
-    [r3, v3] = sv_from_coe(kep_ast_3,ksun); % km, km/s
-    r3 = r3/sim.DU;
-    v3 = v3/sim.DU*sim.TU;
-    
-    % Departure from 3rd ast
-    MJDD3_dim = MJDD3*sim.TU/(3600*24);
-    [kep_ast_3d] = uNEO2(MJDD3_dim,asteroid_3,data); % [km,-,rad,rad,rad,wrapped rad]
-    [r3d, v3d] = sv_from_coe(kep_ast_3d,ksun); % km, km/s
-    r3d = r3d/sim.DU;
-    v3d = v3d/sim.DU*sim.TU;
-    
-    % Coasting 3 on 3rd ast 
+% Arrival at 3rd ast
+MJDP3_dim = MJDP3*sim.TU/(3600*24);
+[kep_ast_3] = uNEO2(MJDP3_dim,asteroid_3,data); % [km,-,rad,rad,rad,wrapped rad]
+[r3, v3] = sv_from_coe(kep_ast_3,ksun); % km, km/s
+r3 = r3/sim.DU;
+v3 = v3/sim.DU*sim.TU;
+
+% Departure from 3rd ast
+MJDD3_dim = MJDD3*sim.TU/(3600*24);
+[kep_ast_3d] = uNEO2(MJDD3_dim,asteroid_3,data); % [km,-,rad,rad,rad,wrapped rad]
+[r3d, v3d] = sv_from_coe(kep_ast_3d,ksun); % km, km/s
+r3d = r3d/sim.DU;
+v3d = v3d/sim.DU*sim.TU;
+
+% Coasting 3 on 3rd ast 
 %     time_int3 = [MJDP3_dim*24*3600, MJDD3_dim*24*3600];
 %     y03 = [r3*sim.DU v3*sim.DU/sim.TU]; %km, km/s; 
 %     options = odeset ('RelTol', 1e-13, 'AbsTol', 1e-14); 
 %     [~,rc3] = ode113(@rates, time_int3, y03,options,'sun');
 %     R_coasting.ast3 = rc3(:,[1 2 3]);
-   % R_coasting.ast3 = coasting_asteroids(MJDP3_dim,MJDD3_dim,asteroid_3);
+% R_coasting.ast3 = coasting_asteroids(MJDP3_dim,MJDD3_dim,asteroid_3);
 
-    % Arrival at 4th ast
-    MJDP4_dim = MJDP4*sim.TU/(3600*24);
-    [kep_ast_4] = uNEO2(MJDP4_dim,asteroid_4,data); % [km,-,rad,rad,rad,wrapped rad]
-    [r4, v4] = sv_from_coe(kep_ast_4,ksun); % km, km/s
-    r4 = r4/sim.DU;
-    v4 = v4/sim.DU*sim.TU;
+% Arrival at 4th ast
+MJDP4_dim = MJDP4*sim.TU/(3600*24);
+[kep_ast_4] = uNEO2(MJDP4_dim,asteroid_4,data); % [km,-,rad,rad,rad,wrapped rad]
+[r4, v4] = sv_from_coe(kep_ast_4,ksun); % km, km/s
+r4 = r4/sim.DU;
+v4 = v4/sim.DU*sim.TU;
 
 %% launcher
-    v_launcher = v_inf_magn*[cos(elev)*cos(az); cos(elev)*sin(az); sin(elev)];
-    v_dep = v_EA + v_launcher;  %if parabolic escape (v_launcher = 0)
-    
-    % Gravity assist
-    v_arr_GA = v_GA + v_inf_magn2*[cos(el2)*cos(az2); cos(el2)*sin(az2); sin(el2)];
+v_launcher = v_inf_magn*[cos(elev)*cos(az); cos(elev)*sin(az); sin(elev)];
+v_dep = v_EA + v_launcher;  %if parabolic escape (v_launcher = 0)
+
+% Gravity assist
+v_arr_GA = v_GA + v_inf_magn2*[cos(el2)*cos(az2); cos(el2)*sin(az2); sin(el2)];
 
 %% NLI
 % 1st leg - Earth -> GA
@@ -167,7 +167,6 @@ elseif sim.ID_FLYBY == 4
     R_SOI_PL = 0.578*1e6; %km
 end
 
-
 v_arr_GA_dim = v_arr_GA.*sim.DU./sim.TU;
 v_dep_GA_dim = v_dep_GA.*sim.DU./sim.TU;
 [delta_v_p,sol.rp] = flyby(RPlanet_flyby, muPlanet_flyby,R_lim_from_planet, ...
@@ -178,17 +177,17 @@ M_after_GA = sol.output_GA.m(end);
 
 
 % 3rd leg - Ast1 -> Ast2
-M_start_2nd_leg = sol.output_1.m(end); %  - sim.M_pods;
+M_start_2nd_leg = sol.output_1.m(end)- sim.M_pods; %  - sim.M_pods;
 [sol.output_2] = NL_interpolator( r1d , r2 , v1d , v2 , N_rev2 , TOF2 , M_start_2nd_leg ,sim.PS.Isp , sim );
 
 
 % 4th leg - Ast2 -> Ast3
-M_start_3rd_leg = sol.output_2.m(end); %  - sim.M_pods;
+M_start_3rd_leg = sol.output_2.m(end)- sim.M_pods; %  - sim.M_pods;
 [sol.output_3] = NL_interpolator( r2d , r3 , v2d , v3 , N_rev3 , TOF3 , M_start_3rd_leg ,sim.PS.Isp , sim );
 
 
 % 5th leg - Ast3 -> Ast4
-M_start_4th_leg = sol.output_3.m(end); %  - sim.M_pods;
+M_start_4th_leg = sol.output_3.m(end)- sim.M_pods; %  
 [sol.output_4] = NL_interpolator( r3d , r4 , v3d , v4 , N_rev4 , TOF4 , M_start_4th_leg ,sim.PS.Isp , sim );
 
 
@@ -293,6 +292,12 @@ output.Href.leg1    = sol.output_1.Href;
 output.Href.leg2    = sol.output_2.Href;
 output.Href.leg3    = sol.output_3.Href;
 output.Href.leg4    = sol.output_4.Href;
+
+output.tEnd.LegGA2 = sol.output_GA.t(end)*sim.TU/86400; 
+output.tEnd.Leg12 = (sol.output_GA.t(end) + sol.output_1.t(end))*sim.TU/86400;
+output.tEnd.Leg22 = (sol.output_GA.t(end) + sol.output_1.t(end) + TOC1 + sol.output_2.t(end))*sim.TU/86400;
+output.tEnd.Leg32 = (sol.output_GA.t(end) + sol.output_1.t(end) + TOC1 + sol.output_2.t(end) + TOC2)*sim.TU/86400;
+output.tEnd.Leg42 = (sol.output_GA.t(end) + sol.output_1.t(end) + TOC1 + sol.output_2.t(end) + TOC2 + sol.output_3.t(end) + TOC3)*sim.TU/86400;
 
 end
 
