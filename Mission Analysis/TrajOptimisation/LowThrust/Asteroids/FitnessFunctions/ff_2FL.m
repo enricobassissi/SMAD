@@ -1,4 +1,4 @@
-function [output, r_encounter, sol] = plot_ff_2FL_Ale(x,sim,data, sol)
+function obj_fun = ff_2FL(x,sim,data)
 
 %% setting the input times
 MJD01 = x(1); % departure time from earth
@@ -12,7 +12,14 @@ MJDPa = MJD01 + TOFa; % passage ast 3
 TOFb = x(5);
 MJDPb = MJDPa + TOFb; % passage ast 4
 
+obj_fun = 100; %%
 
+max_duration = 12*365*(3600*24)/sim.TU;
+penalty_MAX_DURATION = 0;
+if max(TOF1+TOF2,TOFa+TOFb) > max_duration
+    penalty_MAX_DURATION = max(TOF1+TOF2,TOFa+TOFb) - max_duration; % 12 years max mission time 
+end
+    
 % N REV1
 N_rev1 = x(6);
 % N REV2
@@ -66,8 +73,9 @@ el_asta = x(23);
 v_inf_astb_magn = x(24);
 az_astb = x(25);
 el_astb = x(26);
-
-%% Computing position and velocity of planets/asteroids in that days
+     
+    
+%% Computing position and velocity of the planets in that days
 % Departure from Earth
 MJD01_dim = MJD01*sim.TU/(3600*24);
 [kep_EA,ksun] = uplanet(MJD01_dim, 3);
@@ -127,90 +135,71 @@ v_rel_astb = v_inf_astb_magn* [cos(el_astb)*cos(az_astb); cos(el_astb)*sin(az_as
 v_abs_astb = vb + v_rel_astb;
 
 %% NLI
+tol_TOF = 1; % 1 TU means approx 60 days
+penalty_T_leg1 = 0; penalty_T_leg2 = 0; penalty_T_lega = 0; penalty_T_legb = 0; 
+penalty_TOF_leg1 = 0; penalty_TOF_leg2 = 0; penalty_TOF_lega = 0; penalty_TOF_legb = 0;
 % SC1
 % 1st leg - Earth -> ast1
-[output_1] = NL_interpolator( r_EA , r1 , v_dep , v_abs_ast1, N_rev1 , TOF1 , sim.M1 ,sim.PS.Isp , sim );
-
-
+[output_1] = NL_interpolator_of( r_EA , r1 , v_dep , v_abs_ast1, N_rev1 , TOF1 , sim.M1 ,sim.PS.Isp , sim );
+if max(abs(output_1.T_magn)) > sim.max_Available_Thrust
+    penalty_T_leg1 = abs(max(output_1.T_magn)) - sim.max_Available_Thrust;
+end
+if abs(output_1.t(end) - TOF1) > tol_TOF
+    penalty_TOF_leg1 = abs(output_1.t(end) - TOF1);
+end
+% if ~isnan(output_1.Thrust)
 % 2nd leg - Ast1 -> Ast2
-M_start_2nd_leg = output_1.m(end)- sim.M_pods; %  
-[output_2] = NL_interpolator( r1 , r2 , v_abs_ast1 , v_abs_ast2 , N_rev2 , TOF2 , M_start_2nd_leg ,sim.PS.Isp , sim );
-
-
-sol.mass_fract_SC1 = (output_1.m(1) - output_2.m(end))/output_1.m(1);
-
-T_append1 = [output_1.Thrust(:,1),output_1.Thrust(:,2),output_1.Thrust(:,3);
-             output_2.Thrust(:,1),output_2.Thrust(:,2),output_2.Thrust(:,3)];
-
-T1 = sqrt(T_append1(:,1).^2 + T_append1(:,3).^2);
-
+M_start_2nd_leg = output_1.m(end); %  - sim.M_pods;
+[output_2] = NL_interpolator_of( r1 , r2 , v_abs_ast1 , v_abs_ast2 , N_rev2 , TOF2 , M_start_2nd_leg ,sim.PS.Isp , sim );
+if max(abs(output_2.T_magn)) > sim.max_Available_Thrust
+    penalty_T_leg2 = abs(max(output_2.T_magn)) - sim.max_Available_Thrust;
+end
+if abs(output_2.t(end) - TOF2) > tol_TOF
+    penalty_TOF_leg2 = abs(output_2.t(end) - TOF2);
+end
 
 % SC2
 % 1st leg - Earth -> asta
-[output_a] = NL_interpolator( r_EA , ra , v_dep , v_abs_asta, N_reva , TOFa , sim.M2 ,sim.PS.Isp , sim );
-
-
+[output_a] = NL_interpolator_of( r_EA , ra , v_dep , v_abs_asta, N_reva , TOFa , sim.M2 ,sim.PS.Isp , sim );
+if max(abs(output_a.T_magn)) > sim.max_Available_Thrust
+    penalty_T_lega = 10*abs(max(output_a.T_magn)) - sim.max_Available_Thrust;
+end
+if abs(output_a.t(end) - TOFa) > tol_TOF
+    penalty_TOF_lega = abs(output_a.t(end) - TOFa);
+end
+% if ~isnan(output_a.Thrust)
 % 2nd leg - Asta -> Astb
-M_start_b_leg = output_a.m(end)- sim.M_pods; % 
-[output_b] = NL_interpolator( ra , rb , v_abs_asta , v_abs_astb , N_revb , TOFb , M_start_b_leg ,sim.PS.Isp , sim );
-
-
-sol.mass_fract_SC2 = (output_a.m(1) - output_b.m(end))/output_a.m(1);
-
-
-T_append2 = [output_a.Thrust(:,1),output_a.Thrust(:,2),output_a.Thrust(:,3);
-             output_b.Thrust(:,1),output_b.Thrust(:,2),output_b.Thrust(:,3)];
-
-T2 = sqrt(T_append2(:,1).^2 + T_append2(:,3).^2);
-
-
-%% Output encounter states
-r_encounter.EA = r_EA;
-r_encounter.ast1 = r1;
-r_encounter.ast2 = r2;
-r_encounter.asta = ra;
-r_encounter.astb = rb;
-
-
-%% Output
-output.t_SC1            = [output_1.t; output_1.t(end)+output_2.t];
-output.t_SC2            = [output_a.t; output_a.t(end)+output_b.t];
-
-output.m_SC1            = [output_1.m; output_2.m];
-output.m_SC2            = [output_a.m; output_b.m];
-
-output.Thrust_SC1       = T_append1;
-output.T_magn_SC1       = T1;
-output.Thrust_SC2       = T_append2;
-output.T_magn_SC2       = T2;
-
-output.a_SC1            = [output_1.a; output_2.a];
-output.a_SC2            = [output_a.a; output_b.a];
-
-output.r.leg1       = output_1.r; 
-output.r.leg2       = output_2.r;
-output.r.lega       = output_a.r;
-output.r.legb       = output_b.r;
-
-output.theta.leg1   = output_1.theta; 
-output.theta.leg2   = output_2.theta;
-output.theta.lega   = output_a.theta;
-output.theta.legb   = output_b.theta;
-
-output.z.leg1       = output_1.z;
-output.z.leg2       = output_2.z;
-output.z.lega       = output_a.z;
-output.z.legb       = output_b.z;
-
-output.Href.leg1    = output_1.Href;
-output.Href.leg2    = output_2.Href;
-output.Href.lega    = output_a.Href;
-output.Href.legb    = output_b.Href;
-
-output.t1           = output_1.t;
-output.t2           = output_2.t;
-output.ta           = output_a.t;
-output.tb           = output_b.t;
-
+M_start_b_leg = output_a.m(end); %  - sim.M_pods;
+[output_b] = NL_interpolator_of( ra , rb , v_abs_asta , v_abs_astb , N_revb , TOFb , M_start_b_leg ,sim.PS.Isp , sim );
+if max(abs(output_b.T_magn)) > sim.max_Available_Thrust
+    penalty_T_legb = 10*abs(max(output_b.T_magn)) - sim.max_Available_Thrust;
+end
+if abs(output_b.t(end) - TOFb) > tol_TOF
+    penalty_TOF_legb = abs(output_b.t(end) - TOFb);
 end
 
+
+mass_fract_SC1 = (output_1.m(1) - output_2.m(end))/output_1.m(1);
+mass_fract_SC2 = (output_a.m(1) - output_b.m(end))/output_a.m(1);
+
+penalty_MF_feasibility = 0;
+if mass_fract_SC1 < 0 || mass_fract_SC1 > 1 || mass_fract_SC2 < 0 || mass_fract_SC2 > 1
+    penalty_MF_feasibility = 100;
+end
+%         if mass_fract_SC2 > 0 && mass_fract_SC2 < 1 
+avg_mass_fraction = (mass_fract_SC1+mass_fract_SC2)/2;
+MF = max(mass_fract_SC1,mass_fract_SC2) + abs(mass_fract_SC1 - avg_mass_fraction) + ...
+        abs(mass_fract_SC2 - avg_mass_fraction); % cosi sono piu o meno uguali
+
+
+obj_fun = MF + penalty_MAX_DURATION + penalty_MF_feasibility + ...
+    10*(penalty_T_leg1 + penalty_T_leg2 + penalty_T_lega + penalty_T_legb) + ...
+    penalty_TOF_leg1 + penalty_TOF_leg2 + penalty_TOF_lega + penalty_TOF_legb;
+
+    
+end
+
+
+
+                 
+                        

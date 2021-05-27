@@ -150,7 +150,7 @@ penalty_TOF_leg1 = 0; penalty_TOF_leg2 = 0; penalty_TOF_leg3 = 0; penalty_TOF_le
 
 % 1st leg - Earth -> GA
 [output_GA] = NL_interpolator_of( r_EA , r_GA , v_dep , v_arr_GA , N_revGA , TOFGA , sim.M ,sim.PS.Isp , sim );
-if abs(max(output_GA.T_magn)) > sim.max_Available_Thrust
+if max(abs(output_GA.T_magn)) > sim.max_Available_Thrust
     penalty_T_legGA = abs(max(output_GA.T_magn)) - sim.max_Available_Thrust;
 end
 if abs(output_GA.t(end) - TOFGA) > tol_TOF
@@ -179,7 +179,7 @@ end
 
 M_after_GA = output_GA.m(end); % here you don't deploy any pod
 [output_1] = NL_interpolator_of( r_GA , r1 , v_dep_GA , v_abs_ast1, N_rev1 , TOF1 , M_after_GA ,sim.PS.Isp , sim );
-if abs(max(output_1.T_magn)) > sim.max_Available_Thrust
+if max(abs(output_1.T_magn)) > sim.max_Available_Thrust
     penalty_T_leg1 = abs(max(output_1.T_magn)) - sim.max_Available_Thrust;
 end
 if abs(output_1.t(end) - TOF1) > tol_TOF
@@ -189,7 +189,7 @@ end
 % 3rd leg - Ast1 -> Ast2
 M_start_2nd_leg = output_1.m(end)- sim.M_pods; %  
 [output_2] = NL_interpolator_of( r1 , r2 , v_abs_ast1 , v_abs_ast2 , N_rev2 , TOF2 , M_start_2nd_leg ,sim.PS.Isp , sim );
-if abs(max(output_2.T_magn)) > sim.max_Available_Thrust
+if max(abs(output_2.T_magn)) > sim.max_Available_Thrust
     penalty_T_leg2 = abs(max(output_2.T_magn)) - sim.max_Available_Thrust;
 end
 if abs(output_2.t(end) - TOF2) > tol_TOF
@@ -199,7 +199,7 @@ end
 % 4th leg - Ast2 -> Ast3
 M_start_3rd_leg = output_2.m(end)- sim.M_pods; %  
 [output_3] = NL_interpolator_of( r2 , r3 , v_abs_ast2 , v_abs_ast3 , N_rev3 , TOF3 , M_start_3rd_leg ,sim.PS.Isp , sim );
-if abs(max(output_3.T_magn)) > sim.max_Available_Thrust
+if max(abs(output_3.T_magn)) > sim.max_Available_Thrust
     penalty_T_leg3 = abs(max(output_3.T_magn)) - sim.max_Available_Thrust;
 end
 if abs(output_3.t(end) - TOF3) > tol_TOF
@@ -209,7 +209,7 @@ end
 % 5th leg - Ast3 -> Ast4
 M_start_4th_leg = output_3.m(end) - sim.M_pods; %  
 [output_4] = NL_interpolator_of( r3 , r4 , v_abs_ast3 , v_abs_ast4 , N_rev4 , TOF4 , M_start_4th_leg ,sim.PS.Isp , sim );
-if abs(max(output_4.T_magn)) > sim.max_Available_Thrust
+if max(abs(output_4.T_magn)) > sim.max_Available_Thrust
     penalty_T_leg4 = abs(max(output_4.T_magn)) - sim.max_Available_Thrust;
 end
 if abs(output_4.t(end) - TOF4) > tol_TOF

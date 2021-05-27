@@ -1,4 +1,4 @@
-function obj_fun = ff_1FL_Ale_Enri(x,sim,data)
+function obj_fun = ff_1FL_ZoomIn(x,sim,data,best)
 
 %% setting the input times
 MJD01 = x(1); % departure time from earth
@@ -29,38 +29,37 @@ N_rev3 = x(8);
 N_rev4 = x(9);
 
 % C3 launcher
-v_inf_magn = x(11);
-az = x(12);
-el = x(13);
+v_inf_magn = x(10);
+az = x(11);
+el = x(12);
 
 
 % chosing which asteroid to visit
-IDP = x(10); %index of permutation, the column of the Permutation Matrix of the asteroids
-asteroid_1 = data.PermutationMatrix(IDP,1);
-asteroid_2 = data.PermutationMatrix(IDP,2);
-asteroid_3 = data.PermutationMatrix(IDP,3);
-asteroid_4 = data.PermutationMatrix(IDP,4);
+asteroid_1 = best.asteroid_1;
+asteroid_2 = best.asteroid_2;
+asteroid_3 = best.asteroid_3;
+asteroid_4 = best.asteroid_4;
 
 
 % asteroid1 flyby
-v_inf_ast1_magn = x(14);
-az_ast1 = x(15);
-el_ast1 = x(16);
+v_inf_ast1_magn = x(13);
+az_ast1 = x(14);
+el_ast1 = x(15);
 
 % asteroid2 flyby
-v_inf_ast2_magn = x(17);
-az_ast2 = x(18);
-el_ast2 = x(19);
+v_inf_ast2_magn = x(16);
+az_ast2 = x(17);
+el_ast2 = x(18);
 
 % asteroid3 flyby
-v_inf_ast3_magn = x(20);
-az_ast3 = x(21);
-el_ast3 = x(22);
+v_inf_ast3_magn = x(19);
+az_ast3 = x(20);
+el_ast3 = x(21);
 
 % asteroid4 flyby
-v_inf_ast4_magn = x(23);
-az_ast4 = x(24);
-el_ast4 = x(25);
+v_inf_ast4_magn = x(22);
+az_ast4 = x(23);
+el_ast4 = x(24);
      
     
 %% Computing position and velocity of the planets in that days
