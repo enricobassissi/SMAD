@@ -42,11 +42,11 @@ MJDDa = MJDAa + CTa;
 TOFb =  x(5); % tof sc2 to 2nd asteroid
 MJDAb = MJDDa + TOFb; 
 
-max_duration = 12*365*(3600*24)/sim.TU;
+% max_duration = 12*365*(3600*24)/sim.TU;
 penalty_MAX_DURATION = 0;
-if max(TOF1+CT1+TOF2,TOFa+CTa+TOFb) > max_duration
-    penalty_MAX_DURATION = max(TOF1+CT1+TOF2,TOFa+CTa+TOFb) - max_duration; % 12 years max mission time 
-end
+% if max(TOF1+CT1+TOF2,TOFa+CTa+TOFb) > max_duration
+%     penalty_MAX_DURATION = max(TOF1+CT1+TOF2,TOFa+CTa+TOFb) - max_duration; % 12 years max mission time 
+% end
 
 % N REV1
 N_rev1 = x(6);
@@ -78,6 +78,7 @@ data_elements_matrix_2SC = data.data_elements_matrix(~TF,:);
 IDP2 = ceil(IDP_temp_2*HowMany_2SC/100);
 asteroid_a = PermutationMatrix_2SC(IDP2,1);
 asteroid_b = PermutationMatrix_2SC(IDP2,2);
+
 
 %% Computing position and velocity of the planets in that days
 % Departure from Earth
@@ -128,10 +129,6 @@ rAb = rAb/sim.DU;
 vAb = vAb/sim.DU*sim.TU;
 
 %% Launcher departure variable
-%     z = r .* sin(elev);
-%     rcoselev = r .* cos(elev);
-%     x = rcoselev .* cos(az);
-%     y = rcoselev .* sin(az);
 v_launcher = v_inf_magn*[cos(elev)*cos(az); cos(elev)*sin(az); sin(elev)];
 v_dep = v_EA + v_launcher;  %if parabolic escape (v_extra = 0)
 
@@ -143,8 +140,9 @@ penalty_TOF_leg1 = 0; penalty_TOF_leg2 = 0; penalty_TOF_lega = 0; penalty_TOF_le
 % 1st leg - Earth -> Ast 1
 [output_1] = NL_interpolator_of( r_EA , rA1 , v_dep , vA1 , N_rev1 , TOF1 , sim.M1 ,sim.PS.Isp , sim );
 %     if ~isnan(output_1.Thrust(1,1)) && abs(output_1.t(end) - TOF1) < tol_TOF % if is not nan -> it's a valid solution
-if abs(max(output_1.T_magn)) > sim.max_Available_Thrust
-    penalty_T_leg1 = abs(max(output_1.T_magn)) - sim.max_Available_Thrust;
+if max(abs(output_1.T_magn)) > sim.max_Available_Thrust
+    %penalty_T_leg1 = abs(max(output_1.T_magn)) - sim.max_Available_Thrust;
+    penalty_T_leg1 = max(abs(output_1.T_magn)) - sim.max_Available_Thrust;
 end
 if abs(output_1.t(end) - TOF1) > tol_TOF
     penalty_TOF_leg1 = abs(output_1.t(end) - TOF1);
@@ -153,8 +151,9 @@ end
 M_start_2nd_leg = output_1.m(end) - sim.M_pods;
 [output_2] = NL_interpolator_of( rD1 , rA2 , vD1 , vA2 , N_rev2 , TOF2 , M_start_2nd_leg ,sim.PS.Isp , sim );
 %     if ~isnan(output_2.Thrust(1,1)) && abs(output_2.t(end) - TOF2) < tol_TOF  % if is not nan -> it's a valid solution
-if abs(max(output_2.T_magn)) > sim.max_Available_Thrust
-    penalty_T_leg2 = abs(max(output_2.T_magn)) - sim.max_Available_Thrust;
+if max(abs(output_2.T_magn)) > sim.max_Available_Thrust
+    %penalty_T_leg2 = abs(max(output_2.T_magn)) - sim.max_Available_Thrust;
+    penalty_T_leg2 = max(abs(output_2.T_magn)) - sim.max_Available_Thrust;
 end
 if abs(output_2.t(end) - TOF2) > tol_TOF
     penalty_TOF_leg2 = abs(output_2.t(end) - TOF2);
@@ -163,8 +162,9 @@ end
 % SC 2
 [output_a] = NL_interpolator_of( r_EA , rAa , v_dep , vAa , N_reva , TOFa , sim.M2 ,sim.PS.Isp , sim );
 %     if ~isnan(output_a.Thrust(1,1)) && abs(output_a.t(end) - TOFa) < tol_TOF % if is not nan -> it's a valid solution
-if abs(max(output_a.T_magn)) > sim.max_Available_Thrust
-    penalty_T_lega = 10*abs(max(output_a.T_magn)) - sim.max_Available_Thrust;
+if max(abs(output_a.T_magn)) > sim.max_Available_Thrust
+    %penalty_T_lega = 10*abs(max(output_a.T_magn)) - sim.max_Available_Thrust;
+    penalty_T_lega = 10*max(abs(output_a.T_magn)) - sim.max_Available_Thrust;
 end
 if abs(output_a.t(end) - TOFa) > tol_TOF
     penalty_TOF_lega = abs(output_a.t(end) - TOFa);
@@ -172,8 +172,9 @@ end
 % a_th leg - Earth -> Ast_a
 M_start_b_th_leg = output_a.m(end) - sim.M_pods;
 [output_b] = NL_interpolator_of( rDa , rAb , vDa , vAb , N_revb , TOFb , M_start_b_th_leg ,sim.PS.Isp , sim );
-if abs(max(output_b.T_magn)) > sim.max_Available_Thrust
-    penalty_T_legb = 10*abs(max(output_b.T_magn)) - sim.max_Available_Thrust;
+if max(abs(output_b.T_magn)) > sim.max_Available_Thrust
+    %penalty_T_legb = 10*abs(max(output_b.T_magn)) - sim.max_Available_Thrust;
+    penalty_T_legb = 10*max(abs(output_b.T_magn)) - sim.max_Available_Thrust;
 end
 if abs(output_b.t(end) - TOFb) > tol_TOF
     penalty_TOF_legb = abs(output_b.t(end) - TOFb);

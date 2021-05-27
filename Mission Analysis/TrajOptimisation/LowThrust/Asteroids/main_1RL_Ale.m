@@ -78,7 +78,7 @@ sim.direction = 1;                     % direction of integration (1 FW, -1 BW),
                                        % 1 is like imposing wet mass at beginning
 sim.TOF_imposed_flag = 1;
 sim.PS.Isp = 3200/sim.TU;  % non-dimensional specific impulse
-sim.M = 1000; % SC wet mass [kg]
+sim.M = 100; % SC wet mass [kg]
 sim.M_pods = 1; % mass of the payloads+landing stuff [kg]
 
 %% Boundaries
@@ -89,12 +89,12 @@ bound.mjd2000_ed = date2mjd2000(bound.date_ed)*3600*24/sim.TU;
 bound.mjd2000_ld = date2mjd2000(bound.date_ld)*3600*24/sim.TU;
 % TOF1 (2)
 bound.TOF1_min = 500*3600*24/sim.TU; 
-bound.TOF1_max = 900*3600*24/sim.TU; 
+bound.TOF1_max = 2*365*3600*24/sim.TU; 
 % TOF2 (3)
 bound.TOF2_min = 0.5*365*3600*24/sim.TU; 
 bound.TOF2_max = 2*365*3600*24/sim.TU; 
 % N REV (4)
-bound.N_REV1_min = 1; %0
+bound.N_REV1_min = 0; %0
 bound.N_REV1_max = 1; %3
 % N REV 2 (5)
 bound.N_REV2_min = 0; %0
@@ -116,10 +116,10 @@ bound.beta_min = -deg2rad(180);
 bound.beta_max = deg2rad(180);
 % coasting time1 (10)
 bound.CT1_min = 30*3600*24/sim.TU;
-bound.CT1_max = 150*3600*24/sim.TU;
+bound.CT1_max = 80*3600*24/sim.TU;
 % coasting time2 (11)
 bound.CT2_min = 30*3600*24/sim.TU;
-bound.CT2_max = 150*3600*24/sim.TU;
+bound.CT2_max = 80*3600*24/sim.TU;
 % TOF3 (12)
 bound.TOF3_min = 0.5*365*3600*24/sim.TU; %600
 bound.TOF3_max = 2*365*3600*24/sim.TU; 
@@ -128,7 +128,7 @@ bound.N_REV3_min = 0; %0
 bound.N_REV3_max = 1; %3
 % coasting time3 (14)
 bound.CT3_min = 30*3600*24/sim.TU;
-bound.CT3_max = 150*3600*24/sim.TU;
+bound.CT3_max = 80*3600*24/sim.TU;
 % TOF4 (15)
 bound.TOF4_min = 0.2*365*3600*24/sim.TU; %600
 bound.TOF4_max = 2*365*3600*24/sim.TU; 
