@@ -63,7 +63,7 @@ end
 % 
 % [data.y_interp_ft, data.t_vector] = find_eph_neo(data.asteroid_names);
 
-load('data_processed_9_4.mat')
+load('data_processed_42_475.mat')
 
 %% simulation parameters
 sim.mu_dim    = 132712440018              ; % actractor parameter [km^3 s^-2]
