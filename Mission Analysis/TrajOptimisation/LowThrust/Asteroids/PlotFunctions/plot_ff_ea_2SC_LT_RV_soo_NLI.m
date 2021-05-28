@@ -63,21 +63,25 @@ az = x(13);
 elev = x(14);
 
 %% choosing which asteroid to visit
-% 1ST SPACECRAFT ASTEROID OBJECTIVES
-IDP1 = x(10); %index of permutation, the column of the Permutation Matrix of the asteroids
-asteroid_1 = data.PermutationMatrix(IDP1,1);
-asteroid_2 = data.PermutationMatrix(IDP1,2);
-
-% 2ND SPACECRAFT ASTEROID OBJECTIVES
-IDP_temp_2 = x(11); % index for 2nd permutation matrix to be built inside depending on the first 2 selected asteroids
-asteroid_sequence = [asteroid_1,asteroid_2];
-TF = contains(data.asteroid_names,asteroid_sequence);
-data_elements_matrix_2SC = data.data_elements_matrix(~TF,:);
-[~, PermutationMatrix_2SC, HowMany_2SC] = ...
-            sequences_local_pruning2(data_elements_matrix_2SC, data.p_number);
-IDP2 = ceil(IDP_temp_2*HowMany_2SC/100);
-asteroid_a = PermutationMatrix_2SC(IDP2,1);
-asteroid_b = PermutationMatrix_2SC(IDP2,2);
+% % 1ST SPACECRAFT ASTEROID OBJECTIVES
+% IDP1 = x(10); %index of permutation, the column of the Permutation Matrix of the asteroids
+% asteroid_1 = data.PermutationMatrix(IDP1,1);
+% asteroid_2 = data.PermutationMatrix(IDP1,2);
+% 
+% % 2ND SPACECRAFT ASTEROID OBJECTIVES
+% IDP_temp_2 = x(11); % index for 2nd permutation matrix to be built inside depending on the first 2 selected asteroids
+% asteroid_sequence = [asteroid_1,asteroid_2];
+% TF = contains(data.asteroid_names,asteroid_sequence);
+% data_elements_matrix_2SC = data.data_elements_matrix(~TF,:);
+% [~, PermutationMatrix_2SC, HowMany_2SC] = ...
+%             sequences_local_pruning2(data_elements_matrix_2SC, data.p_number);
+% IDP2 = ceil(IDP_temp_2*HowMany_2SC/100);
+% asteroid_a = PermutationMatrix_2SC(IDP2,1);
+% asteroid_b = PermutationMatrix_2SC(IDP2,2);
+asteroid_1 = "2021DR";
+asteroid_2 = "2021JE1";
+asteroid_a = "2020VV";
+asteroid_b = "2013GM3";
 
 %% Computing position and velocity of the planets in that days
 % Departure from Earth
@@ -214,6 +218,8 @@ v_encounter.astAb = vAb;
 %% Porcherie
 t_span_CT1 = linspace(output_1.t(end),output_1.t(end)+CT1,sim.n_sol);
 t_span_CTa = linspace(output_a.t(end),output_a.t(end)+CTa,sim.n_sol);
+% t_span_CT1 = linspace(0,CT1,sim.n_sol);
+% t_span_CTa = linspace(0,CTa,sim.n_sol);
 mCT1 = ones(sim.n_sol,1).*output_1.m(end);
 mCTa = ones(sim.n_sol,1).*output_a.m(end);
 TCT1 = ones(sim.n_sol,3).*output_1.Thrust(end); %% oppure è thrust nulla???
