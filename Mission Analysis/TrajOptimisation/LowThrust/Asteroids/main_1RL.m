@@ -80,6 +80,7 @@ sim.TOF_imposed_flag = 1;
 sim.PS.Isp = 3200/sim.TU;  % non-dimensional specific impulse
 sim.M = 100; % SC wet mass [kg]
 sim.M_pods = 1; % mass of the payloads+landing stuff [kg]
+sim.max_Available_Thrust = 0.01; % 10 mN, BepiColombo was 250 mN but was much bigger
 
 %% Boundaries
 % Departure dates (1)
@@ -88,32 +89,32 @@ bound.date_ld =  [2028, 1, 1, 0, 0, 0];
 bound.mjd2000_ed = date2mjd2000(bound.date_ed)*3600*24/sim.TU;
 bound.mjd2000_ld = date2mjd2000(bound.date_ld)*3600*24/sim.TU;
 % TOF1 (2)
-bound.TOF1_min = 500*3600*24/sim.TU; 
-bound.TOF1_max = 2*365*3600*24/sim.TU; 
+bound.TOF1_min = 0.3*3600*24/sim.TU; 
+bound.TOF1_max = 3*365*3600*24/sim.TU; 
 % TOF2 (3)
-bound.TOF2_min = 0.5*365*3600*24/sim.TU; 
-bound.TOF2_max = 2*365*3600*24/sim.TU; 
+bound.TOF2_min = 0.3*365*3600*24/sim.TU; 
+bound.TOF2_max = 3*365*3600*24/sim.TU; 
 % N REV (4)
 bound.N_REV1_min = 0; %0
-bound.N_REV1_max = 1; %3
+bound.N_REV1_max = 2; %3
 % N REV 2 (5)
 bound.N_REV2_min = 0; %0
-bound.N_REV2_max = 1; %3
+bound.N_REV2_max = 2; %3
 % ID Permutation (6)
 bound.IDP_min = 1; 
 bound.IDP_max = data.HowMany; 
 % bound.IDP_max = length(data.asteroid_names);
 % C3 stuff
 % Constraint on C3 Launcher (7)
-sim.C3_max = 20; % km^2/s^2
+sim.C3_max = 30; % km^2/s^2
 bound.v_inf_magn_min = 0;
 bound.v_inf_magn_max = sqrt(sim.C3_max)/sim.DU*sim.TU;
-% alpha, azimuth (8)
+% azimuth (8)
 bound.alpha_min = -deg2rad(180);
 bound.alpha_max = deg2rad(180);
-% beta, elvation (9)
-bound.beta_min = -deg2rad(180);
-bound.beta_max = deg2rad(180);
+% elvation (9)
+bound.beta_min = -deg2rad(90);
+bound.beta_max = deg2rad(90);
 % coasting time1 (10)
 bound.CT1_min = 30*3600*24/sim.TU;
 bound.CT1_max = 80*3600*24/sim.TU;
@@ -121,20 +122,20 @@ bound.CT1_max = 80*3600*24/sim.TU;
 bound.CT2_min = 30*3600*24/sim.TU;
 bound.CT2_max = 80*3600*24/sim.TU;
 % TOF3 (12)
-bound.TOF3_min = 0.5*365*3600*24/sim.TU; %600
-bound.TOF3_max = 2*365*3600*24/sim.TU; 
+bound.TOF3_min = 0.3*365*3600*24/sim.TU; %600
+bound.TOF3_max = 3*365*3600*24/sim.TU; 
 % N REV 3 (13)
 bound.N_REV3_min = 0; %0
-bound.N_REV3_max = 1; %3
+bound.N_REV3_max = 2; %3
 % coasting time3 (14)
 bound.CT3_min = 30*3600*24/sim.TU;
 bound.CT3_max = 80*3600*24/sim.TU;
 % TOF4 (15)
-bound.TOF4_min = 0.2*365*3600*24/sim.TU; %600
-bound.TOF4_max = 2*365*3600*24/sim.TU; 
+bound.TOF4_min = 0.3*365*3600*24/sim.TU; %600
+bound.TOF4_max = 3*365*3600*24/sim.TU; 
 % N REV 4 (16)
 bound.N_REV4_min = 0; %0
-bound.N_REV4_max = 1; %3
+bound.N_REV4_max = 2; %3
 
 % x = [MJD0,TOF1,TOF2,NREV,NREV2,IDP,v_inf_magn,alpha,beta,CT1,CT2,TOF3,NREV3,
 %      CT3,TOF4,NREV4]
@@ -171,8 +172,8 @@ options.Display = 'iter';
 % multiobjective genetic algorithm terminates
 % options.HybridFcn = 'fgoalattain';
 
-options.PopulationSize = 1000; % ideal 1000
-options.MaxGenerations = 50; % ideal 100
+options.PopulationSize = 1200; % ideal 1000
+options.MaxGenerations = 300; % ideal 100
 
 options.FunctionTolerance = 1e-6; %1e-9
 options.MaxStallGenerations = ceil(options.MaxGenerations/10);
@@ -204,6 +205,7 @@ sol.asteroid_2 = data.PermutationMatrix(x(6),2);
 sol.asteroid_3 = data.PermutationMatrix(x(6),3);
 sol.asteroid_4 = data.PermutationMatrix(x(6),4);
 
+sol.departure_mjd2000 = x(1)*sim.TU/(3600*24);
 sol.departure_date = mjd20002date(x(1)*sim.TU/(3600*24));
 sol.TOF1 = x(2)*sim.TU/86400;
 sol.TOF2 = x(3)*sim.TU/86400;
@@ -216,99 +218,50 @@ sol.mission_duration_d = sol.TOF1+sol.CT1+sol.TOF2+sol.CT2+sol.TOF3+sol.CT3+sol.
 sol.mission_duration_y = sol.mission_duration_d/365;
 sol.arrival_date = mjd20002date(x(1)*sim.TU/(3600*24)+sol.mission_duration_d);
 
-sol.mass_fraction = Fval;
+sol.obj_fun = Fval;
 sol.Nrev = [x(4), x(5), x(13), x(16)];
 sol.v_inf_magn = x(7)*sim.DU/sim.TU;
-sol.alpha = x(8);
-sol.beta = x(9);
+sol.az = x(8);
+sol.el = x(9);
 
 %% characteristic quantities plot
-[output, r_encounter, v_encounter, sol] = plot_ff_ea_4ast_LT_soo_NLI(x,sim,data,sol);
+[output, r_encounter, v_encounter, sol] = plot_ff_1RL(x,sim,data,sol);
 
 figure()
 subplot(5,1,1)
 plot(output.t*sim.TU/86400,output.Thrust(:,1));
-% xline(sol.TOF1,'LineWidth',2); xline(sol.TOF1+sol.CT1,'LineWidth',2);
-% xline(sol.TOF1+sol.CT1+sol.TOF2,'LineWidth',2);xline(sol.TOF1+sol.CT1+sol.TOF2+sol.CT2,'LineWidth',2);
-% xline(sol.TOF1+sol.CT1+sol.TOF2+sol.CT2+sol.TOF3,'LineWidth',2);
-xline(output.t(sim.n_sol)*sim.TU/86400,'LineWidth',2); xline(output.t(2*sim.n_sol)*sim.TU/86400,'LineWidth',2);
-xline(output.t(3*sim.n_sol)*sim.TU/86400,'LineWidth',2); xline(output.t(4*sim.n_sol)*sim.TU/86400,'LineWidth',2);
-xline(output.t(5*sim.n_sol)*sim.TU/86400,'LineWidth',2)
-xlabel('Time [days]')
+xline(output.tEnd.Leg11,'LineWidth',2); xline(output.tEnd.Leg12,'LineWidth',2);
+xline(output.tEnd.Leg21,'LineWidth',2); xline(output.tEnd.Leg22,'LineWidth',2);
+xline(output.tEnd.Leg31,'LineWidth',2); xline(output.tEnd.Leg32,'LineWidth',2);
+xline(output.tEnd.Leg41,'LineWidth',2); xline(output.tEnd.Leg42,'LineWidth',2);
+% xlabel('Time [days]')
 ylabel('In-plane Thrust [N]')
 
 subplot(5,1,2)
 plot(output.t*sim.TU/86400,180/pi*output.Thrust(:,2));
-xline(sol.TOF1,'LineWidth',2); xline(sol.TOF1+sol.CT1,'LineWidth',2);
-xline(sol.TOF1+sol.CT1+sol.TOF2,'LineWidth',2);xline(sol.TOF1+sol.CT1+sol.TOF2+sol.CT2,'LineWidth',2);
-xline(sol.TOF1+sol.CT1+sol.TOF2+sol.CT2+sol.TOF3,'LineWidth',2);
-xlabel('Time [days]')
+% xlabel('Time [days]')
 ylabel('In-plane Thrust angle [deg]')
 
 subplot(5,1,3)
 plot(output.t*sim.TU/86400,output.Thrust(:,3));
-xline(sol.TOF1,'LineWidth',2); xline(sol.TOF1+sol.CT1,'LineWidth',2);
-xline(sol.TOF1+sol.CT1+sol.TOF2,'LineWidth',2);xline(sol.TOF1+sol.CT1+sol.TOF2+sol.CT2,'LineWidth',2);
-xline(sol.TOF1+sol.CT1+sol.TOF2+sol.CT2+sol.TOF3,'LineWidth',2);
-xlabel('Time [days]')
+% xlabel('Time [days]')
 ylabel('out-of-plane Thrust [N]')
 
 subplot(5,1,4)
 plot(output.t*sim.TU/86400,sqrt(output.Thrust(:,1).^2 + output.Thrust(:,3).^2));
-xline(sol.TOF1,'LineWidth',2); xline(sol.TOF1+sol.CT1,'LineWidth',2);
-xline(sol.TOF1+sol.CT1+sol.TOF2,'LineWidth',2);xline(sol.TOF1+sol.CT1+sol.TOF2+sol.CT2,'LineWidth',2);
-xline(sol.TOF1+sol.CT1+sol.TOF2+sol.CT2+sol.TOF3,'LineWidth',2);
-xlabel('Time [days]')
+% xlabel('Time [days]')
 ylabel('Thrust [N]')
 
 subplot(5,1,5)
 plot(output.t*sim.TU/86400,output.m);
-xline(sol.TOF1,'LineWidth',2); xline(sol.TOF1+sol.CT1,'LineWidth',2);
-xline(sol.TOF1+sol.CT1+sol.TOF2,'LineWidth',2);xline(sol.TOF1+sol.CT1+sol.TOF2+sol.CT2,'LineWidth',2);
-xline(sol.TOF1+sol.CT1+sol.TOF2+sol.CT2+sol.TOF3,'LineWidth',2);
-xlabel('Time [days]')
+xline(output.tEnd.Leg11,'LineWidth',2); xline(output.tEnd.Leg12,'LineWidth',2);
+xline(output.tEnd.Leg21,'LineWidth',2); xline(output.tEnd.Leg22,'LineWidth',2);
+xline(output.tEnd.Leg31,'LineWidth',2); xline(output.tEnd.Leg32,'LineWidth',2);
+xline(output.tEnd.Leg41,'LineWidth',2); xline(output.tEnd.Leg42,'LineWidth',2);
+% xlabel('Time [days]')
 ylabel('Mass [kg]')
 
 %% orbit plots
-day1 = [2028 1 1 0 0 0];
-day2 = [2032 1 1 0 0 0];
-
-t1 = date2mjd2000(day1);
-t2 = date2mjd2000(day2);
-times = linspace(t1,t2,1000);
-
-for i=1:length(times)
-    % Orbit earth
-    [kep1,ksun] = uplanet(times(i),3);
-    [r1(i,1:3),v1(i,1:3)] = sv_from_coe(kep1,ksun);
-    r1(i,1:3) = r1(i,1:3)/sim.DU;
-    
-    % Orbit mars
-    [kep2,ksun] = uplanet(times(i),4);
-    [r2(i,1:3),~] = sv_from_coe(kep2,ksun);
-    r2(i,1:3) = r2(i,1:3)/sim.DU;
-    
-    % Orbit ast1
-    [kep_ast_1] = uNEO2(times(i),sol.asteroid_1,data); % [km,-,rad,rad,rad,wrapped rad]
-    [r_ast1(i,1:3), v_ast1] = sv_from_coe(kep_ast_1,ksun); % km, km/s
-    r_ast1(i,1:3) = r_ast1(i,1:3)/sim.DU;
-    
-    % Orbit ast2
-    [kep_ast_2] = uNEO2(times(i),sol.asteroid_2,data); % [km,-,rad,rad,rad,wrapped rad]
-    [r_ast2(i,1:3), v_ast2] = sv_from_coe(kep_ast_2,ksun); % km, km/s
-    r_ast2(i,1:3) = r_ast2(i,1:3)/sim.DU;
-    
-    % Orbit ast3
-    [kep_ast_3] = uNEO2(times(i),sol.asteroid_3,data); % [km,-,rad,rad,rad,wrapped rad]
-    [r_ast3(i,1:3), v_ast3] = sv_from_coe(kep_ast_3,ksun); % km, km/s
-    r_ast3(i,1:3) = r_ast3(i,1:3)/sim.DU;
-    
-    % Orbit ast4
-    [kep_ast_4] = uNEO2(times(i),sol.asteroid_4,data); % [km,-,rad,rad,rad,wrapped rad]
-    [r_ast4(i,1:3), v_ast4] = sv_from_coe(kep_ast_4,ksun); % km, km/s
-    r_ast4(i,1:3) = r_ast4(i,1:3)/sim.DU;
-end
-
 % transfer orbits
 r_transf_orbit_1  = [output.r.leg1.*cos(output.theta.leg1), ...
     output.r.leg1.*sin(output.theta.leg1), output.z.leg1];
@@ -357,26 +310,50 @@ plot3(r_encounter.astA4(1),r_encounter.astA4(2),r_encounter.astA4(3),...
     '^','Color',colors(6,:),'DisplayName',sol.asteroid_4)
 axis equal; grid on;
 xlabel('x [AU]'); ylabel('y [AU]'); ylabel('y [AU]'); 
-% Earth
-plot3(r1(:,1),r1(:,2),r1(:,3),...
-    '--','Color',colors(8,:),'DisplayName','Earth'); % geocentric equatorial frame 
-% Mars
-plot3(r2(:,1),r2(:,2),r2(:,3),...
-    '--','Color',colors(2,:),'DisplayName','Mars');
-% Asteroid 1
-plot3(r_ast1(:,1),r_ast1(:,2),r_ast1(:,3),...
-    '--','Color',colors(3,:),'DisplayName',sol.asteroid_1);
-% Asteroid 2
-plot3(r_ast2(:,1),r_ast2(:,2),r_ast2(:,3),...
-    '--','Color',colors(4,:),'DisplayName',sol.asteroid_2);
-% Asteroid 3
-plot3(r_ast3(:,1),r_ast3(:,2),r_ast3(:,3),...
-    '--','Color',colors(5,:),'DisplayName',sol.asteroid_3);
-% Asteroid 4
-plot3(r_ast4(:,1),r_ast4(:,2),r_ast4(:,3),...
-    '--','Color',colors(6,:),'DisplayName',sol.asteroid_4);
+% PLANETS
+plot_planet_orbit(x(1)*sim.TU/(3600*24),3,colors,8); % earth
+plot_planet_orbit(x(1)*sim.TU/(3600*24),4,colors,2); % mars
+% Asteroids
+fraction_of_the_orbit = 1;
+hello_orbit1 = sol.departure_mjd2000 + output.tEnd.Leg12;
+hello_orbit2 = sol.departure_mjd2000 + output.tEnd.Leg22;
+hello_orbit3 = sol.departure_mjd2000 + output.tEnd.Leg32;
+hello_orbit4 = sol.departure_mjd2000 + output.tEnd.Leg42;
+plot_asteorid_orbit(hello_orbit1,fraction_of_the_orbit,sol.asteroid_1,colors,3);
+plot_asteorid_orbit(hello_orbit2,fraction_of_the_orbit,sol.asteroid_2,colors,4);
+plot_asteorid_orbit(hello_orbit3,fraction_of_the_orbit,sol.asteroid_3,colors,5);
+plot_asteorid_orbit(hello_orbit4,fraction_of_the_orbit,sol.asteroid_4,colors,6);
 % Sun
 plot3(0,0,0,'o','Color',colors(4,:),'DisplayName','Sun')
 legend('show')
 view(2)
 
+%% post analysis and checks
+max_Thrust = max(sqrt(output.Thrust(:,1).^2 + output.Thrust(:,3).^2))*1000; %[mN]
+
+transf1_check = abs(sol.TOF1 - output.t1(end)*sim.TU/(3600*24));
+transf2_check = abs(sol.TOF2 - output.t2(end)*sim.TU/(3600*24));
+transf3_check = abs(sol.TOF3 - output.t3(end)*sim.TU/(3600*24));
+transf4_check = abs(sol.TOF4 - output.t4(end)*sim.TU/(3600*24));
+
+Traj = [R_transf_orbit_1;R_transf_orbit_2;R_transf_orbit_3;R_transf_orbit_4];
+max_dist_sun = max(vecnorm(Traj,2,2));
+min_dist_sun = min(vecnorm(Traj,2,2));
+
+mjd_earth_plot = [output.t1;output.t2;output.t3;output.t4].*sim.TU/86400 + sol.departure_mjd2000;
+for k=1:length(mjd_earth_plot)
+    [kep,ksun] = uplanet(mjd_earth_plot(k), 3);
+    [r__E, ~] = sv_from_coe(kep,ksun);  
+    R__E(k,:)=r__E/sim.DU; % it's in km it becomes AU, to be plotted
+end
+clearvars k r__E
+
+dist_sc_earth = Traj - R__E;
+max_dist_earth = max(vecnorm(dist_sc_earth,2,2));
+min_dist_earth = min(vecnorm(dist_sc_earth,2,2));
+
+% Propulsion for NIKITA
+Propulsion.Magnitude_Thrust = sqrt(output.Thrust(:,1).^2 + output.Thrust(:,3).^2);
+Propulsion.InPlane_Thrust   = output.Thrust(:,1);
+Propulsion.gamma_angle      = output.Thrust(:,2);
+Propulsion.OutofPlane_Thrust = output.Thrust(:,3);

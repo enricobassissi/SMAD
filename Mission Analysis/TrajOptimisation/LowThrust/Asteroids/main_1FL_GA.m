@@ -339,25 +339,6 @@ sol.v_inf_ast4_magn = x(30)*sim.DU/sim.TU;
 %% characteristic quantities plot and Checks
 [output, r_encounter, sol] = plot_ff_1FL_GA_Ale(x,sim,data,sol);
 
-max_Thrust = max(sqrt(output.Thrust(:,1).^2 + output.Thrust(:,3).^2))*1000 %[mN]
-
-sol.TOF1
-output.t1(end)
-transf1_check = abs(sol.TOF1- output.t1(end))*sim.TU/(3600*24)
-
-sol.TOF2
-output.t2(end)
-transf2_check = abs(sol.TOF2- output.t2(end))*sim.TU/(3600*24)
-
-sol.TOF3
-output.t3(end)
-transf3_check = abs(sol.TOF3 - output.t3(end))*sim.TU/(3600*24)
-
-sol.TOF4
-output.t4(end)
-transf4_check = abs(sol.TOF4 - output.t4(end))*sim.TU/(3600*24)
-
-%%
 figure('Name','Time Evolution of Stuff')
 subplot(5,1,1)
 plot(output.t*sim.TU/86400,output.Thrust(:,1));
@@ -467,3 +448,34 @@ axis equal; grid on;
 xlabel('x [AU]'); ylabel('y [AU]'); ylabel('y [AU]'); 
 legend('show')
 view(2)
+
+%% post analysis and checks
+max_Thrust = max(output.T_magn)*1000; %[mN]
+
+transfGA_check = abs(sol.TOFGA - output.tGA(end))*sim.TU/(3600*24);
+transf1_check = abs(sol.TOF1- output.t1(end))*sim.TU/(3600*24);
+transf2_check = abs(sol.TOF2- output.t2(end))*sim.TU/(3600*24);
+transfa_check = abs(sol.TOFa - output.ta(end))*sim.TU/(3600*24);
+transfb_check = abs(sol.TOFb - output.tb(end))*sim.TU/(3600*24);
+
+Traj = [R_transf_orbit_GA;R_transf_orbit_1;R_transf_orbit_2;R_transf_orbit_3;R_transf_orbit_4];
+max_dist_sun = max(vecnorm(Traj,2,2));
+min_dist_sun = min(vecnorm(Traj,2,2));
+
+mjd_earth_plot = [output.tGA;output.t1;output.t2;output.t3;output.t4].*sim.TU/86400 + sol.departure_mjd2000;
+for k=1:length(mjd_earth_plot)
+    [kep,ksun] = uplanet(mjd_earth_plot(k), 3);
+    [r__E, ~] = sv_from_coe(kep,ksun);  
+    R__E(k,:)=r__E/sim.DU; % it's in km it becomes AU, to be plotted
+end
+clearvars k r__E
+
+dist_sc_earth = Traj - R__E;
+max_dist_earth = max(vecnorm(dist_sc_earth,2,2));
+min_dist_earth = min(vecnorm(dist_sc_earth,2,2));
+
+% Propulsion for NIKITA
+Propulsion.Magnitude_Thrust = output.T_magn;
+Propulsion.InPlane_Thrust   = output.Thrust(:,1);
+Propulsion.gamma_angle      = output.Thrust(:,2);
+Propulsion.OutofPlane_Thrust = output.Thrust(:,3);

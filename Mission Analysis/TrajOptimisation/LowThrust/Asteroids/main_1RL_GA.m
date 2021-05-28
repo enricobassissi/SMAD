@@ -82,11 +82,11 @@ sim.direction = 1;                     % direction of integration (1 FW, -1 BW),
 sim.TOF_imposed_flag = 1;
 sim.PS.Isp = 3200/sim.TU;  % non-dimensional specific impulse  
 sim.M = 100; % SC wet mass [kg]
-%sim.M_pods = 5; % mass of the payloads+landing stuff [kg]
+sim.M_pods = 1; % mass of the payloads+landing stuff [kg]
 
 sim.ID_FLYBY = 3; % flyby planet
 sim.c = 1e+3;
-sim.maxT = 0.025;
+sim.max_Available_Thrust = 0.02; % N
 
 AU = astroConstants(2);
 %% Boundaries
@@ -96,11 +96,11 @@ bound.date_ld = [2028, 1, 1, 0, 0, 0];
 bound.mjd2000_ed = date2mjd2000(bound.date_ed)*3600*24/sim.TU;
 bound.mjd2000_ld = date2mjd2000(bound.date_ld)*3600*24/sim.TU;
 % TOFGA (2)
-bound.TOFGA_min = 0.8*365*3600*24/sim.TU; %10*3600
+bound.TOFGA_min = 0.4*365*3600*24/sim.TU; %10*3600
 bound.TOFGA_max = 2*365*3600*24/sim.TU; 
 % TOF1 (3)
 bound.TOF1_min = 0.3*365*3600*24/sim.TU; 
-bound.TOF1_max = 3*365*3600*24/sim.TU; %2*365
+bound.TOF1_max = 2*365*3600*24/sim.TU; %2*365
 % TOF2 (4)
 bound.TOF2_min = 0.3*365*3600*24/sim.TU; 
 bound.TOF2_max = 2*365*3600*24/sim.TU; 
@@ -115,16 +115,16 @@ bound.N_REVGA_min = 0; %0
 bound.N_REVGA_max = 1; %3
 % N REV 1 (8)
 bound.N_REV1_min = 0; %0
-bound.N_REV1_max = 2; %3
+bound.N_REV1_max = 1; %3
 % N REV 2 (9)
 bound.N_REV2_min = 0; %0
-bound.N_REV2_max = 2; %3
+bound.N_REV2_max = 1; %3
 % N REV 3 (10)
 bound.N_REV3_min = 0; %0
-bound.N_REV3_max = 2; %3
+bound.N_REV3_max = 1; %3
 % N REV 4 (11)
 bound.N_REV4_min = 0; %0
-bound.N_REV4_max = 2; %3
+bound.N_REV4_max = 1; %3
 % ID Permutation (12)
 bound.IDP_min = 1; 
 bound.IDP_max = data.HowMany; 
@@ -201,10 +201,10 @@ options.Display = 'iter';
 % options.HybridFcn = 'fgoalattain';
 
 options.PopulationSize = 1000; % ideal 1000
-options.MaxGenerations = 10; % ideal 100
+options.MaxGenerations = 300; % ideal 100
 
 options.FunctionTolerance = 1e-6; %1e-9
-options.MaxStallGenerations = ceil(options.MaxGenerations/5);
+options.MaxStallGenerations = ceil(options.MaxGenerations/10);
 
 % Parallel pool
 % Open the parallel pool
@@ -233,6 +233,7 @@ sol.asteroid_2 = data.PermutationMatrix(x(12),2);
 sol.asteroid_3 = data.PermutationMatrix(x(12),3);
 sol.asteroid_4 = data.PermutationMatrix(x(12),4);
 
+sol.departure_mjd2000 = x(1)*sim.TU/(3600*24);
 sol.departure_date = mjd20002date(x(1)*sim.TU/(3600*24));
 % sol.TOFGA = x(2)*sim.TU/86400;
 % sol.TOF1  = x(3)*sim.TU/86400;
@@ -262,9 +263,8 @@ sol.az3 = x(19);
 sol.el3 = x(20);
 sol.obj_fun = Fval;
 
-
 %% characteristic quantities plot
-[output, r_encounter,r_departure,R_coasting, v_encounter, sol] = plot_ff_ea_4ast_LT_GA_RV_soo_NLI(x,sim,data, sol)
+[output, r_encounter,r_departure,R_coasting, v_encounter, sol] = plot_ff_1RL_GA(x,sim,data, sol);
 
 figure()
 subplot(5,1,1)
@@ -386,17 +386,20 @@ xlabel('x [AU]'); ylabel('y [AU]'); ylabel('y [AU]');
 plot_planet_orbit(x(1)*sim.TU/(3600*24),3,colors,8); % earth
 plot_planet_orbit(x(1)*sim.TU/(3600*24),4,colors,2); % mars
 % Asteroids
-fraction_of_the_orbit = 1/6;
-plot_asteorid_orbit(sol.output_1.t(end)*sim.TU/(3600*24),fraction_of_the_orbit,sol.asteroid_1,colors,3);
-plot_asteorid_orbit(sol.output_2.t(end)*sim.TU/(3600*24),fraction_of_the_orbit,sol.asteroid_2,colors,4);
-plot_asteorid_orbit(sol.output_3.t(end)*sim.TU/(3600*24),fraction_of_the_orbit,sol.asteroid_3,colors,5);
-plot_asteorid_orbit(sol.output_4.t(end)*sim.TU/(3600*24),fraction_of_the_orbit,sol.asteroid_4,colors,6);
+fraction_of_the_orbit = 1;
+hello_orbit1 = sol.departure_mjd2000 + output.tEnd.Leg12;
+hello_orbit2 = sol.departure_mjd2000 + output.tEnd.Leg22;
+hello_orbit3 = sol.departure_mjd2000 + output.tEnd.Leg32;
+hello_orbit4 = sol.departure_mjd2000 + output.tEnd.Leg42;
+plot_asteorid_orbit(hello_orbit1,fraction_of_the_orbit,sol.asteroid_1,colors,3);
+plot_asteorid_orbit(hello_orbit2,fraction_of_the_orbit,sol.asteroid_2,colors,4);
+plot_asteorid_orbit(hello_orbit3,fraction_of_the_orbit,sol.asteroid_3,colors,5);
+plot_asteorid_orbit(hello_orbit4,fraction_of_the_orbit,sol.asteroid_4,colors,6);
 
 % Sun
 plot3(0,0,0,'o','Color',colors(4,:),'DisplayName','Sun')
 legend('show')
 view(2)
-
 
 % Check position Earth at the end
 MJD_end = sol.output_4.t(end)*sim.TU/(3600*24);
@@ -405,32 +408,41 @@ MJD_end = sol.output_4.t(end)*sim.TU/(3600*24);
 
 plot3(rEA_end(1)/AU,rEA_end(2)/AU,rEA_end(3)/AU,'r*','DisplayName','Earth end')
 
-%% Checks
-max_Thrust = max(sqrt(output.Thrust(:,1).^2 + output.Thrust(:,3).^2))*1000 %[mN]
+%% post analysis and Checks
+max_Thrust = max(sqrt(output.Thrust(:,1).^2 + output.Thrust(:,3).^2))*1000; %[mN]
 
-sol.TOF1
-sol.output_1.t(end)
-transf1_check = abs(sol.TOF1-sol.output_1.t(end))*sim.TU/(3600*24)
+transfGA_check = abs(sol.TOFGA-sol.output_GA.t(end))*sim.TU/(3600*24);
+transf1_check = abs(sol.TOF1-sol.output_1.t(end))*sim.TU/(3600*24);
+transf2_check = abs(sol.TOF2-sol.output_2.t(end))*sim.TU/(3600*24);
+transf3_check = abs(sol.TOF3 -sol.output_3.t(end))*sim.TU/(3600*24);
+transf4_check = abs(sol.TOF4 -sol.output_4.t(end))*sim.TU/(3600*24);
 
-sol.TOF2
-sol.output_2.t(end)
-transf2_check = abs(sol.TOF2-sol.output_2.t(end))*sim.TU/(3600*24)
+Traj = [R_transf_orbit_GA;R_transf_orbit_1;R_transf_orbit_2;R_transf_orbit_3;R_transf_orbit_4];
+max_dist_sun = max(vecnorm(Traj,2,2));
+min_dist_sun = min(vecnorm(Traj,2,2));
 
-sol.TOF3
-sol.output_3.t(end)
-transf3_check = abs(sol.TOF3 -sol.output_3.t(end))*sim.TU/(3600*24)
+mjd_earth_plot = output.t.*sim.TU/86400 + sol.departure_mjd2000;
+for k=1:length(mjd_earth_plot)
+    [kep,ksun] = uplanet(mjd_earth_plot(k), 3);
+    [r__E, ~] = sv_from_coe(kep,ksun);  
+    R__E(k,:)=r__E/sim.DU; % it's in km it becomes AU, to be plotted
+end
+clearvars k r__E
 
-sol.TOF4
-sol.output_4.t(end)
-transf4_check = abs(sol.TOF4 -sol.output_4.t(end))*sim.TU/(3600*24)
+dist_sc_earth = Traj - R__E;
+max_dist_earth = max(vecnorm(dist_sc_earth,2,2));
+min_dist_earth = min(vecnorm(dist_sc_earth,2,2));
 
-return
+% Propulsion for NIKITA
+Propulsion.Magnitude_Thrust = sqrt(output.Thrust(:,1).^2 + output.Thrust(:,3).^2);
+Propulsion.InPlane_Thrust   = output.Thrust(:,1);
+Propulsion.gamma_angle      = output.Thrust(:,2);
+Propulsion.OutofPlane_Thrust = output.Thrust(:,3);
+
 %% Plot with thrust vectors
-
 Tlocal_transf_orbit_GA  = [-sol.output_GA.Thrust(:,1).*sin(output.theta.GA), ...
     sol.output_GA.Thrust(:,1).*cos(output.theta.GA), sol.output_GA.Thrust(:,3)];
 T_transf_orbit_GA = rotate_local2ecplitic(r_encounter.EA,Tlocal_transf_orbit_GA,sim.n_sol,output.Href.GA);
-
 
 Tlocal_transf_orbit_1  = [-sol.output_1.Thrust(:,1).*sin(output.theta.leg1), ...
     sol.output_1.Thrust(:,1).*cos(output.theta.leg1), sol.output_1.Thrust(:,3)];
@@ -519,3 +531,9 @@ title('In-plane Thrust(shall be tangential)')
 plot(0,0,'o','Color',colors(4,:),'DisplayName','Sun')
 legend('show')
 view(2)
+
+Thrust_Helio = [T_transf_orbit_GA(:,1),T_transf_orbit_GA(:,2),T_transf_orbit_GA(:,3);...
+    T_transf_orbit_1(:,1),T_transf_orbit_1(:,2),T_transf_orbit_1(:,3);...
+    T_coasting_1(:,1),T_coasting_1(:,2),T_coasting_1(:,3);...
+    T_transf_orbit_2(:,1),T_transf_orbit_2(:,2),T_transf_orbit_2(:,3)];
+    
