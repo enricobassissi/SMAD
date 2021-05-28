@@ -66,7 +66,8 @@ end
 % 
 % [data.y_interp_ft, data.t_vector] = find_eph_neo(data.asteroid_names);
 
-load('data_processed_42_61_2SC.mat')
+% load('data_processed_42_61_2SC.mat')
+load('data_processed_9_2.mat')
 
 %% simulation parameters
 sim.mu_dim    = 132712440018              ; % actractor parameter [km^3 s^-2]
@@ -80,11 +81,11 @@ sim.g0 = 9.81*(sim.TU^2/(1000*sim.DU)); % non-dimensional g0
 sim.direction = 1;                     % direction of integration (1 FW, -1 BW), 
                                        % 1 is like imposing wet mass at beginning
 sim.TOF_imposed_flag = 1;
-sim.PS.Isp = 3200/sim.TU;  % non-dimensional specific impulse
-sim.M1 = 75; % SC wet mass [kg] %%
-sim.M2 = 75; % SC wet mass [kg] %%
-sim.M_pods = 1.5; % mass of the payloads + landing stuff [kg] %%
-sim.max_Available_Thrust = 0.005; % 5 [mN], BepiColombo is 250 mN but it's much bigger
+sim.PS.Isp = 3450/sim.TU;  % non-dimensional specific impulse
+sim.M1 = 150; % SC wet mass [kg] %%
+sim.M2 = 150; % SC wet mass [kg] %%
+sim.M_pods = 5; % mass of the payloads + landing stuff [kg] %%
+sim.max_Available_Thrust = 0.065; % could be up to 80 [mN], BepiColombo is 250 mN but it's much bigger
 
 %% Boundaries
 % Departure dates (1)
@@ -181,7 +182,7 @@ options.PopulationSize = 1000; % ideal 1000
 options.MaxGenerations = 300; % ideal 100
 
 options.FunctionTolerance = 1e-6; %1e-9
-options.MaxStallGenerations = ceil(options.MaxGenerations/5);
+options.MaxStallGenerations = ceil(options.MaxGenerations/10);
 
 % Parallel pool
 % Open the parallel pool
@@ -195,7 +196,7 @@ end
 options.UseParallel = true;
 
 %% Build the soo
-FitnessFunction = @(x) ff_ea_2SC_LT_RV_soo_NLI(x,sim,data); % Function handle to the fitness function
+FitnessFunction = @(x) ff_2RL_NIKI(x,sim,data); % Function handle to the fitness function
 numberOfVariables = length(bound.ub); % Number of decision variables
 
 tic
@@ -208,14 +209,15 @@ el_time_min_pp = toc/60;
 sol.asteroid_1 = data.PermutationMatrix(x(10),1);
 sol.asteroid_2 = data.PermutationMatrix(x(10),2);
 IDP_temp_2 = x(11); % index for 2nd permutation matrix to be built inside depending on the first 2 selected asteroids
-TF = contains(data.asteroid_names,[sol.asteroid_1,sol.asteroid_1]);
-data_elements_matrix_2SC = data.data_elements_matrix(~TF,:);
-[~, PermutationMatrix_2SC, HowMany_2SC] = ...
-            sequences_local_pruning2(data_elements_matrix_2SC, data.p_number);
+asteroid_sequence = [sol.asteroid_1,sol.asteroid_2];
+TF = contains(data.asteroid_names,asteroid_sequence);
+not_asteroid_sequence = data.asteroid_names(~TF);
+% HowMany_for2ndSC = factorial(length(not_asteroid_sequence)) / factorial(length(not_asteroid_sequence) - 2);
+[PermutationMatrix_SC2, ~] = permnUnique(not_asteroid_sequence, 2);
+HowMany_2SC = length(PermutationMatrix_SC2);
 IDP2 = ceil(IDP_temp_2*HowMany_2SC/100);
-sol.asteroid_a = PermutationMatrix_2SC(IDP2,1);
-sol.asteroid_b = PermutationMatrix_2SC(IDP2,2);
-
+sol.asteroid_a = PermutationMatrix_SC2(IDP2,1);
+sol.asteroid_b = PermutationMatrix_SC2(IDP2,2);
 
 sol.departure_date = mjd20002date(x(1)*sim.TU/(3600*24));
 sol.departure_mjd2000 = x(1)*sim.TU/86400;
@@ -244,7 +246,7 @@ sol.az = x(13);
 sol.el = x(14);
 
 %% characteristic quantities plot
-[output, r_encounter, v_encounter, sol] = plot_ff_2RL(x,sim,data,sol);
+[output, r_encounter, v_encounter, sol] = plot_ff_2RL_NIKI(x,sim,data,sol);
 % Thrust
 sol.max_T_SC1 = max(output.T_magn_SC1);
 sol.max_T_SC2 = max(output.T_magn_SC2);

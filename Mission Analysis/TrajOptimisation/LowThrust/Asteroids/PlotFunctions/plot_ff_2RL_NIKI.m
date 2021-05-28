@@ -1,4 +1,4 @@
-function obj_fun = ff_ea_2SC_LT_RV_soo_NLI(x,sim,data)
+function [output, r_encounter, v_encounter, sol] = plot_ff_2RL_NIKI(x,sim,data, sol)
 %{ 
 input variable vector
 x = [(1) MJD0,
@@ -72,13 +72,13 @@ asteroid_2 = data.PermutationMatrix(IDP1,2);
 IDP_temp_2 = x(11); % index for 2nd permutation matrix to be built inside depending on the first 2 selected asteroids
 asteroid_sequence = [asteroid_1,asteroid_2];
 TF = contains(data.asteroid_names,asteroid_sequence);
-data_elements_matrix_2SC = data.data_elements_matrix(~TF,:);
-[~, PermutationMatrix_2SC, HowMany_2SC] = ...
-            sequences_local_pruning2(data_elements_matrix_2SC, data.p_number);
+not_asteroid_sequence = data.asteroid_names(~TF);
+% HowMany_for2ndSC = factorial(length(not_asteroid_sequence)) / factorial(length(not_asteroid_sequence) - 2);
+[PermutationMatrix_SC2, ~] = permnUnique(not_asteroid_sequence, 2);
+HowMany_2SC = length(PermutationMatrix_SC2);
 IDP2 = ceil(IDP_temp_2*HowMany_2SC/100);
-asteroid_a = PermutationMatrix_2SC(IDP2,1);
-asteroid_b = PermutationMatrix_2SC(IDP2,2);
-
+asteroid_a = PermutationMatrix_SC2(IDP2,1);
+asteroid_b = PermutationMatrix_SC2(IDP2,2);
 
 %% Computing position and velocity of the planets in that days
 % Departure from Earth
@@ -129,6 +129,7 @@ rAb = rAb/sim.DU;
 vAb = vAb/sim.DU*sim.TU;
 
 %% Launcher departure variable
+
 v_launcher = v_inf_magn*[cos(elev)*cos(az); cos(elev)*sin(az); sin(elev)];
 v_dep = v_EA + v_launcher;  %if parabolic escape (v_extra = 0)
 
@@ -180,19 +181,79 @@ if abs(output_b.t(end) - TOFb) > tol_TOF
     penalty_TOF_legb = abs(output_b.t(end) - TOFb);
 end
 
-mass_fract_SC1 = (output_1.m(1) - output_2.m(end))/output_1.m(1);
-mass_fract_SC2 = (output_a.m(1) - output_b.m(end))/output_a.m(1);
+sol.mass_fract_SC1 = (output_1.m(1) - output_2.m(end))/output_1.m(1);
+sol.mass_fract_SC2 = (output_a.m(1) - output_b.m(end))/output_a.m(1);
 
 %     if mass_fract_SC1 > 0 && mass_fract_SC1 < 1 
 %         if mass_fract_SC2 > 0 && mass_fract_SC2 < 1 
-avg_mass_fraction = (mass_fract_SC1+mass_fract_SC2)/2;
-MF = max(mass_fract_SC1,mass_fract_SC2) + abs(mass_fract_SC1 - avg_mass_fraction) + ...
-        abs(mass_fract_SC2 - avg_mass_fraction); % cosi sono piu o meno uguali
+avg_mass_fraction = (sol.mass_fract_SC1+ sol.mass_fract_SC2)/2;
+MF = max(sol.mass_fract_SC1,sol.mass_fract_SC2) + abs(sol.mass_fract_SC1 - avg_mass_fraction) + ...
+        abs(sol.mass_fract_SC2 - avg_mass_fraction); % cosi sono piu o meno uguali
 % disp('success')
 
-obj_fun = MF + penalty_MAX_DURATION + ...
+sol.obj_fun = MF + penalty_MAX_DURATION + ...
     10*(penalty_T_leg1 + penalty_T_leg2 + penalty_T_lega + penalty_T_legb) + ...
     penalty_TOF_leg1 + penalty_TOF_leg2 + penalty_TOF_lega + penalty_TOF_legb;
+
+%% Output encounter states
+r_encounter.EA = r_EA;
+r_encounter.astA1 = rA1;
+r_encounter.astD1 = rD1;
+r_encounter.astA2 = rA2;
+r_encounter.astAa = rAa;
+r_encounter.astDa = rDa;
+r_encounter.astAb = rAb;
+
+v_encounter.EA = v_EA;
+v_encounter.astA1 = vA1;
+v_encounter.astD1 = vD1;
+v_encounter.astA2 = vA2;
+v_encounter.astAa = vAa;
+v_encounter.astDa = vDa;
+v_encounter.astAb = vAb;
+
+%% Porcherie
+t_span_CT1 = linspace(output_1.t(end),output_1.t(end)+CT1,sim.n_sol);
+t_span_CTa = linspace(output_a.t(end),output_a.t(end)+CTa,sim.n_sol);
+mCT1 = ones(sim.n_sol,1).*output_1.m(end);
+mCTa = ones(sim.n_sol,1).*output_a.m(end);
+TCT1 = ones(sim.n_sol,3).*output_1.Thrust(end); %% oppure è thrust nulla???
+TCTa = ones(sim.n_sol,3).*output_a.Thrust(end);
+
+%% Output
+output.t_SC1            = [output_1.t; t_span_CT1'; t_span_CT1(end)+output_2.t];
+output.t_SC2            = [output_a.t; t_span_CTa'; t_span_CTa(end)+output_b.t];
+output.m_SC1            = [output_1.m; mCT1; output_2.m];
+output.m_SC2            = [output_a.m; mCTa; output_b.m];
+output.Thrust_SC1       = [output_1.Thrust; TCT1; output_2.Thrust];
+output.T_magn_SC1       = sqrt(output.Thrust_SC1(:,1).^2 + output.Thrust_SC1(:,3).^2);
+output.Thrust_SC2       = [output_a.Thrust; TCTa; output_b.Thrust];
+output.T_magn_SC2       = sqrt(output.Thrust_SC2(:,1).^2 + output.Thrust_SC2(:,3).^2);
+output.a_SC1            = [output_1.a; output_2.a];
+output.a_SC2            = [output_a.a; output_b.a];
+output.r.leg1       = output_1.r; 
+output.r.leg2       = output_2.r;
+output.r.lega       = output_a.r;
+output.r.legb       = output_b.r;
+output.theta.leg1   = output_1.theta; 
+output.theta.leg2   = output_2.theta;
+output.theta.lega   = output_a.theta;
+output.theta.legb   = output_b.theta;
+output.z.leg1       = output_1.z;
+output.z.leg2       = output_2.z;
+output.z.lega       = output_a.z;
+output.z.legb       = output_b.z;
+output.Href.leg1    = output_1.Href;
+output.Href.leg2    = output_2.Href;
+output.Href.lega    = output_a.Href;
+output.Href.legb    = output_b.Href;
+
+output.t1           = output_1.t;
+output.CT1          = t_span_CT1';
+output.t2           = output_2.t;
+output.ta           = output_a.t;
+output.CTa          = t_span_CTa';
+output.tb           = output_b.t;
 
 end
 

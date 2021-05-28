@@ -1,4 +1,4 @@
-function [output, r_encounter, v_encounter, sol] = plot_ff_ea_2SC_LT_RV_soo_NLI(x,sim,data, sol)
+function [output, r_encounter, v_encounter, sol] = plot_ff_2RL(x,sim,data, sol)
 %{ 
 input variable vector
 x = [(1) MJD0,

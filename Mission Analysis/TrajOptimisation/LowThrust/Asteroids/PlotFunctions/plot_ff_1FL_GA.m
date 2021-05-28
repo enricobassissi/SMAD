@@ -1,4 +1,4 @@
-function [output, r_encounter, sol] = plot_ff_1FL_GA_Ale(x,sim,data, sol)
+function [output, r_encounter, sol] = plot_ff_1FL_GA(x,sim,data, sol)
 %% setting the input times
 MJD01 = x(1); % departure time from earth
 TOFGA = x(14);
@@ -171,18 +171,22 @@ M_start_3rd_leg = output_2.m(end); %  - sim.M_pods;
 M_start_4th_leg = output_3.m(end); %  - sim.M_pods;
 [output_4] = NL_interpolator( r3 , r4 , v_abs_ast3 , v_abs_ast4 , N_rev4 , TOF4 , M_start_4th_leg ,sim.PS.Isp , sim );
 
+%% Extract quantities from output struct
 sol.mass_fract = (output_GA.m(1) - output_4.m(end))/output_GA.m(1);
 
+% T_append = [output_GA.Thrust(:,1),output_GA.Thrust(:,2),output_GA.Thrust(:,3);
+%             output_1.Thrust(:,1),output_1.Thrust(:,2),output_1.Thrust(:,3);
+%             output_2.Thrust(:,1),output_2.Thrust(:,2),output_2.Thrust(:,3);
+%             output_3.Thrust(:,1),output_3.Thrust(:,2),output_3.Thrust(:,3);
+%             output_4.Thrust(:,1),output_4.Thrust(:,2),output_4.Thrust(:,3)];
 
-T_append = [output_GA.Thrust(:,1),output_GA.Thrust(:,2),output_GA.Thrust(:,3);
-            output_1.Thrust(:,1),output_1.Thrust(:,2),output_1.Thrust(:,3);
-            output_2.Thrust(:,1),output_2.Thrust(:,2),output_2.Thrust(:,3);
-            output_3.Thrust(:,1),output_3.Thrust(:,2),output_3.Thrust(:,3);
-            output_4.Thrust(:,1),output_4.Thrust(:,2),output_4.Thrust(:,3)];
+% sol.T = sqrt(T_append(:,1).^2 + T_append(:,3).^2);
 
-sol.T = sqrt(T_append(:,1).^2 + T_append(:,3).^2);
-
-
+sol.T_GA = [output_GA.Thrust(:,1),output_GA.Thrust(:,2),output_GA.Thrust(:,3)];
+sol.T_1 = [output_1.Thrust(:,1),output_1.Thrust(:,2),output_1.Thrust(:,3)];
+sol.T_2 = [output_2.Thrust(:,1),output_2.Thrust(:,2),output_2.Thrust(:,3)];
+sol.T_3 = [output_3.Thrust(:,1),output_3.Thrust(:,2),output_3.Thrust(:,3)];
+sol.T_4 = [output_4.Thrust(:,1),output_4.Thrust(:,2),output_4.Thrust(:,3)];
 
 %% Output encounter states
 r_encounter.EA = r_EA;

@@ -114,7 +114,13 @@ M_start_3rd_leg = output_2.m(end) - sim.M_pods;
 M_start_4th_leg = output_3.m(end) - sim.M_pods;
 [output_4] = NL_interpolator( rD3 , rA4 , vD3 , vA4 , N_rev4 , TOF4 , M_start_4th_leg ,sim.PS.Isp , sim );
 
+%% Extract quantities from output struct
 sol.mass_fract = (output_1.m(1) - output_4.m(end))/output_1.m(1);
+
+sol.T_1 = [output_1.Thrust(:,1),output_1.Thrust(:,2),output_1.Thrust(:,3)];
+sol.T_2 = [output_2.Thrust(:,1),output_2.Thrust(:,2),output_2.Thrust(:,3)];
+sol.T_3 = [output_3.Thrust(:,1),output_3.Thrust(:,2),output_3.Thrust(:,3)];
+sol.T_4 = [output_4.Thrust(:,1),output_4.Thrust(:,2),output_4.Thrust(:,3)];
 
 %% Output encounter states
 r_encounter.EA = r_EA;

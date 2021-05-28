@@ -68,6 +68,10 @@ py_selected_asteroids = py.neo_api_function.refined_selection(py_dict_risk_list)
 py_selected_asteroids_dict = py_selected_asteroids{1};
 selected_asteroids_names = cellfun(@string,cell(py_selected_asteroids{2}));
 
+% Magnitude H
+py_MOID_H = py.neo_api_function.MOID_H(py_selected_asteroids_dict);
+H = cellfun(@double,cell(py_MOID_H{2})');
+
 % Selected Asteroids Characteristics Cell
 [selected_asteroids_orbital_elements_and_sigma, orbital_elements_units] = ...
     get_orbital_elements_and_sigma(selected_asteroids_names,py_selected_asteroids_dict);
@@ -96,7 +100,7 @@ clearvars i idx
 data_elements_matrix = [sel_asteroids_names,a_asteroids,e_asteroids,incl_asteroids,...
     OM_asteroids,om_asteroids];
 % table of results
-TABLE = table(sel_asteroids_names,a_asteroids,e_asteroids,incl_asteroids,OM_asteroids,...
+TABLE = table(sel_asteroids_names,H,a_asteroids,e_asteroids,incl_asteroids,OM_asteroids,...
     om_asteroids)
 
 %% cut down the asteroids on the orbital parameters
@@ -110,7 +114,7 @@ data_elements_matrix_cut = data_elements_matrix(and(and(and(TF_a_up,TF_e),TF_a_l
 clearvars TF_a_up TF_a_low TF_e TF_i
 
 %% Local Pruning on i and w_up
-p_number = 2;
+p_number = 4;
 [asteroid_names, PermutationMatrix_after, HowMany_after] = ...
             sequences_local_pruning2(data_elements_matrix_cut, p_number);
 
