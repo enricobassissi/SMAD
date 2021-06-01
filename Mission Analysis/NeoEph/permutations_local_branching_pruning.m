@@ -104,14 +104,18 @@ TABLE = table(sel_asteroids_names,H,a_asteroids,e_asteroids,incl_asteroids,OM_as
     om_asteroids)
 
 %% cut down the asteroids on the orbital parameters
-TF_a_up = str2double(data_elements_matrix(:,2))<1.4; % check a upper bound
+TF_a_up = str2double(data_elements_matrix(:,2))<1.8; % check a upper bound
 TF_a_low = str2double(data_elements_matrix(:,2))> 0.6; % check a lower bound
-TF_e = str2double(data_elements_matrix(:,3))<0.5; % check e
-TF_i = str2double(data_elements_matrix(:,4))<4; % check i
+TF_e = str2double(data_elements_matrix(:,3))<0.7; % check e
+TF_i = str2double(data_elements_matrix(:,4))<5; % check i
 
 data_elements_matrix_cut = data_elements_matrix(and(and(and(TF_a_up,TF_e),TF_a_low),TF_i),:);
 
 clearvars TF_a_up TF_a_low TF_e TF_i
+
+%% no pruning permutation
+p_number = 4;
+[PermutationMatrix_noPruning, ~] = permnUnique(asteroid_names, p_number);
 
 %% Local Pruning on i and w_up
 p_number = 4;

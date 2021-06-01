@@ -36,8 +36,6 @@ MJDD3 = MJDA3 + CT3; % departure on ast 3
 TOF4 = x(15);
 MJDA4 = MJDD3 + TOF4; % arrival ast 4
 
-obj_fun = 100;
-
 max_duration = 12*365*(3600*24)/sim.TU;
 penalty_MAX_DURATION = 0;
 if (TOF1+CT1+TOF2+CT2+TOF3+CT3+TOF4) > max_duration % 12 years max mission time 

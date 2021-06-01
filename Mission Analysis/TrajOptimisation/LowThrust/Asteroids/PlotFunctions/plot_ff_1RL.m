@@ -181,13 +181,12 @@ output.t2 = output_2.t;
 output.t3 = output_3.t;
 output.t4 = output_4.t;
 
-output.tEnd.Leg11 = output.t1(end)*sim.TU/86400; 
-output.tEnd.Leg12 = (output.t1(end)+CT1)*sim.TU/86400;
-output.tEnd.Leg21 = t_span_CT1(end)*sim.TU/86400;
-output.tEnd.Leg22 = (t_span_CT1(end)+output_2.t(end))*sim.TU/86400;
-output.tEnd.Leg31 = t_span_CT2(end)*sim.TU/86400;
-output.tEnd.Leg32 = (t_span_CT2(end)+output_3.t(end))*sim.TU/86400;
-output.tEnd.Leg41 = t_span_CT3(end)*sim.TU/86400;
-output.tEnd.Leg42 = (t_span_CT3(end)+output_4.t(end))*sim.TU/86400;
+output.tEnd.Leg11 = output.t1(end)*sim.TU/86400; %  A1
+output.tEnd.Leg12 = output.tEnd.Leg11+CT1*sim.TU/86400; %  D1
+output.tEnd.Leg21 = output.tEnd.Leg12+output_2.t(end)*sim.TU/86400; %  A2
+output.tEnd.Leg22 = output.tEnd.Leg21+CT2*sim.TU/86400; % ct2 on ast 2
+output.tEnd.Leg31 = output.tEnd.Leg22+output_3.t(end)*sim.TU/86400; % A3
+output.tEnd.Leg32 = output.tEnd.Leg31+CT3*sim.TU/86400; %  D3
+output.tEnd.Leg41 = output.tEnd.Leg32+output_4.t(end)*sim.TU/86400; %  A4
 end
 

@@ -520,7 +520,7 @@ def refined_selection(dict_risk_list):
     MOID_H_selected=[]
     for key in dict_risk_list.keys():
         if float(dict_risk_list[key]['moid'].scale)<=0.05: #MOID<=0.05 AU
-            if (dict_risk_list[key]["magn_radius_flag"]=='H' and float(dict_risk_list[key]["H"])<=28) or (dict_risk_list[key]["magn_radius_flag"]=='D' and float(dict_risk_list[key]["D"])>=20):
+            if (dict_risk_list[key]["magn_radius_flag"]=='H' and float(dict_risk_list[key]["H"])<=28) or (dict_risk_list[key]["magn_radius_flag"]=='D' and float(dict_risk_list[key]["D"])>=20): #low case H is 24.5 meaning 25 m circa
                 MOID_H_selected.append(key)
 
     # At least one impact 2026<year<2048 with a Palermo Scale>=-7 (-12 now)
@@ -551,7 +551,7 @@ def refined_selection(dict_risk_list):
     # Orbit Uncertantains filter (number of observation>=40)
     OU_selected=[]
     for key in dict_risk_list:
-            if int(dict_risk_list[key]['N_obs'])>=10:
+            if int(dict_risk_list[key]['N_obs'])>=10: # low case to open -> 5
                 OU_selected.append(key)
     #Intersection of filtered lists
     refined_selected=list(set(list(set(PS_date_selected) & set(MOID_H_selected))) & set(OU_selected))

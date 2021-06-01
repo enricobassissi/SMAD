@@ -1,7 +1,7 @@
 %% --------------------------------------------------------------------- %%
-%% ------------------------- Earth Ast1 Transfer ----------------------- %%
-%% ------------------------- ARCH 1+4, LT FLYBY ------------------------ %%
-%% ------------------------------ SOO ---------------------------------- %%
+%% -------------- Ma se io faccio un'ottimizzazione a giro ------------- %%
+%% --------- escludendo dalla run quello che ho appena visitato -------- %%
+%% --------------------------- che succede? ---------------------------- %%
 %% --------------------------------------------------------------------- %%
 %% Setup for default options
 set(0, 'DefaultTextFontSize', 20)
@@ -82,7 +82,8 @@ sim.TOF_imposed_flag = 1;
 sim.PS.Isp = 3200/sim.TU;  % non-dimensional specific impulse
 sim.M = 100; % SC mass [kg]
 % sim.M = 80; % SC mass [kg]
-sim.max_Available_Thrust = 0.05; % [N]
+sim.max_Available_Thrust = 0.01; % [N]
+sim.massPods = 5; % kg
 
 %% Boundaries
 % Departure dates (1)
@@ -91,11 +92,11 @@ bound.date_ld =  [2028, 1, 1, 0, 0, 0];
 bound.mjd2000_ed = date2mjd2000(bound.date_ed)*3600*24/sim.TU;
 bound.mjd2000_ld = date2mjd2000(bound.date_ld)*3600*24/sim.TU;
 % TOF1 (2)
-bound.TOF1_min = 0.3*365*3600*24/sim.TU; %600
-bound.TOF1_max = 2*365*3600*24/sim.TU; 
+bound.TOF1_min = 0.2*365*3600*24/sim.TU; %600
+bound.TOF1_max = 3*365*3600*24/sim.TU; 
 % N REV (3)
 bound.N_REV_min = 0; %0
-bound.N_REV_max = 0; %3
+bound.N_REV_max = 2; %3
 % C3 stuff
 % Constraint on C3 Launcher (4)
 sim.C3_max = 30; % km^2/s^2
@@ -159,143 +160,85 @@ end
 options.UseParallel = true;
 
 %% Build the soo
-FitnessFunction = @(x) ff_ea_1ast_LT_soo_NLI(x,sim,data); % Function handle to the fitness function
+sim.asteroid_to_fish = data.asteroid_names;
+FitnessFunction = @(x) ff_chesuccseottimizzunoallavolta(x,sim,data); % Function handle to the fitness function
 numberOfVariables = length(bound.ub); % Number of decision variables
 
 tic
-[x,Fval,exitFlag,Output] = ga(FitnessFunction,numberOfVariables,constr.A, ...
+[x1,Fval1,exitFlag1,Output1] = ga(FitnessFunction,numberOfVariables,constr.A, ...
     constr.b,constr.Aeq,constr.beq,bound.lb,...
     bound.ub,constr.nonlcon,constr.IntCon,options);
-el_time_min_pp = toc/60;
+el_time_min_pp1 = toc/60;
 
-%% Solution Struct
-sol.departure_mjd2000 = x(1)*sim.TU/(3600*24);
-sol.dep_opt = mjd20002date(x(1)*sim.TU/(3600*24));
-sol.TOF = x(2)*sim.TU/(3600*24);
-sol.asteroid_1 = data.asteroid_names(x(7));
+[output1, r_encounter, v_encounter,sol] = plot_ff_chesuccseottimizzunoallavolta(x1,sim,data,sol);
+
+%% and then let's go to the second
+sol.time_arr_ast_ADIM = x1(1)+x1(2);
+sol.asteroid_1 = data.asteroid_names(x1(7));
+sim.asteroid_to_fish = data.asteroid_names(~contains(data.asteroid_names,sol.asteroid_1));
+sim.M = output1.m(end) - sim.massPods; % SC mass [kg]
+FitnessFunction = @(x) ff_chesucc1_1ast_to_another_ast(x,sim,data,sol);
+
+%% Boundaries 2
+% CT1 (1)
+bound2.CT1_min = 30*3600*24/sim.TU; %600
+bound2.CT1_max = 80*3600*24/sim.TU; 
+% TOF1 (2)
+bound2.TOF1_min = 0.2*365*3600*24/sim.TU; %600
+bound2.TOF1_max = 3*365*3600*24/sim.TU; 
+% N REV (3)
+bound2.N_REV_min = 0; %0
+bound2.N_REV_max = 2; %3
+% ID Permutation (4)
+bound2.IDP_min = 1; 
+% bound.IDP_max = data.HowMany; 
+bound2.IDP_max = length(sim.asteroid_to_fish);
+
+% x = [MJD0,TOF1,NREV,v_inf_magn,az,el,IDP]
+bound2.lb = [bound2.CT1_min, bound2.TOF1_min, ...
+    bound2.N_REV_min, bound2.IDP_min]; % Lower bound
+bound2.ub = [bound2.CT1_max, bound2.TOF1_max, ...
+    bound2.N_REV_max, bound2.IDP_max]; % Upper bound
+
+%% Constraints
+constr.A = []; % linear inequality constraints
+constr.b = []; % linear inequality constraints
+constr.Aeq = []; % linear equality constraints
+constr.beq = []; % linear equality constraints
+constr.nonlcon = []; % linear equality constraints
+% if you want to restrict x(2) and x(10) to be integers, set IntCon to [2,10].
+% ga(fitnessfcn,nvars,A,b,Aeq,beq,lb,ub,nonlcon,IntCon,options)
+constr.IntCon = [3,4];
+
+%%
+numberOfVariables2 = length(bound2.ub);
+tic
+[x2,Fval2,exitFlag2,Output2] = ga(FitnessFunction,numberOfVariables2,constr.A, ...
+    constr.b,constr.Aeq,constr.beq,bound2.lb,...
+    bound2.ub,constr.nonlcon,constr.IntCon,options);
+el_time_min_pp2 = toc/60;
+
+[output2, r_encounter2, v_encounter2, sol] = plot_ff_chesucc1_1ast_to_another_ast(x2,sim,data,sol);
 
 %% plot
-[output, r_encounter, v_encounter] = plot_ff_ea_1ast_LT_soo_NLI(x,sim,data);
+r_1  = [output1.r.*cos(output1.theta), ...
+    output1.r.*sin(output1.theta), output1.z];
+R_1 = rotate_local2ecplitic(r_encounter.EA,r_1,sim.n_sol,output1.Href);
 
-figure()
-subplot(5,1,1)
-plot(output.t*sim.TU/86400,output.Thrust(:,1));
-% xlabel('Time [days]')
-ylabel('In-plane Thrust [N]')
+r_2  = [output2.r.*cos(output2.theta), ...
+    output2.r.*sin(output2.theta), output2.z];
+R_2 = rotate_local2ecplitic(r_encounter2.ast1,r_2,sim.n_sol,output2.Href);
 
-subplot(5,1,2)
-plot(output.t*sim.TU/86400,180/pi*output.Thrust(:,2));
-% xlabel('Time [days]')
-ylabel('In-plane Thrust angle [deg]')
-
-subplot(5,1,3)
-plot(output.t*sim.TU/86400,output.Thrust(:,3));
-% xlabel('Time [days]')
-ylabel('out-of-plane Thrust [N]')
-
-subplot(5,1,4)
-plot(output.t*sim.TU/86400,sqrt(output.Thrust(:,1).^2 + output.Thrust(:,3).^2));
-% xlabel('Time [days]')
-ylabel('Thrust [N]')
-
-subplot(5,1,5)
-plot(output.t*sim.TU/86400,output.m);
-xlabel('Time [days]')
-ylabel('Mass [kg]')
-
-%% plot orbit
-r3  = [output.r.*cos(output.theta) output.r.*sin(output.theta) output.z];
-R3 = rotate_local2ecplitic(r_encounter.EA,r3,sim.n_sol,output.Href);
-
-figure()
-plot3(R3(:,1),R3(:,2),R3(:,3),'DisplayName','Traj')
+plot3(R_1(:,1),R_1(:,2),R_1(:,3));
 hold on
-plot3(r_encounter.EA(1),r_encounter.EA(2),r_encounter.EA(3),'*m','DisplayName','Dep')
-plot3(r_encounter.ast1(1),r_encounter.ast1(2),r_encounter.ast1(3),'*c','DisplayName','Arr')
-axis equal; grid on;
-xlabel('x [AU]'); ylabel('y [AU]'); ylabel('y [AU]'); 
-% PLANETS
-plot_planet_orbit(sol.departure_mjd2000,3,colors,8); % earth
-plot_planet_orbit(sol.departure_mjd2000,4,colors,2); % mars
-% Asteroids
-fraction_of_the_orbit = 1;
-hello_orbit1 = sol.departure_mjd2000 + output.t(end);
-plot_asteorid_orbit(hello_orbit1,fraction_of_the_orbit,sol.asteroid_1,colors,3);
-% Sun
-plot3(0,0,0,'o','Color',colors(4,:),'DisplayName','Sun')
+plot3(R_2(:,1),R_2(:,2),R_2(:,3));
+axis equal
+plot3(r_encounter.EA(1),r_encounter.EA(2),r_encounter.EA(3),'*',...
+    'DisplayName','Dep Earth')
+plot3(r_encounter.ast1(1),r_encounter.ast1(2),r_encounter.ast1(3),'^',...
+    'DisplayName','Arr Ast1')
+plot3(r_encounter2.ast1(1),r_encounter2.ast1(2),r_encounter2.ast1(3),'*',...
+    'DisplayName','Dep Ast1')
+plot3(r_encounter2.ast2(1),r_encounter2.ast2(2),r_encounter2.ast2(3),'^',...
+    'DisplayName','Arr Ast2')
 legend('show')
-view(2)
-
-%% post analysis and checks
-max_Thrust = max(sqrt(output.Thrust(:,1).^2 + output.Thrust(:,3).^2))*1000; %[mN]
-
-transf_check = abs(sol.TOF - output.t(end)*sim.TU/(3600*24));
-
-Traj = R3;
-max_dist_sun = max(vecnorm(Traj,2,2));
-min_dist_sun = min(vecnorm(Traj,2,2));
-
-mjd_earth_plot = output.t.*sim.TU/86400 + sol.departure_mjd2000;
-for k=1:length(mjd_earth_plot)
-    [kep,ksun] = uplanet(mjd_earth_plot(k), 3);
-    [r__E, ~] = sv_from_coe(kep,ksun);  
-    R__E(k,:)=r__E/sim.DU; % it's in km it becomes AU, to be plotted
-end
-clearvars k r__E
-
-dist_sc_earth = Traj - R__E;
-max_dist_earth = max(vecnorm(dist_sc_earth,2,2));
-min_dist_earth = min(vecnorm(dist_sc_earth,2,2));
-
-% Propulsion for NIKITA
-Propulsion.Magnitude_Thrust = sqrt(output.Thrust(:,1).^2 + output.Thrust(:,3).^2);
-Propulsion.InPlane_Thrust   = output.Thrust(:,1);
-Propulsion.gamma_angle      = output.Thrust(:,2);
-Propulsion.OutofPlane_Thrust = output.Thrust(:,3);
-
-%% Plot with thrust vectors
-Tlocal_transf_orbit  = [-output.Thrust(:,1).*sin(output.theta), ...
-    output.Thrust(:,1).*cos(output.theta), output.Thrust(:,3)];
-Thrust_Helio = rotate_local2ecplitic(r_encounter.EA,Tlocal_transf_orbit,sim.n_sol,output.Href);
-
-figure('Name','Thrust Plot')
-plot3(R3(:,1),R3(:,2),R3(:,3),...
-    'Color',colors(1,:),'DisplayName','Traj')
-hold on
-
-plot3(r_encounter.EA(1),r_encounter.EA(2),r_encounter.EA(3),...
-    '*','Color',colors(8,:),'DisplayName','Dep Earth')
-plot3(r_encounter.ast1(1),r_encounter.ast1(2),r_encounter.ast1(3),...
-    '^','Color',colors(3,:),'DisplayName',sol.asteroid_1)
-
-quiver3(R3(:,1),R3(:,2),R3(:,3),Thrust_Helio(:,1),Thrust_Helio(:,2),Thrust_Helio(:,3),2)
-
-axis equal; grid on;
-xlabel('x [AU]'); ylabel('y [AU]'); ylabel('y [AU]'); 
-title('In-plane + out-of-plane Thrust')
-% Sun
-plot3(0,0,0,'o','Color',colors(4,:),'DisplayName','Sun')
-legend('show')
-%view(2)
-
-figure('Name','Plane thrust')
-hold on
-plot(R3(:,1),R3(:,2),...
-    'Color',colors(1,:),'DisplayName','Traj')
-
-plot(r_encounter.EA(1),r_encounter.EA(2),...
-    '*','Color',colors(8,:),'DisplayName','Dep Earth')
-plot(r_encounter.ast1(1),r_encounter.ast1(2),...
-    '^','Color',colors(3,:),'DisplayName',sol.asteroid_1)
-
-quiver(R3(:,1),R3(:,2),Thrust_Helio(:,1),Thrust_Helio(:,2),2,...
-    'Color',colors(3,:),'DisplayName',sol.asteroid_1)
-
-axis equal; grid on;
-xlabel('x [AU]'); ylabel('y [AU]');
-title('In-plane Thrust(shall be tangential)')
-% Sun
-plot(0,0,'o','Color',colors(4,:),'DisplayName','Sun')
-legend('show')
-view(2)
-
