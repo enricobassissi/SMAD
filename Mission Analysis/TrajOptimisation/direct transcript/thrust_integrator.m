@@ -1,4 +1,4 @@
-function M_ratio = thrust_integrator(y,N,t_vec,M0,tin,tfin,sim)
+function M_fin = thrust_integrator(y,N,t_vec,M0,tin,tfin,sim)
 for i=1:N
     n=(i-1)*5;
 %     u(i,:)=[y(n+7),y(n+8),y(n+9)];
@@ -12,7 +12,7 @@ acc=@(t) acc_stepwise(u,t,t_vec);
 %     output.acc_vec(i)=acc(t_vec(i));
 % end
 [T,m]=ode45(@(t, mass) dynamic_mass(t,mass,acc,sim),linspace(0,tfin-tin,N) ,M0);
-M_ratio=(m(1)-m(N))/m(1);
+M_fin=(m(1)-m(N))/m(1);
 
 
 %%%
@@ -37,11 +37,16 @@ function K = dynamic_mass(t,mass,acc,sim)
 end
 
 function out = acc_stepwise(u,t,t_vec)
-%INPUT u=ux1 uy1 uz1 ux2 uy2 uz2 ...]
+%INPUT u=ux1 ux2 ...]
 for i=1:(length(t_vec)-1)
     if and(t_vec(i)<=t,t<t_vec(i+1))
+        ii=i;
         break
     end
 end
-out=abs(u(i));
+if i==(length(t_vec)-1)
+    out=0;
+else
+    out=abs(u(ii));
+end
 end
