@@ -1,6 +1,5 @@
 %% --------------------------------------------------------------------- %%
 %% ----------------------- Fixed Adim Points Transfer ------------------ %%
-%% ------------------------- ARCH 1+4, LT FLYBY ------------------------ %%
 %% --------------------------------------------------------------------- %%
 %% Setup for default options
 set(0, 'DefaultTextFontSize', 20)
@@ -50,7 +49,7 @@ sim.mu_dim    = 132712440018          ; % actractor parameter [km^3 s^-2] -- sun
 sim.DU    = 149597870.7           ; % distance unit [km]
 sim.TU    = (sim.DU^3/sim.mu_dim )^0.5; % time unit [s]
 sim.mu    = 1;                      % non-dimensional attractor parameter [DU^3/TU^2]
-sim.n_sol = 1000;                    % number of computational nodes %% 100 initially
+sim.n_sol = 100;                    % number of computational nodes %% 100 initially
 sim.x = linspace(0,1,sim.n_sol)';   % 
 sim.out_shape = 2;                  % out-of-plane shape (2:CONWAY)
 sim.g0 = 9.81*(sim.TU^2/(1000*sim.DU)); % non-dimensional g0
@@ -60,52 +59,36 @@ sim.tol_vers = 1e-8;
 sim.TOF_imposed_flag = 1;
 
 %% Propulsive system parameters
-PS.Is = 3000/sim.TU;  % non-dimensional specific impulse
+PS.Is = 3200/sim.TU;  % non-dimensional specific impulse
 
 %% Orbits parameters
 % RI = [ 1  0 0.1]'; % initial position [DU]  %% ORIGINALE: [1 0 0.1] 
 % RF = [-1 -1 0]'; % final position [DU]
-RI = [0.447414393411926;0.879938587683895;0];
-RF = [-0.775622628026112;0.956685003492707;0.150772515926221];
+% RI = [0.447414393411926;0.879938587683895;0];
+% RF = [-0.775622628026112;0.956685003492707;0.150772515926221];
+RI = [0.912120396290969;-0.434463464204559;0];
+RF = [0.845237646018605;-0.523439287406316;-0.004681108117684];
+
 
 % VI = [ 0  1 0]'; % initial velocity [DU/TU]
 % VF = [ 0.7  -0.7 0]'; % final velocity [DU/TU]
-VI = [-0.907762647631375;0.449438604937013;0];
-VF = [-0.445502785321434;-0.703586702008884;-0.140992872926641];
+% VI = [-0.907762647631375;0.449438604937013;0];
+% VF = [-0.445502785321434;-0.703586702008884;-0.140992872926641];
+VI = [0.413845006023926;0.899070082885654;0];
+VF = [0.516727044683935;0.921903628364270;0.004179914191347];
 
-N_rev = 1; % number of revolution
-TOF = 600*(3600*24)/sim.TU % TOF [TU] %10.4
+N_rev = 0; % number of revolution
+TOF = 410*(3600*24)/sim.TU % TOF [TU] %10.4
 M = 100; % SC mass [kg]
 
-elev = deg2rad(+160); az = deg2rad(-80); 
-v_launcher = sqrt(3)*[cos(elev)*cos(az); cos(elev)*sin(az); sin(elev)].*sim.TU/sim.DU;
+elev = -0.522433756570365; az = 1.37502410938492;
+v_launcher = 0.0356067686329918*[cos(elev)*cos(az); cos(elev)*sin(az); sin(elev)].*sim.TU/sim.DU;
 v_dep = VI + v_launcher;  %if parabolic escape (v_extra = 0)
 
-% v_launcher = sqrt(20)*VI./norm(VI).*sim.TU/sim.DU ;
-% v_launcher = sqrt(3)*VI./norm(VI).*sim.TU/sim.DU ;
-% v_dep =VI + v_launcher;  %since parabolic escape (vinf = 0)
-% alpha = deg2rad(10);
-% beta = deg2rad(10);
-% v_inf_magn = sqrt(1.00).*sim.TU/sim.DU;
-% % [azimuthv,elevationv,radiusv] = cart2sph(RI(1)+VI(1),RI(2)+VI(2),RI(2)+VI(3)); 
-% [azimuthv,elevationv,radiusv] = cart2sph(VI(1),VI(2),VI(3)); 
-% azimuthv2 = azimuthv + alpha;
-% elevationv2 = elevationv + beta;
-% radiusv2 = radiusv + v_inf_magn;
-% [v2x,v2y,v2z] = sph2cart(azimuthv2,elevationv2,radiusv2);
-% % v2 = [v2x-RI(1);v2y-RI(2);v2z-RI(3)];
-% v2 = [v2x;v2y;v2z];
-% v_dep = v2;  %if parabolic escape (v_extra = 0)
-% 
-% v_launcher = (v_dep).*sim.DU/sim.TU
-% norm(v_launcher)
-% 
-% quiver3(RI(1),RI(2),RI(2),v2x,v2y,v2z)
-% hold on
-% quiver3(RI(1),RI(2),RI(2),VI(1),VI(2),VI(3))
 
 %% Non linear interpolator
 output2 = NL_interpolator( RI , RF , v_dep , VF , N_rev , TOF ,M ,PS.Is ,sim );
+output2.t(end)
 
 figure()
 subplot(5,1,1)
@@ -146,48 +129,50 @@ plot3(RF(1), RF(2), RF(3),'*','Color',colors(3,:),'DisplayName','End')
 xlabel('x'); ylabel('y'); zlabel('z');
 legend('show')
 
-%% NLI2
+
+
+% %% NLI2
 % problem, HI e h_ref sono troppo diversi non so perchè
-output3 = NLI2( RI , RF , VI , VF , N_rev , TOF ,M ,PS.Is ,sim );
-figure()
-subplot(5,1,1)
-plot(output3.t*sim.TU/86400,output3.Thrust(:,1));
-xlabel('Time [days]')
-ylabel('In-plane Thrust [N]')
-
-subplot(5,1,2)
-plot(output3.t*sim.TU/86400,180/pi*output3.Thrust(:,2));
-xlabel('Time [days]')
-ylabel('In-plane Thrust angle [deg]')
-
-subplot(5,1,3)
-plot(output3.t*sim.TU/86400,output3.Thrust(:,3));
-xlabel('Time [days]')
-ylabel('out-of-plane Thrust [N]')
-
-subplot(5,1,4)
-plot(output3.t*sim.TU/86400,sqrt(output3.Thrust(:,1).^2 + output3.Thrust(:,3).^2));
-xlabel('Time [days]')
-ylabel('Thrust [N]')
-
-subplot(5,1,5)
-plot(output3.t*sim.TU/86400,output3.m);
-xlabel('Time [days]')
-ylabel('Mass [kg]')
-
-R_sdrp3  = [output3.r.*cos(output3.theta) output3.r.*sin(output3.theta) output3.z];
-Rglobal3 = rotate_local2ecplitic(RI,R_sdrp3,sim.n_sol,output3.Href);
-
-figure()
-plot3(Rglobal3(:,1),Rglobal3(:,2),Rglobal3(:,3),'Color',colors(1,:),'DisplayName','Trajectory')
-axis equal
-grid on
-hold on
-plot3(RI(1), RI(2), RI(3),'*','Color',colors(2,:),'DisplayName','Start')
-plot3(RF(1), RF(2), RF(3),'*','Color',colors(3,:),'DisplayName','End')
-legend('show')
-
-TOF
-output.t(end)
-output2.t(end)
-output3.t(end)
+% output3 = NLI2( RI , RF , VI , VF , N_rev , TOF ,M ,PS.Is ,sim );
+% figure()
+% subplot(5,1,1)
+% plot(output3.t*sim.TU/86400,output3.Thrust(:,1));
+% xlabel('Time [days]')
+% ylabel('In-plane Thrust [N]')
+% 
+% subplot(5,1,2)
+% plot(output3.t*sim.TU/86400,180/pi*output3.Thrust(:,2));
+% xlabel('Time [days]')
+% ylabel('In-plane Thrust angle [deg]')
+% 
+% subplot(5,1,3)
+% plot(output3.t*sim.TU/86400,output3.Thrust(:,3));
+% xlabel('Time [days]')
+% ylabel('out-of-plane Thrust [N]')
+% 
+% subplot(5,1,4)
+% plot(output3.t*sim.TU/86400,sqrt(output3.Thrust(:,1).^2 + output3.Thrust(:,3).^2));
+% xlabel('Time [days]')
+% ylabel('Thrust [N]')
+% 
+% subplot(5,1,5)
+% plot(output3.t*sim.TU/86400,output3.m);
+% xlabel('Time [days]')
+% ylabel('Mass [kg]')
+% 
+% R_sdrp3  = [output3.r.*cos(output3.theta) output3.r.*sin(output3.theta) output3.z];
+% Rglobal3 = rotate_local2ecplitic(RI,R_sdrp3,sim.n_sol,output3.Href);
+% 
+% figure()
+% plot3(Rglobal3(:,1),Rglobal3(:,2),Rglobal3(:,3),'Color',colors(1,:),'DisplayName','Trajectory')
+% axis equal
+% grid on
+% hold on
+% plot3(RI(1), RI(2), RI(3),'*','Color',colors(2,:),'DisplayName','Start')
+% plot3(RF(1), RF(2), RF(3),'*','Color',colors(3,:),'DisplayName','End')
+% legend('show')
+% 
+% TOF
+% output.t(end)
+% output2.t(end)
+% output3.t(end)

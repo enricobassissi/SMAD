@@ -224,6 +224,8 @@ sol.v_inf_magn = x(7)*sim.DU/sim.TU;
 sol.az = x(8);
 sol.el = x(9);
 
+[sol_dates] = sol_to_dates_of_mission_LT(sol,'1RL')
+
 %% characteristic quantities plot
 [output, r_encounter, v_encounter, sol] = plot_ff_1RL(x,sim,data,sol);
 

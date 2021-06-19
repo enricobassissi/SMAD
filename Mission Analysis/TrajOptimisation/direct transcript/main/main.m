@@ -27,18 +27,16 @@ colors = [0    50   71;... % (1) DEEP SPACE
 %% LOAD INIT GUESS DATA
 load('ws_2RL_moo3.mat')
 clear data output
+
 %% DIRECT TRANSCRIPTION
-
-%data = dataNS3;
-
-v_launcher = sol.v_inf_magn*[cos(sol.el)*cos(sol.az); cos(sol.el)*sin(sol.az); sin(sol.el)];
+v_launcher = sol.v_inf_magn/sim.DU*sim.TU*[cos(sol.el)*cos(sol.az); cos(sol.el)*sin(sol.az); sin(sol.el)];
 v_dep = v_encounter.EA + v_launcher;  %if parabolic escape (v_extra = 0)
-[output] = NL_interpolator_dt( r_encounter.EA , r_encounter.astA1 , v_dep , v_encounter.astA1 , sol.Nrev(1) , sol.TOF1/sim.TU ,sim.M1 ,sim.PS.Isp ,sim);
+[output] = NL_interpolator_dt( r_encounter.EA , r_encounter.astA1 , v_dep , v_encounter.astA1 , sol.Nrev(1) , sol.TOF1_ADIM ,sim.M1 ,sim.PS.Isp ,sim);
 
-data.n_int = sim.n_sol;
-data.Tmax = 0.025;
-href = output.Href;
-TOF = sol.TOF1;
+data.n_int = sim.n_sol; % discretisation points
+data.Tmax = 0.025; % max thrust available
+href = output.Href; % vector normal to the transfer orbit plane
+TOF = sol.TOF1; % time of flight, dimensional [days]
 t0 = sol.departure_mjd2000; %to be checked, maybe 0
 r1vers = r_encounter.EA./(norm(r_encounter.EA));
 
@@ -47,12 +45,22 @@ T=output.T_magn;
 r=output.r;
 z=output.z;
 s=sqrt(r.^2+z.^2);
-vr=output.vr;%enrico deve estrarre il carbone dalle miniere
+vr=output.vr; %enrico deve estrarre il carbone dalle miniere
 vt=output.vt;
-vz=outpur.vz;
-% acc_inplane=ouput.u(
-[ m, T, r, z, s, vr, vt, vz, acc_inplane, acc_out, acc, TH, L, gamma1, gamma2, gamma, v1perp, v2perp, v1tra, v2tra, vnorm, dmdt, T_inplane, T_outplane, theta_dot, time, TOFr] = ...
-    Conway(TOF3, N_rev3, q3, r1norm_3, r2norm_3, r1vers_3, r2vers_3, hvers_3, hh_3, v1_3, v2_3, muS, data);
+vz=output.vz;
+acc_inplane = output.acc_inplane;
+acc_out = output.acc_out;
+acc = output.acc;
+TH = output.theta;
+gamma = output.gamma;
+T_inplane = output.T_inplane;
+T_outplane = output.T_outplane;
+theta_dot = output.theta_dot;
+time = output.t;
+% ENRI: L, gamma1, gamma2, v1perp, v2perp, v1tra, v2tra, vnorm, dmdt, TOFr || non li usa mai!
+
+% [ m, T, r, z, s, vr, vt, vz, acc_inplane, acc_out, acc, TH, L, gamma1, gamma2, gamma, v1perp, v2perp, v1tra, v2tra, vnorm, dmdt, T_inplane, T_outplane, theta_dot, time, TOFr] = ...
+%     Conway(TOF3, N_rev3, q3, r1norm_3, r2norm_3, r1vers_3, r2vers_3, hvers_3, hh_3, v1_3, v2_3, muS, data);
 
 X = [r', TH', z', vr', theta_dot', vz', m'];
 options = optimset( 'Algorithm','interior-point', ...
@@ -62,9 +70,9 @@ options = optimset( 'Algorithm','interior-point', ...
                         'MaxFunEvals', 5000000);
 
 N = data.n_int;
-DU = astroConstants(2);
-TU = (DU^3/muS).^0.5;
-MU = data.Mdry;
+DU = sim.DU;
+TU = sim.TU;
+MU = sim.M1; % ENRI: it was mdry but we adimensionalise on mwet
 % 
 % DU = 1;
 % TU = 1;
@@ -89,7 +97,9 @@ ualpha = gamma;
 
 data.xi = Xad(1,:);
 data.xf = Xad(end,:);
-data.muS = muS;   
+data.muS = sim.mu_dim;   
+data.MU = sim.M1; % ENRI: same thing on mass adimensionalisation
+data.Isp = sim.PS.Isp; % ENRI: our isp
 
 Xpropad = zeros(N, 7);
 Xpropad(1,:) = Xad(1,:); %first value equal
@@ -101,10 +111,10 @@ data.time = timead;
 %         xx = x(k,:);
 
         hhh = timead(k+1) - timead(k);
-        K1 = EoMpolarAD(timead(k), xx, T(k), ualpha(k), ubeta(k), muS, data);
-        K2 = EoMpolarAD(timead(k)+ hhh/2, xx + hhh/2*K1, 0.5*(T(k+1) + T(k)), 0.5*(ualpha(k+1) + ualpha(k)), 0.5*(ubeta(k)+ubeta(k+1)), muS, data);
-        K3 = EoMpolarAD(timead(k)+ hhh/2, xx + hhh/2*K2, 0.5*(T(k+1) + T(k)), 0.5*(ualpha(k+1) + ualpha(k)), 0.5*(ubeta(k)+ubeta(k+1)),  muS, data);
-        K4 = EoMpolarAD(timead(k)+ hhh, xx + hhh*K3, T(k+1), ualpha(k+1), ubeta(k+1), muS, data);    
+        K1 = EoMpolarAD(timead(k), xx, T(k), ualpha(k), ubeta(k), data.muS, data);
+        K2 = EoMpolarAD(timead(k)+ hhh/2, xx + hhh/2*K1, 0.5*(T(k+1) + T(k)), 0.5*(ualpha(k+1) + ualpha(k)), 0.5*(ubeta(k)+ubeta(k+1)), data.muS, data);
+        K3 = EoMpolarAD(timead(k)+ hhh/2, xx + hhh/2*K2, 0.5*(T(k+1) + T(k)), 0.5*(ualpha(k+1) + ualpha(k)), 0.5*(ubeta(k)+ubeta(k+1)),  data.muS, data);
+        K4 = EoMpolarAD(timead(k)+ hhh, xx + hhh*K3, T(k+1), ualpha(k+1), ubeta(k+1), data.muS, data);    
 
 %         Xprop(k+1,:) = xx + hhh/6*(K1 + 2*K2 + 2*K3 + K4);
         Xpropad(k+1,:) = Xpropad(k,:) + hhh/6*(K1 + 2*K2 + 2*K3 + K4);

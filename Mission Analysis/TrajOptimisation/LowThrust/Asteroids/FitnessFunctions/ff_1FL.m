@@ -10,7 +10,6 @@ MJDP3 = MJDP2 + TOF3; % passage ast 3
 TOF4 = x(5);
 MJDP4 = MJDP3 + TOF4; % passage ast 4
 
-obj_fun = 100; %%
 
 max_duration = 12*365*(3600*24)/sim.TU;
 penalty_MAX_DURATION = 0;
@@ -129,7 +128,7 @@ penalty_TOF_leg1 = 0; penalty_TOF_leg2 = 0; penalty_TOF_leg3 = 0; penalty_TOF_le
 % 1st leg - Earth -> ast1
 [output_1] = NL_interpolator_of( r_EA , r1 , v_dep , v_abs_ast1, N_rev1 , TOF1 , sim.M ,sim.PS.Isp , sim );
 if max(abs(output_1.T_magn)) > sim.max_Available_Thrust
-    penalty_T_leg1 = abs(max(output_1.T_magn)) - sim.max_Available_Thrust;
+    penalty_T_leg1 = max(abs(output_1.T_magn)) - sim.max_Available_Thrust;
 end
 if abs(output_1.t(end) - TOF1) > tol_TOF
     penalty_TOF_leg1 = abs(output_1.t(end) - TOF1);
@@ -147,7 +146,7 @@ end
 M_start_3rd_leg = output_2.m(end) - sim.M_pods; % 
 [output_3] = NL_interpolator_of( r2 , r3 , v_abs_ast2 , v_abs_ast3 , N_rev3 , TOF3 , M_start_3rd_leg ,sim.PS.Isp , sim );
 if max(abs(output_3.T_magn)) > sim.max_Available_Thrust
-    penalty_T_leg3 = abs(max(output_3.T_magn)) - sim.max_Available_Thrust;
+    penalty_T_leg3 = max(abs(output_3.T_magn)) - sim.max_Available_Thrust;
 end
 if abs(output_3.t(end) - TOF3) > tol_TOF
     penalty_TOF_leg3 = abs(output_3.t(end) - TOF3);
@@ -156,7 +155,7 @@ end
 M_start_4th_leg = output_3.m(end) - sim.M_pods; % 
 [output_4] = NL_interpolator_of( r3 , r4 , v_abs_ast3 , v_abs_ast4 , N_rev4 , TOF4 , M_start_4th_leg ,sim.PS.Isp , sim );
 if max(abs(output_4.T_magn)) > sim.max_Available_Thrust
-    penalty_T_leg4 = abs(max(output_4.T_magn)) - sim.max_Available_Thrust;
+    penalty_T_leg4 = max(abs(output_4.T_magn)) - sim.max_Available_Thrust;
 end
 if abs(output_4.t(end) - TOF4) > tol_TOF
     penalty_TOF_leg4 = abs(output_4.t(end) - TOF4);

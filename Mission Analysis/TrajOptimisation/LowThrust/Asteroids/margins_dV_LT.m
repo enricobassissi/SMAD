@@ -19,19 +19,25 @@ str_path=split(pwd, 'Asteroids');
 imp_path=string(str_path(1));
 addpath(genpath(imp_path));
 
-load(imp_path+'Asteroids\Workspaces\ws_1FL_0.62_pods_42mN.mat')
+load(imp_path+'Asteroids\Workspaces\ws_1FL_0.6_pods_45mN.mat')
 % fuel_wet = 1-(exp(-sol.dV_tot*1e3/(g0*Isp))); 
 g0 = 9.81;
 Isp = 3200;
-dV_not_margined = -g0*Isp*log(1-sol.mass_fract);
-dV_margin_DV_010 =  dV_not_margined*0.05;
-dV_margin_DV_080 = 0.030; % km/s % launcher
+dV_not_margined = [sol.dV_associated_Leg1, sol.dV_associated_Leg2, sol.dV_associated_Leg3, sol.dV_associated_Leg4];
+% dV_margin_DV_010 =  dV_not_margined*0.05;
+dV_margin_DV_010 =  [0,0,0,0];
+% dV_margin_DV_080 = 0.030; % km/s % launcher
+dV_margin_DV_080 = 0;
 dV_margin_DV_120 = dV_not_margined*0.1;
-dV_margin_DV_130 = 0.045;
-dV_margin_DV_150 = 0.020*4;
-dV_margined = dV_not_margined+dV_margin_DV_010+dV_margin_DV_080+...
-    dV_margin_DV_120+dV_margin_DV_130+dV_margin_DV_150
-mass_frac_margined = 1-(exp(-dV_margined/(g0*Isp)))
+dV_margin_DV_130 = 0.045; % launcher, direct injection
+dV_margin_DV_150 = 0.020; % interplanetary approach
+dV_margined = [dV_not_margined(1)+dV_margin_DV_010(1)+dV_margin_DV_080+...
+    dV_margin_DV_120(1)+dV_margin_DV_130,...
+    dV_not_margined(2)+dV_margin_DV_010(2)+dV_margin_DV_120(2)+dV_margin_DV_150,...
+    dV_not_margined(3)+dV_margin_DV_010(3)+dV_margin_DV_120(3)+dV_margin_DV_150,...
+    dV_not_margined(4)+dV_margin_DV_010(4)+dV_margin_DV_120(4)+dV_margin_DV_150]
+
+mass_frac_margined = 1-(exp(-sum(dV_margined)/(g0*Isp)))
 
 %% 1RL
 clear; clc;
@@ -50,15 +56,21 @@ load(imp_path+'Asteroids\Workspaces\ws_1RL_0.7_27mN.mat')
 % fuel_wet = 1-(exp(-sol.dV_tot*1e3/(g0*Isp))); 
 g0 = 9.81;
 Isp = 3200;
-dV_not_margined = -g0*Isp*log(1-sol.mass_fract);
-dV_margin_DV_010 =  dV_not_margined*0.05;
-dV_margin_DV_080 = 0.030; % km/s % launcher
+dV_not_margined = [sol.dV_associated_Leg1, sol.dV_associated_Leg2, sol.dV_associated_Leg3, sol.dV_associated_Leg4];
+% dV_margin_DV_010 =  dV_not_margined*0.05;
+dV_margin_DV_010 =  [0,0,0,0];
+% dV_margin_DV_080 = 0.030; % km/s % launcher
+dV_margin_DV_080 = 0;
 dV_margin_DV_120 = dV_not_margined*0.1;
-dV_margin_DV_130 = 0.045;
-dV_margin_DV_150 = 0.020*4;
-dV_margined = dV_not_margined+dV_margin_DV_010+dV_margin_DV_080+...
-    dV_margin_DV_120+dV_margin_DV_130+dV_margin_DV_150
-mass_frac_margined = 1-(exp(-dV_margined/(g0*Isp)))
+dV_margin_DV_130 = 0.045; % launcher, direct injection
+dV_margin_DV_150 = 0.020; % interplanetary approach
+dV_margined = [dV_not_margined(1)+dV_margin_DV_010(1)+dV_margin_DV_080+...
+    dV_margin_DV_120(1)+dV_margin_DV_130,...
+    dV_not_margined(2)+dV_margin_DV_010(2)+dV_margin_DV_120(2)+dV_margin_DV_150,...
+    dV_not_margined(3)+dV_margin_DV_010(3)+dV_margin_DV_120(3)+dV_margin_DV_150,...
+    dV_not_margined(4)+dV_margin_DV_010(4)+dV_margin_DV_120(4)+dV_margin_DV_150]
+sum(dV_margined)
+mass_frac_margined = 1-(exp(-sum(dV_margined)/(g0*Isp)))
 
 %% 2FL
 clear; clc;
@@ -77,25 +89,33 @@ load(imp_path+'Asteroids\Workspaces\ws_2FL_0.3_pods_16mN.mat')
 % fuel_wet = 1-(exp(-sol.dV_tot*1e3/(g0*Isp))); 
 g0 = 9.81;
 Isp = 3200;
-dV_not_margined = -g0*Isp*log(1-sol.mass_fract_SC1);
-dV_margin_DV_010 =  dV_not_margined*0.05;
-dV_margin_DV_080 = 0.030; % km/s % launcher
-dV_margin_DV_120 = dV_not_margined*0.1;
-dV_margin_DV_130 = 0.045;
-dV_margin_DV_150 = 0.020*2;
-dV_margined_SC1 = dV_not_margined+dV_margin_DV_010+dV_margin_DV_080+...
-    dV_margin_DV_120+dV_margin_DV_130+dV_margin_DV_150
-mass_frac_margined_SC1 = 1-(exp(-dV_margined_SC1/(g0*Isp)))
+dV_not_margined_SC1 = [sol.dV_associated_Leg1, sol.dV_associated_Leg2]
+% dV_margin_DV_010 =  dV_not_margined*0.05;
+dV_margin_DV_010 =  [0,0];
+% dV_margin_DV_080 = 0.030; % km/s % launcher
+dV_margin_DV_080 = 0;
+dV_margin_DV_120 = dV_not_margined_SC1*0.1;
+dV_margin_DV_130 = 0.045; % launcher, direct injection
+dV_margin_DV_150 = 0.020; % interplanetary approach
+dV_margined_SC1 = [dV_not_margined_SC1(1)+dV_margin_DV_010(1)+dV_margin_DV_080+...
+    dV_margin_DV_120(1)+dV_margin_DV_130,...
+    dV_not_margined_SC1(2)+dV_margin_DV_010(2)+dV_margin_DV_120(2)+dV_margin_DV_150]
+sum(dV_margined_SC1)
+mass_frac_margined_SC1 = 1-(exp(-sum(dV_margined_SC1)/(g0*Isp)))
 
-dV_not_margined_2 = -g0*Isp*log(1-sol.mass_fract_SC2);
-dV_margin_DV_010 =  dV_not_margined_2*0.05;
-dV_margin_DV_080 = 0.030; % km/s % launcher
-dV_margin_DV_120 = dV_not_margined_2*0.1;
-dV_margin_DV_130 = 0.045;
-dV_margin_DV_150 = 0.020*2;
-dV_margined_SC2 = dV_not_margined_2+dV_margin_DV_010+dV_margin_DV_080+...
-    dV_margin_DV_120+dV_margin_DV_130+dV_margin_DV_150
-mass_frac_margined_SC2 = 1-(exp(-dV_margined_SC2/(g0*Isp)))
+dV_not_margined_SC2 = [sol.dV_associated_Lega, sol.dV_associated_Legb]
+% dV_margin_DV_010 =  dV_not_margined*0.05;
+dV_margin_DV_010 =  [0,0];
+% dV_margin_DV_080 = 0.030; % km/s % launcher
+dV_margin_DV_080 = 0;
+dV_margin_DV_120 = dV_not_margined_SC2*0.1;
+dV_margin_DV_130 = 0.045; % launcher, direct injection
+dV_margin_DV_150 = 0.020; % interplanetary approach
+dV_margined_SC2 = [dV_not_margined_SC2(1)+dV_margin_DV_010(1)+dV_margin_DV_080+...
+    dV_margin_DV_120(1)+dV_margin_DV_130,...
+    dV_not_margined_SC2(2)+dV_margin_DV_010(2)+dV_margin_DV_120(2)+dV_margin_DV_150]
+sum(dV_margined_SC2)
+mass_frac_margined_SC2 = 1-(exp(-sum(dV_margined_SC2)/(g0*Isp)))
 
 %% 2RL
 clear; clc;
@@ -110,26 +130,34 @@ str_path=split(pwd, 'Asteroids');
 imp_path=string(str_path(1));
 addpath(genpath(imp_path));
 
-load(imp_path+'Asteroids\Ale Workspaces\case22.mat')
+load(imp_path+'Asteroids\Ale Workspaces\case22_for_margins.mat')
 % fuel_wet = 1-(exp(-sol.dV_tot*1e3/(g0*Isp))); 
 g0 = 9.81;
 Isp = 3200;
-dV_not_margined = -g0*Isp*log(1-sol.mass_fract_SC1);
-dV_margin_DV_010 =  dV_not_margined*0.05;
-dV_margin_DV_080 = 0.030; % km/s % launcher
-dV_margin_DV_120 = dV_not_margined*0.1;
-dV_margin_DV_130 = 0.045;
-dV_margin_DV_150 = 0.020*2;
-dV_margined_SC1 = dV_not_margined+dV_margin_DV_010+dV_margin_DV_080+...
-    dV_margin_DV_120+dV_margin_DV_130+dV_margin_DV_150
-mass_frac_margined_SC1 = 1-(exp(-dV_margined_SC1/(g0*Isp)))
+dV_not_margined_SC1 = [sol.dV_associated_Leg1, sol.dV_associated_Leg2+1000]
+% dV_margin_DV_010 =  dV_not_margined*0.05;
+dV_margin_DV_010 =  [0,0];
+% dV_margin_DV_080 = 0.030; % km/s % launcher
+dV_margin_DV_080 = 0;
+dV_margin_DV_120 = dV_not_margined_SC1*0.1;
+dV_margin_DV_130 = 0.045; % launcher, direct injection
+dV_margin_DV_150 = 0.020; % interplanetary approach
+dV_margined_SC1 = [dV_not_margined_SC1(1)+dV_margin_DV_010(1)+dV_margin_DV_080+...
+    dV_margin_DV_120(1)+dV_margin_DV_130,...
+    dV_not_margined_SC1(2)+dV_margin_DV_010(2)+dV_margin_DV_120(2)+dV_margin_DV_150]
+sum(dV_margined_SC1)
+mass_frac_margined_SC1 = 1-(exp(-sum(dV_margined_SC1)/(g0*Isp)))
 
-dV_not_margined_2 = -g0*Isp*log(1-sol.mass_fract_SC2);
-dV_margin_DV_010 =  dV_not_margined_2*0.05;
-dV_margin_DV_080 = 0.030; % km/s % launcher
-dV_margin_DV_120 = dV_not_margined_2*0.1;
-dV_margin_DV_130 = 0.045;
-dV_margin_DV_150 = 0.020*2;
-dV_margined_SC2 = dV_not_margined_2+dV_margin_DV_010+dV_margin_DV_080+...
-    dV_margin_DV_120+dV_margin_DV_130+dV_margin_DV_150
-mass_frac_margined_SC2 = 1-(exp(-dV_margined_SC2/(g0*Isp)))
+dV_not_margined_SC2 = [sol.dV_associated_Lega+1000, sol.dV_associated_Legb]
+% dV_margin_DV_010 =  dV_not_margined*0.05;
+dV_margin_DV_010 =  [0,0];
+% dV_margin_DV_080 = 0.030; % km/s % launcher
+dV_margin_DV_080 = 0;
+dV_margin_DV_120 = dV_not_margined_SC2*0.1;
+dV_margin_DV_130 = 0.045; % launcher, direct injection
+dV_margin_DV_150 = 0.020; % interplanetary approach
+dV_margined_SC2 = [dV_not_margined_SC2(1)+dV_margin_DV_010(1)+dV_margin_DV_080+...
+    dV_margin_DV_120(1)+dV_margin_DV_130,...
+    dV_not_margined_SC2(2)+dV_margin_DV_010(2)+dV_margin_DV_120(2)+dV_margin_DV_150]
+sum(dV_margined_SC2)
+mass_frac_margined_SC2 = 1-(exp(-sum(dV_margined_SC2)/(g0*Isp)))

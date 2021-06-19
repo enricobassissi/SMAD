@@ -42,11 +42,11 @@ MJDDa = MJDAa + CTa;
 TOFb =  x(5); % tof sc2 to 2nd asteroid
 MJDAb = MJDDa + TOFb; 
 
-% max_duration = 12*365*(3600*24)/sim.TU;
+max_duration = 12*365*(3600*24)/sim.TU;
 penalty_MAX_DURATION = 0;
-% if max(TOF1+CT1+TOF2,TOFa+CTa+TOFb) > max_duration
-%     penalty_MAX_DURATION = max(TOF1+CT1+TOF2,TOFa+CTa+TOFb) - max_duration; % 12 years max mission time 
-% end
+if max(TOF1+CT1+TOF2,TOFa+CTa+TOFb) > max_duration
+    penalty_MAX_DURATION = max(TOF1+CT1+TOF2,TOFa+CTa+TOFb) - max_duration; % 12 years max mission time 
+end
 
 % N REV1
 N_rev1 = x(6);
@@ -78,7 +78,6 @@ data_elements_matrix_2SC = data.data_elements_matrix(~TF,:);
 IDP2 = ceil(IDP_temp_2*HowMany_2SC/100);
 asteroid_a = PermutationMatrix_2SC(IDP2,1);
 asteroid_b = PermutationMatrix_2SC(IDP2,2);
-
 
 %% Computing position and velocity of the planets in that days
 % Departure from Earth
@@ -180,18 +179,26 @@ if abs(output_b.t(end) - TOFb) > tol_TOF
     penalty_TOF_legb = abs(output_b.t(end) - TOFb);
 end
 
-mass_fract_SC1 = (output_1.m(1) - output_2.m(end))/output_1.m(1);
-mass_fract_SC2 = (output_a.m(1) - output_b.m(end))/output_a.m(1);
+%% mass fractions
+mass_depleted_Leg1 = output_1.m(1) - output_1.m(end);
+mass_depleted_Leg2 = output_2.m(1) - output_2.m(end);
+tot_mass_depleted_SC1 = mass_depleted_Leg1+mass_depleted_Leg2;
+mass_fract_SC1 = tot_mass_depleted_SC1/output_1.m(1);
+
+mass_depleted_Lega = output_a.m(1) - output_a.m(end);
+mass_depleted_Legb = output_b.m(1) - output_b.m(end);
+tot_mass_depleted_SC2 = mass_depleted_Lega+mass_depleted_Legb;
+mass_fract_SC2 = tot_mass_depleted_SC2/output_a.m(1);
 
 %     if mass_fract_SC1 > 0 && mass_fract_SC1 < 1 
 %         if mass_fract_SC2 > 0 && mass_fract_SC2 < 1 
 avg_mass_fraction = (mass_fract_SC1+mass_fract_SC2)/2;
-MF = max(mass_fract_SC1,mass_fract_SC2) + abs(mass_fract_SC1 - avg_mass_fraction) + ...
-        abs(mass_fract_SC2 - avg_mass_fraction); % cosi sono piu o meno uguali
+MF = max(mass_fract_SC1,mass_fract_SC2) + 10*abs(mass_fract_SC1 - avg_mass_fraction) + ...
+        10*abs(mass_fract_SC2 - avg_mass_fraction); % cosi sono piu o meno uguali
 % disp('success')
 
 obj_fun = MF + penalty_MAX_DURATION + ...
-    10*(penalty_T_leg1 + penalty_T_leg2 + penalty_T_lega + penalty_T_legb) + ...
+    100*(penalty_T_leg1 + penalty_T_leg2 + penalty_T_lega + penalty_T_legb) + ...
     penalty_TOF_leg1 + penalty_TOF_leg2 + penalty_TOF_lega + penalty_TOF_legb;
 
 end

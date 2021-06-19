@@ -67,11 +67,11 @@ py_selected_asteroids = py.neo_api_function.refined_selection(py_dict_risk_list)
 
 % Properties dictionary and name list
 py_selected_asteroids_dict = py_selected_asteroids{1};
-selected_asteroids_names = cellfun(@string,cell(py_selected_asteroids{2}));
+selected_asteroids_names_not_filtered = cellfun(@string,cell(py_selected_asteroids{2}));
 
 % Selected Asteroids Characteristics Cell
 [selected_asteroids_orbital_elements_and_sigma, orbital_elements_units] = ...
-    get_orbital_elements_and_sigma(selected_asteroids_names,py_selected_asteroids_dict);
+    get_orbital_elements_and_sigma(selected_asteroids_names_not_filtered,py_selected_asteroids_dict);
 
 incl_asteroids = zeros(length(selected_asteroids_orbital_elements_and_sigma),1);
 e_asteroids = zeros(length(selected_asteroids_orbital_elements_and_sigma),1);
@@ -83,13 +83,18 @@ for i = 1:length(selected_asteroids_orbital_elements_and_sigma)
 end
 clearvars i
 
-TABLE = table(selected_asteroids_names',a_asteroids,e_asteroids,incl_asteroids)
+TABLE = table(selected_asteroids_names_not_filtered',a_asteroids,e_asteroids,incl_asteroids)
 
 %% --------------------------------------------------------------------- %%
 %% ---------------- GET HORIZONS DATA OF THE ASTEROIDS ----------------- %%
 %% ------------------------ FROM 2020 TO 2050 -------------------------- %%
 %% ------------------ Analysis on Keplerian Elements ------------------- %%
 %% --------------------------------------------------------------------- %%
+% I actually want only the 42 of the local pruning
+load('bbbb.mat');
+selected_asteroids_names = aaa;
+% selected_asteroids_names = ["2012BK14"];
+
 % Asteroids
 PointOfView = 'Sun';
 epoch_start = '2020-01-01';
@@ -116,7 +121,7 @@ clearvars name
 t_vector = linspace(pystr2mjd2000(epoch_start),pystr2mjd2000(epoch_stop),length(horizons_data{1,1}(:,1)));
 
 %% Fourier interpolation
-N = 200;
+N = 500;
 y_interp_ft = interpft(horizons_data{1,1},N,1); % 1 by column, 2 by rows
 t_vector2 = linspace(pystr2mjd2000(epoch_start),pystr2mjd2000(epoch_stop),N);
 
@@ -167,10 +172,10 @@ t_vector = linspace(pystr2mjd2000(epoch_start),pystr2mjd2000(epoch_stop),length(
 for name = 1:length(selected_asteroids_names)
     
     % Fourier interpolation
-    N = 200; % number of query point, interpolation points
+    N = 400; % number of query point, interpolation points
     V_interp_ft_2{name,1} = interpft(horizons_data{name}(:,1:5),N,1); % 1 by column, 2 by rows
     t_vector2 = linspace(pystr2mjd2000(epoch_start),pystr2mjd2000(epoch_stop),N);
-    N2 = 800; % number of query point, interpolation points
+    N2 = 1000; % number of query point, interpolation points
     V_interp_ft_22{name,1} = interpft(horizons_data{name}(:,6),N2,1); % 1 by column, 2 by rows
     t_vector22 = linspace(pystr2mjd2000(epoch_start),pystr2mjd2000(epoch_stop),N2);
     
@@ -343,7 +348,7 @@ for name = 1:length(selected_asteroids_names)
     axis equal; grid on;
     xlabel('x [AU]'); ylabel('y [AU]');  zlabel('z [AU]'); 
     legend('show','Location',"southeast")
-    saveas(h_fig,sprintf('./Figures/Orbits/orb%d.png',name));
+%     saveas(h_fig,sprintf('./Figures/Orbits/orb%d.png',name)); % questo è giusto
     %print(h_fig,sprintf('./Figures/Orbits/orb%d.pdf',name),'-dpdf','-bestfit'); 
     %exportgraphics(gca,sprintf('./Figures/Orbits/orb%d.png',name),'ContentType','image');
 end

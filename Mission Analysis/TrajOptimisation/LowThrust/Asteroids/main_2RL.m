@@ -5,15 +5,15 @@
 %% ------------------------------ SOO ---------------------------------- %%
 %% --------------------------------------------------------------------- %%
 %% Setup for default options
-set(0, 'DefaultTextFontSize', 11)
-set(0, 'DefaultAxesFontSize', 11)
-set(0, 'DefaultLegendFontSize', 11)
+set(0, 'DefaultTextFontSize', 20)
+set(0, 'DefaultAxesFontSize', 20)
+set(0, 'DefaultLegendFontSize', 20)
 set(0, 'DefaultAxesXGrid', 'on')
 set(0, 'DefaultAxesYGrid', 'on')
 set(0, 'DefaultLegendInterpreter', 'latex')
 set(0, 'DefaultAxesTickLabelInterpreter', 'latex')
 set(0, 'DefaultTextInterpreter', 'latex')
-set(0, 'DefaultLineLineWidth', 1.2)
+set(0, 'DefaultLineLineWidth', 1.8)
 format short
 
 %% Initializing the Environment
@@ -73,7 +73,7 @@ sim.mu_dim    = 132712440018              ; % actractor parameter [km^3 s^-2]
 sim.DU        = 149597870.7               ; % distance unit [km]
 sim.TU        = (sim.DU^3/sim.mu_dim )^0.5; % time unit [s]
 sim.mu        = 1;                      % non-dimensional attractor parameter [DU^3/TU^2]
-sim.n_sol     = 200;                    % number of computational nodes
+sim.n_sol     = 100;                    % number of computational nodes
 sim.x = linspace(0,1,sim.n_sol)';   % 
 
 sim.g0 = 9.81*(sim.TU^2/(1000*sim.DU)); % non-dimensional g0
@@ -81,19 +81,19 @@ sim.direction = 1;                     % direction of integration (1 FW, -1 BW),
                                        % 1 is like imposing wet mass at beginning
 sim.TOF_imposed_flag = 1;
 sim.PS.Isp = 3200/sim.TU;  % non-dimensional specific impulse
-sim.M1 = 70; % SC wet mass [kg] %%
-sim.M2 = 70; % SC wet mass [kg] %%
-sim.M_pods = 1; % mass of the payloads + landing stuff [kg] %%
-sim.max_Available_Thrust = 0.005; % 5 [mN], BepiColombo is 250 mN but it's much bigger
+sim.M1 = 140; % SC wet mass [kg] %%
+sim.M2 = 140; % SC wet mass [kg] %%
+sim.M_pods = 3; % mass of the payloads + landing stuff [kg] %%
+sim.max_Available_Thrust = 0.02; % 5 [mN], BepiColombo is 250 mN but it's much bigger
 
 %% Boundaries
 % Departure dates (1)
-bound.date_ed = [2026, 1, 1, 0, 0, 0]; 
+bound.date_ed = [2024, 1, 1, 0, 0, 0]; 
 bound.date_ld =  [2028, 1, 1, 0, 0, 0]; 
 bound.mjd2000_ed = date2mjd2000(bound.date_ed)*3600*24/sim.TU;
 bound.mjd2000_ld = date2mjd2000(bound.date_ld)*3600*24/sim.TU;
 % TOF1 (2)
-bound.TOF1_min = 0.2*365*3600*24/sim.TU; %1*365
+bound.TOF1_min = 0*365*3600*24/sim.TU; %1*365
 bound.TOF1_max = 3*365*3600*24/sim.TU; %3*365
 % TOF2 (3)
 bound.TOF2_min = 0.2*365*3600*24/sim.TU; %600
@@ -102,20 +102,20 @@ bound.TOF2_max = 3*365*3600*24/sim.TU;
 bound.TOFa_min = 0.2*365*3600*24/sim.TU; %600
 bound.TOFa_max = 3*365*3600*24/sim.TU; 
 % TOFb (5)
-bound.TOFb_min = 0.2*365*3600*24/sim.TU; %0.5*365
+bound.TOFb_min = 0*365*3600*24/sim.TU; %0.5*365
 bound.TOFb_max = 3*365*3600*24/sim.TU; 
 % N REV 1 (6)
 bound.N_REV1_min = 0; %0
-bound.N_REV1_max = 1; %3
+bound.N_REV1_max = 2; %3
 % N REV 2 (7)
 bound.N_REV2_min = 0; %0
-bound.N_REV2_max = 1; %3
+bound.N_REV2_max = 2; %3
 % N REV a (8)
 bound.N_REVa_min = 0; %0
-bound.N_REVa_max = 1; %3
+bound.N_REVa_max = 2; %3
 % N REV b (9)
 bound.N_REVb_min = 0; %0
-bound.N_REVb_max = 1; %3
+bound.N_REVb_max = 2; %3
 % ID Permutation (10)
 bound.IDP_min = 1; 
 bound.IDP_max = data.HowMany; 
@@ -181,7 +181,7 @@ options.PopulationSize = 1000; % ideal 1000
 options.MaxGenerations = 300; % ideal 100
 
 options.FunctionTolerance = 1e-6; %1e-9
-options.MaxStallGenerations = ceil(options.MaxGenerations/5);
+options.MaxStallGenerations = ceil(options.MaxGenerations/10);
 
 % Parallel pool
 % Open the parallel pool
@@ -216,12 +216,6 @@ IDP2 = ceil(IDP_temp_2*HowMany_2SC/100);
 sol.asteroid_a = PermutationMatrix_2SC(IDP2,1);
 sol.asteroid_b = PermutationMatrix_2SC(IDP2,2);
 
-% sol.asteroid_1 = "2021DR";
-% sol.asteroid_2 = "2021JE1";
-% sol.asteroid_a = "2020VV";
-% sol.asteroid_b = "2013GM3";
-
-
 sol.departure_date = mjd20002date(x(1)*sim.TU/(3600*24));
 sol.departure_mjd2000 = x(1)*sim.TU/86400;
 sol.TOF1 = x(2)*sim.TU/86400;
@@ -247,6 +241,49 @@ sol.Nrev = [x(6), x(7), x(8), x(9)];
 sol.v_inf_magn = x(12)*sim.DU/sim.TU;
 sol.az = x(13);
 sol.el = x(14);
+sol.az_deg = rad2deg(x(13));
+sol.el_deg = rad2deg(x(14));
+
+[sol_dates] = sol_to_dates_of_mission_LT(sol,'2RL')
+
+coasting.ast1.arr_mjd2000 = sol.departure_mjd2000 + sol.TOF1;
+coasting.ast1.dep_mjd2000 = sol.departure_mjd2000 + sol.TOF1 + sol.CT1;
+coasting.ast1 = time_and_distance_at_asteroid(sol.asteroid_1,coasting.ast1.arr_mjd2000,coasting.ast1.dep_mjd2000,data,sim);
+
+coasting.ast2.arr_mjd2000 = sol.departure_mjd2000 + sol.TOF1 + sol.CT1 + sol.TOF2;
+coasting.ast2.dep_mjd2000 = sol.departure_mjd2000 + sol.TOF1 + sol.CT1 + sol.TOF2 + 50; % arbitrary 50 day of prox ops on last ast
+coasting.ast2 = time_and_distance_at_asteroid(sol.asteroid_2,coasting.ast2.arr_mjd2000,coasting.ast2.dep_mjd2000,data,sim);
+
+coasting.asta.arr_mjd2000 = sol.departure_mjd2000 + sol.TOFa;
+coasting.asta.dep_mjd2000 = sol.departure_mjd2000 + sol.TOFa + sol.CTa;
+coasting.asta = time_and_distance_at_asteroid(sol.asteroid_a,coasting.asta.arr_mjd2000,coasting.asta.dep_mjd2000,data,sim);
+
+coasting.astb.arr_mjd2000 = sol.departure_mjd2000 + sol.TOFa + sol.CTa + sol.TOFb;
+coasting.astb.dep_mjd2000 = sol.departure_mjd2000 + sol.TOFa + sol.CTa + sol.TOFb + 50; % arbitrary 50 day of prox ops on last ast
+coasting.astb = time_and_distance_at_asteroid(sol.asteroid_b,coasting.astb.arr_mjd2000,coasting.astb.dep_mjd2000,data,sim);
+
+figure('Name','Coasting rel pos ast earth')
+plot3(coasting.ast1.rel_pos_ast_earth(:,1),coasting.ast1.rel_pos_ast_earth(:,2),coasting.ast1.rel_pos_ast_earth(:,3),...
+    'DisplayName','Ast 1','Color',colors(1,:));
+axis equal; hold on;
+plot3(coasting.ast2.rel_pos_ast_earth(:,1),coasting.ast2.rel_pos_ast_earth(:,2),coasting.ast2.rel_pos_ast_earth(:,3),...
+    'DisplayName','Ast 2','Color',colors(2,:));
+plot3(coasting.asta.rel_pos_ast_earth(:,1),coasting.asta.rel_pos_ast_earth(:,2),coasting.asta.rel_pos_ast_earth(:,3),...
+    'DisplayName','Ast a','Color',colors(3,:));
+plot3(coasting.astb.rel_pos_ast_earth(:,1),coasting.astb.rel_pos_ast_earth(:,2),coasting.astb.rel_pos_ast_earth(:,3),...
+    'DisplayName','Ast b','Color',colors(4,:));
+plot3(0,0,0,'o','DisplayName','Earth','Color',colors(8,:))
+legend('show')
+xlabel('x [AU]'); ylabel('y [AU]'); zlabel('z [AU]');
+
+figure()
+plot(coasting.ast1.time-sol.departure_mjd2000,coasting.ast1.norm_rel_pos,'DisplayName','Ast 1','Color',colors(1,:))
+hold on
+plot(coasting.ast2.time-sol.departure_mjd2000,coasting.ast2.norm_rel_pos,'DisplayName','Ast 2','Color',colors(2,:))
+plot(coasting.asta.time-sol.departure_mjd2000,coasting.asta.norm_rel_pos,'DisplayName','Ast a','Color',colors(3,:))
+plot(coasting.astb.time-sol.departure_mjd2000,coasting.astb.norm_rel_pos,'DisplayName','Ast b','Color',colors(4,:))
+legend('show')
+xlabel('time from departure [d]'); ylabel('norm(DIST) [AU]'); 
 
 %% characteristic quantities plot
 [output, r_encounter, v_encounter, sol] = plot_ff_2RL(x,sim,data,sol);
@@ -312,6 +349,39 @@ plot(output.t_SC2*sim.TU/86400,output.m_SC2,'Color',colors(2,:));
 xlabel('Time [days]')
 ylabel('Mass [kg]')
 
+%% only mass e thrust
+figure()
+subplot(2,1,1)
+plot(output.t_SC1*sim.TU/86400,output.m_SC1,'Color',colors(1,:));
+hold on
+plot(output.t_SC2*sim.TU/86400,output.m_SC2,'Color',colors(2,:));
+xline(sol.TOF1,'LineWidth',2,'LineStyle',':','Color',colors(1,:)); 
+xline(sol.TOF1+sol.CT1,'LineWidth',2,'LineStyle',':','Color',colors(1,:));
+xline(sol.TOF1+sol.CT1+sol.TOF2,'LineWidth',2,'LineStyle',':','Color',colors(1,:));
+xline(sol.TOFa,'LineWidth',2,'LineStyle',':','Color',colors(2,:)); 
+xline(sol.TOFa+sol.CTa,'LineWidth',2,'LineStyle',':','Color',colors(2,:));
+xline(sol.TOFa+sol.CTa+sol.TOFb,'LineWidth',2,'LineStyle',':','Color',colors(2,:));
+xlabel('Time [days]')
+ylabel('Mass [kg]')
+
+subplot(2,1,2)
+hp1 = plot(output.t_SC1*sim.TU/86400,output.T_magn_SC1,'Color',colors(1,:));
+hold on
+hp2 = plot(output.t_SC2*sim.TU/86400,output.T_magn_SC2,'Color',colors(2,:));
+xline(sol.TOF1,'LineWidth',2,'LineStyle',':','Color',colors(1,:)); 
+xline(sol.TOF1+sol.CT1,'LineWidth',2,'LineStyle',':','Color',colors(1,:));
+xline(sol.TOF1+sol.CT1+sol.TOF2,'LineWidth',2,'LineStyle',':','Color',colors(1,:));
+xline(sol.TOFa,'LineWidth',2,'LineStyle',':','Color',colors(2,:)); 
+xline(sol.TOFa+sol.CTa,'LineWidth',2,'LineStyle',':','Color',colors(2,:));
+xline(sol.TOFa+sol.CTa+sol.TOFb,'LineWidth',2,'LineStyle',':','Color',colors(2,:));
+xlabel('Time [days]')
+ylabel('Thrust [N]')
+
+lgd = legend([hp1,hp2],'SC1','SC2');
+% lgd.Location = 'eastoutside';
+lgd.NumColumns = 1;
+clearvars lgd hp1 hp2
+
 %% orbit plots
 % transfer orbits
 % SC1
@@ -350,19 +420,19 @@ r_transf_orbit_b  = [output.r.legb.*cos(output.theta.legb), ...
 R_transf_orbit_b = rotate_local2ecplitic(r_encounter.astDa,r_transf_orbit_b,sim.n_sol,output.Href.legb);
 
 figure()
-% plot3(R_transf_orbit_1(:,1),R_transf_orbit_1(:,2),R_transf_orbit_1(:,3),...
-%     'Color',colors(1,:),'DisplayName','Traj SC1')
+plot3(R_transf_orbit_1(:,1),R_transf_orbit_1(:,2),R_transf_orbit_1(:,3),...
+    'Color',colors(1,:),'DisplayName','Traj SC1')
 hold on
 % hc1 = plot3( yC1(:,1)/sim.DU, yC1(:,2)/sim.DU, yC1(:,3)/sim.DU,'*','Color',colors(1,:),...
 %     'Markersize',3,'DisplayName','CT');
 % hc1.Annotation.LegendInformation.IconDisplayStyle = 'off';
-% hpt2 = plot3(R_transf_orbit_2(:,1),R_transf_orbit_2(:,2),R_transf_orbit_2(:,3),...
-%     'Color',colors(1,:));
-% hpt2.Annotation.LegendInformation.IconDisplayStyle = 'off';
+hpt2 = plot3(R_transf_orbit_2(:,1),R_transf_orbit_2(:,2),R_transf_orbit_2(:,3),...
+    'Color',colors(1,:));
+hpt2.Annotation.LegendInformation.IconDisplayStyle = 'off';
 plot3(R_transf_orbit_a(:,1),R_transf_orbit_a(:,2),R_transf_orbit_a(:,3),...
     'Color',colors(2,:),'DisplayName','Traj SC2');
-hca = plot3( yCa(:,1)/sim.DU, yCa(:,2)/sim.DU, yCa(:,3)/sim.DU,'*','Color',colors(2,:),...
-    'Markersize',3,'DisplayName','CT2');
+% hca = plot3( yCa(:,1)/sim.DU, yCa(:,2)/sim.DU, yCa(:,3)/sim.DU,'*','Color',colors(2,:),...
+%     'Markersize',3,'DisplayName','CT2');
 % hca.Annotation.LegendInformation.IconDisplayStyle = 'off';
 hpt4 = plot3(R_transf_orbit_b(:,1),R_transf_orbit_b(:,2),R_transf_orbit_b(:,3),...
     'Color',colors(2,:));
@@ -453,3 +523,165 @@ Propulsion.InPlane_Thrust   = [output.Thrust_SC1(:,1) output.Thrust_SC2(:,1)];
 Propulsion.gamma_angle      = [output.Thrust_SC1(:,2) output.Thrust_SC2(:,2)];
 Propulsion.OutofPlane_Thrust = [output.Thrust_SC1(:,3) output.Thrust_SC2(:,3)];
 
+    %% Extract the Sun-SpaceCraft Distance for all the trajectory [km]
+%     sol.SunSpacecraftDistanceNorm = vecnorm([yEA1;y_ast12;y_EAa;y_astab],2,2); % 2,2 means norm 2 and by row
+    sol.Spacecraft1Trajectory = [yEA1;yC1;y_ast12];
+    sol.Spacecraft2Trajectory = [y_EAa;yCa;y_astab];
+    sol.SC1time = [tEA1;tC1;t_ast12;];
+    sol.SC2time = [t_EAa;tCa;t_astab];
+%     [sol.angles.SAA,sol.angles.EVA,sol.angles.SCA,sol.angles.SolarConjunction] = aspect_angles(sol);
+
+%% Plot with thrust vectors
+Tlocal_transf_orbit_1  = [-sol.T_1(:,1).*sin(output.theta.leg1), ...
+    sol.T_1(:,1).*cos(output.theta.leg1), sol.T_1(:,3)];
+T_transf_orbit_1 = rotate_local2ecplitic(r_encounter.EA,Tlocal_transf_orbit_1,sim.n_sol,output.Href.leg1);
+
+Tlocal_transf_orbit_2  = [-sol.T_2(:,1).*sin(output.theta.leg2), ...
+    sol.T_2(:,1).*cos(output.theta.leg2), sol.T_2(:,3)];
+T_transf_orbit_2 = rotate_local2ecplitic(r_encounter.astD1,Tlocal_transf_orbit_2,sim.n_sol,output.Href.leg2);
+
+Tlocal_transf_orbit_a  = [-sol.T_a(:,1).*sin(output.theta.lega), ...
+    sol.T_a(:,1).*cos(output.theta.lega), sol.T_a(:,3)];
+T_transf_orbit_a = rotate_local2ecplitic(r_encounter.EA,Tlocal_transf_orbit_a,sim.n_sol,output.Href.lega);
+
+Tlocal_transf_orbit_b  = [-sol.T_b(:,1).*sin(output.theta.legb), ...
+    sol.T_b(:,1).*cos(output.theta.legb), sol.T_b(:,3)];
+T_transf_orbit_b = rotate_local2ecplitic(r_encounter.astDa,Tlocal_transf_orbit_b,sim.n_sol,output.Href.legb);
+
+figure('Name','Thrust Plot')
+plot3(R_transf_orbit_1(:,1),R_transf_orbit_1(:,2),R_transf_orbit_1(:,3),...
+    'Color',colors(1,:),'DisplayName','Traj SC1')
+hold on
+hpt1 = plot3(R_transf_orbit_2(:,1),R_transf_orbit_2(:,2),R_transf_orbit_2(:,3),...
+    'Color',colors(1,:));
+hpt1.Annotation.LegendInformation.IconDisplayStyle = 'off';
+
+plot3(R_transf_orbit_a(:,1),R_transf_orbit_a(:,2),R_transf_orbit_a(:,3),...
+    'Color',colors(2,:),'DisplayName','Traj SC2')
+hpt2 = plot3(R_transf_orbit_b(:,1),R_transf_orbit_b(:,2),R_transf_orbit_b(:,3),...
+    'Color',colors(2,:));
+hpt2.Annotation.LegendInformation.IconDisplayStyle = 'off';
+
+plot3(r_encounter.EA(1),r_encounter.EA(2),r_encounter.EA(3),...
+    '*','Color',colors(8,:),'DisplayName','Dep Earth')
+plot3(r_encounter.astA1(1),r_encounter.astA1(2),r_encounter.astA1(3),...
+    '^','Color',colors(3,:),'DisplayName',sol.asteroid_1)
+plot3(r_encounter.astD1(1),r_encounter.astD1(2),r_encounter.astD1(3),...
+    '*','Color',colors(3,:),'DisplayName',sol.asteroid_1)
+plot3(r_encounter.astA2(1),r_encounter.astA2(2),r_encounter.astA2(3),...
+    '^','Color',colors(5,:),'DisplayName',sol.asteroid_2)
+plot3(r_encounter.astAa(1),r_encounter.astAa(2),r_encounter.astAa(3),...
+    '^','Color',colors(4,:),'DisplayName',sol.asteroid_a)
+plot3(r_encounter.astDa(1),r_encounter.astDa(2),r_encounter.astDa(3),...
+    '*','Color',colors(4,:),'DisplayName',sol.asteroid_a)
+plot3(r_encounter.astAb(1),r_encounter.astAb(2),r_encounter.astAb(3),...
+    '^','Color',colors(4,:),'DisplayName',sol.asteroid_b)
+
+quiver3(R_transf_orbit_1(:,1),R_transf_orbit_1(:,2),R_transf_orbit_1(:,3),T_transf_orbit_1(:,1),T_transf_orbit_1(:,2),T_transf_orbit_1(:,3),2)
+quiver3(R_transf_orbit_2(:,1),R_transf_orbit_2(:,2),R_transf_orbit_2(:,3),T_transf_orbit_2(:,1),T_transf_orbit_2(:,2),T_transf_orbit_2(:,3),2)
+quiver3(R_transf_orbit_a(:,1),R_transf_orbit_a(:,2),R_transf_orbit_a(:,3),T_transf_orbit_a(:,1),T_transf_orbit_a(:,2),T_transf_orbit_a(:,3),2)
+quiver3(R_transf_orbit_b(:,1),R_transf_orbit_b(:,2),R_transf_orbit_b(:,3),T_transf_orbit_b(:,1),T_transf_orbit_b(:,2),T_transf_orbit_b(:,3),2)
+
+axis equal; grid on;
+xlabel('x [AU]'); ylabel('y [AU]'); ylabel('y [AU]'); 
+title('In-plane + out-of-plane Thrust')
+% Sun
+plot3(0,0,0,'o','Color',colors(4,:),'DisplayName','Sun')
+legend('show')
+%view(2)
+
+figure('Name','Plane thrust 1')
+hold on
+plot(R_transf_orbit_1(:,1),R_transf_orbit_1(:,2),...
+    'Color',colors(1,:),'DisplayName','Traj')
+hpt1 = plot(R_transf_orbit_2(:,1),R_transf_orbit_2(:,2),...
+    'Color',colors(1,:));
+hpt1.Annotation.LegendInformation.IconDisplayStyle = 'off';
+
+% plot(R_transf_orbit_a(:,1),R_transf_orbit_a(:,2),...
+%     'Color',colors(1,:),'DisplayName','Traj')
+% hpt2 = plot(R_transf_orbit_b(:,1),R_transf_orbit_b(:,2),...
+%     'Color',colors(1,:));
+% hpt2.Annotation.LegendInformation.IconDisplayStyle = 'off';
+
+plot(r_encounter.EA(1),r_encounter.EA(2),...
+    '*','Color',colors(8,:),'DisplayName','Dep Earth')
+plot(r_encounter.astA1(1),r_encounter.astA1(2),...
+    '^','Color',colors(3,:),'DisplayName',sol.asteroid_1)
+plot(r_encounter.astD1(1),r_encounter.astD1(2),...
+    '*','Color',colors(3,:),'DisplayName',sol.asteroid_1)
+plot(r_encounter.astA2(1),r_encounter.astA2(2),...
+    '^','Color',colors(4,:),'DisplayName',sol.asteroid_2)
+% plot(r_encounter.astAa(1),r_encounter.astAa(2),...
+%     '^','Color',colors(5,:),'DisplayName',sol.asteroid_a)
+% plot(r_encounter.astDa(1),r_encounter.astDa(2),...
+%     '*','Color',colors(5,:),'DisplayName',sol.asteroid_a)
+% plot(r_encounter.astAb(1),r_encounter.astAb(2),...
+%     '^','Color',colors(6,:),'DisplayName',sol.asteroid_b)
+
+quiver(R_transf_orbit_1(:,1),R_transf_orbit_1(:,2),T_transf_orbit_1(:,1),T_transf_orbit_1(:,2),2,...
+    'Color',colors(3,:),'DisplayName',sol.asteroid_1)
+quiver(R_transf_orbit_2(:,1),R_transf_orbit_2(:,2),T_transf_orbit_2(:,1),T_transf_orbit_2(:,2),2,...
+    'Color',colors(4,:),'DisplayName',sol.asteroid_2)
+% quiver(R_transf_orbit_a(:,1),R_transf_orbit_a(:,2),T_transf_orbit_a(:,1),T_transf_orbit_a(:,2),2,...
+%     'Color',colors(5,:),'DisplayName',sol.asteroid_a)
+% quiver(R_transf_orbit_b(:,1),R_transf_orbit_b(:,2),T_transf_orbit_b(:,1),T_transf_orbit_b(:,2),2,...
+%     'Color',colors(6,:),'DisplayName',sol.asteroid_b)
+axis equal; grid on;
+xlabel('x [AU]'); ylabel('y [AU]');
+% title('In-plane Thrust(shall be tangential)')
+% Sun
+plot(0,0,'o','Color',colors(4,:),'DisplayName','Sun')
+legend('show')
+view(2)
+
+figure('Name','Plane thrust 2')
+hold on
+% plot(R_transf_orbit_1(:,1),R_transf_orbit_1(:,2),...
+%     'Color',colors(1,:),'DisplayName','Traj')
+% hpt1 = plot(R_transf_orbit_2(:,1),R_transf_orbit_2(:,2),...
+%     'Color',colors(1,:));
+% hpt1.Annotation.LegendInformation.IconDisplayStyle = 'off';
+% 
+plot(R_transf_orbit_a(:,1),R_transf_orbit_a(:,2),...
+    'Color',colors(1,:),'DisplayName','Traj')
+hpt2 = plot(R_transf_orbit_b(:,1),R_transf_orbit_b(:,2),...
+    'Color',colors(1,:));
+hpt2.Annotation.LegendInformation.IconDisplayStyle = 'off';
+
+plot(r_encounter.EA(1),r_encounter.EA(2),...
+    '*','Color',colors(8,:),'DisplayName','Dep Earth')
+% plot(r_encounter.astA1(1),r_encounter.astA1(2),...
+%     '^','Color',colors(3,:),'DisplayName',sol.asteroid_1)
+% plot(r_encounter.astD1(1),r_encounter.astD1(2),...
+%     '*','Color',colors(3,:),'DisplayName',sol.asteroid_1)
+% plot(r_encounter.astA2(1),r_encounter.astA2(2),...
+%     '^','Color',colors(4,:),'DisplayName',sol.asteroid_2)
+plot(r_encounter.astAa(1),r_encounter.astAa(2),...
+    '^','Color',colors(5,:),'DisplayName',sol.asteroid_a)
+plot(r_encounter.astDa(1),r_encounter.astDa(2),...
+    '*','Color',colors(5,:),'DisplayName',sol.asteroid_a)
+plot(r_encounter.astAb(1),r_encounter.astAb(2),...
+    '^','Color',colors(6,:),'DisplayName',sol.asteroid_b)
+
+% quiver(R_transf_orbit_1(:,1),R_transf_orbit_1(:,2),T_transf_orbit_1(:,1),T_transf_orbit_1(:,2),2,...
+%     'Color',colors(3,:),'DisplayName',sol.asteroid_1)
+% quiver(R_transf_orbit_2(:,1),R_transf_orbit_2(:,2),T_transf_orbit_2(:,1),T_transf_orbit_2(:,2),2,...
+%     'Color',colors(4,:),'DisplayName',sol.asteroid_2)
+quiver(R_transf_orbit_a(:,1),R_transf_orbit_a(:,2),T_transf_orbit_a(:,1),T_transf_orbit_a(:,2),2,...
+    'Color',colors(5,:),'DisplayName',sol.asteroid_a)
+quiver(R_transf_orbit_b(:,1),R_transf_orbit_b(:,2),T_transf_orbit_b(:,1),T_transf_orbit_b(:,2),2,...
+    'Color',colors(6,:),'DisplayName',sol.asteroid_b)
+axis equal; grid on;
+xlabel('x [AU]'); ylabel('y [AU]');
+% title('In-plane Thrust(shall be tangential)')
+% Sun
+plot(0,0,'o','Color',colors(4,:),'DisplayName','Sun')
+legend('show')
+view(2)
+
+Thrust_Helio_SC1 = [T_transf_orbit_1(:,1),T_transf_orbit_1(:,2),T_transf_orbit_1(:,3);...
+                    T_transf_orbit_2(:,1),T_transf_orbit_2(:,2),T_transf_orbit_2(:,3)];
+Thrust_Helio_SC2 = [T_transf_orbit_a(:,1),T_transf_orbit_a(:,2),T_transf_orbit_a(:,3);...
+                    T_transf_orbit_b(:,1),T_transf_orbit_b(:,2),T_transf_orbit_b(:,3)];
+                

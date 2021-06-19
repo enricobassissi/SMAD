@@ -63,6 +63,7 @@ end
 % [data.y_interp_ft, data.t_vector] = find_eph_neo(data.asteroid_names);
 
 load('data_processed_42_475.mat')
+load('power_propulsion_data.mat')
 
 %% simulation parameters
 sim.mu_dim    = 132712440018              ; % actractor parameter [km^3 s^-2]
@@ -91,11 +92,11 @@ bound.date_ld =  [2028, 1, 1, 0, 0, 0];
 bound.mjd2000_ed = date2mjd2000(bound.date_ed)*3600*24/sim.TU;
 bound.mjd2000_ld = date2mjd2000(bound.date_ld)*3600*24/sim.TU;
 % TOF1 (2)
-bound.TOF1_min = 0.3*365*3600*24/sim.TU; %600
-bound.TOF1_max = 2*365*3600*24/sim.TU; 
+bound.TOF1_min = 0.2*365*3600*24/sim.TU; %600
+bound.TOF1_max = 3*365*3600*24/sim.TU; 
 % N REV (3)
 bound.N_REV_min = 0; %0
-bound.N_REV_max = 0; %3
+bound.N_REV_max = 2; %3
 % C3 stuff
 % Constraint on C3 Launcher (4)
 sim.C3_max = 30; % km^2/s^2
@@ -159,7 +160,7 @@ end
 options.UseParallel = true;
 
 %% Build the soo
-FitnessFunction = @(x) ff_ea_1ast_LT_soo_NLI(x,sim,data); % Function handle to the fitness function
+FitnessFunction = @(x) ff_ea_1ast_LT_soo_NLI_melia(x,sim,data,power_propulsion_data); % Function handle to the fitness function
 numberOfVariables = length(bound.ub); % Number of decision variables
 
 tic
@@ -175,9 +176,9 @@ sol.TOF = x(2)*sim.TU/(3600*24);
 sol.asteroid_1 = data.asteroid_names(x(7));
 
 %% plot
-[output, r_encounter, v_encounter] = plot_ff_ea_1ast_LT_soo_NLI(x,sim,data);
+[output,r_encounter,v_encounter,sol] = plot_ff_ea_1ast_LT_soo_NLI_melia(x,sim,data,power_propulsion_data,sol);
 
-figure()
+figure('Name','Params')
 subplot(5,1,1)
 plot(output.t*sim.TU/86400,output.Thrust(:,1));
 % xlabel('Time [days]')
@@ -203,11 +204,18 @@ plot(output.t*sim.TU/86400,output.m);
 xlabel('Time [days]')
 ylabel('Mass [kg]')
 
+%% plot thrust melia
+figure('Name','Thrust Available and Requested')
+plot(sol.t,sol.T_available,'DisplayName','T Available')
+hold on
+plot(sol.t,sol.T_magn_Helio,'DisplayName','T Required')
+legend('show')
+
 %% plot orbit
 r3  = [output.r.*cos(output.theta) output.r.*sin(output.theta) output.z];
 R3 = rotate_local2ecplitic(r_encounter.EA,r3,sim.n_sol,output.Href);
 
-figure()
+figure('Name','Orbits')
 plot3(R3(:,1),R3(:,2),R3(:,3),'DisplayName','Traj')
 hold on
 plot3(r_encounter.EA(1),r_encounter.EA(2),r_encounter.EA(3),'*m','DisplayName','Dep')
@@ -258,7 +266,7 @@ Tlocal_transf_orbit  = [-output.Thrust(:,1).*sin(output.theta), ...
     output.Thrust(:,1).*cos(output.theta), output.Thrust(:,3)];
 Thrust_Helio = rotate_local2ecplitic(r_encounter.EA,Tlocal_transf_orbit,sim.n_sol,output.Href);
 
-figure('Name','Thrust Plot')
+figure('Name','Thrust Vector Plot')
 plot3(R3(:,1),R3(:,2),R3(:,3),...
     'Color',colors(1,:),'DisplayName','Traj')
 hold on

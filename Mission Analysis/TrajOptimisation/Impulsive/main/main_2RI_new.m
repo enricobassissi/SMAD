@@ -76,7 +76,7 @@ load('data_processed_42_61_2SC.mat')
 % quantities for SC 2 will have letters (a,b,...)
 
 % Departure dates (1), departure time for both the sc
-sim.soo_lim.date_ed = [2022, 1, 1, 0, 0, 0];
+sim.soo_lim.date_ed = [2024, 1, 1, 0, 0, 0];
 sim.soo_lim.date_ld =  [2028, 1, 1, 0, 0, 0];
 sim.soo_lim.mjd2000_ed = date2mjd2000(sim.soo_lim.date_ed);
 sim.soo_lim.mjd2000_ld = date2mjd2000(sim.soo_lim.date_ld);
@@ -85,7 +85,7 @@ sim.soo_lim.TOF1_min = 100; % days
 sim.soo_lim.TOF1_max = 3*365; % days
 % Buffer time 1 (3)
 sim.soo_lim.bt1_min = 30;
-sim.soo_lim.bt1_max = 180;
+sim.soo_lim.bt1_max = 80;
 % TOF2 (4), tof sc1 to 2nd asteroid
 sim.soo_lim.TOF2_min = 50; % days
 sim.soo_lim.TOF2_max = 3*365; % days
@@ -95,7 +95,7 @@ sim.soo_lim.TOFa_min = 100; % days
 sim.soo_lim.TOFa_max = 3*365; % days
 % Buffer time 2 (6)
 sim.soo_lim.bt2_min = 30;
-sim.soo_lim.bt2_max = 180;
+sim.soo_lim.bt2_max = 80;
 % TOFb (7), tof sc2 to 2nd asteroid
 sim.soo_lim.TOFb_min = 50; % days
 sim.soo_lim.TOFb_max = 3*365; % days
@@ -129,8 +129,8 @@ sim.C3_max = 30; % km^2/s^2
 options = optimoptions('particleswarm');
 options.HybridFcn = @fmincon;
 options.SwarmSize = 1000; % Default is min(100,10*nvars),
-options.MaxIterations = 200; %  Default is 200*nvars
-options.MaxStallIterations = 70; % Default 20
+options.MaxIterations = 300; %  Default is 200*nvars
+options.MaxStallIterations = options.MaxIterations/10; % Default 20
 options.Display = 'iter';
 options.FunctionTolerance = 1e-6;
 
@@ -178,8 +178,8 @@ data_elements_matrix_2SC = data.data_elements_matrix(~TF,:);
 [~, PermutationMatrix_2SC, HowMany_2SC] = ...
             sequences_local_pruning2(data_elements_matrix_2SC, data.p_number);
 IDP2 = ceil(IDP_temp_2*HowMany_2SC/100);
-sol.asteroid_a = PermutationMatrix_2SC(IDP2,1);
-sol.asteroid_b = PermutationMatrix_2SC(IDP2,2);
+sol.ast_a = PermutationMatrix_2SC(IDP2,1);
+sol.ast_b = PermutationMatrix_2SC(IDP2,2);
 sol.TOFa = x(5);
 sol.buffer_time2 = x(6);
 sol.TOFb = x(7);
@@ -189,17 +189,23 @@ sol.end_of_mission_date_sc2 = mjd20002date(sol.MJD0+sol.TOF_tot_D_sc2)';
 
 sol.end_of_mission_date_overall = max(sol.end_of_mission_date_sc1,sol.end_of_mission_date_sc2);
 
-% %% Mass Consumption for High Thrust Impulsive Case
-% g0 = 9.81; %m/s^2
-% % https://www.space-propulsion.com/spacecraft-propulsion/hydrazine-thrusters/20n-hydrazine-thruster.html
-% Isp = 230; %s 
-% m_dry = 100; %kg
-% m_prop = m_dry*(exp(sol.dV_tot*1e3/(g0*Isp)) - 1); %kg
+
 
 %% Plot trajectories
 sol = plot_mission_4neo_RV_ARCH2sc(sol,data,sim,colors)
 [sol_dates] = sol_to_dates_of_mission(sol,'2SC_RV')
 
+% Mass Consumption for High Thrust Impulsive Case
+g0 = 9.81; %m/s^2
+% % https://www.space-propulsion.com/spacecraft-propulsion/hydrazine-thrusters/20n-hydrazine-thruster.html
+Isp = 230; %s 
+% m_dry = 100; %kg
+% m_prop = m_dry*(exp(sol.dV_tot*1e3/(g0*Isp)) - 1); %kg
+% dV = ve*ln(m_wet/m_dry) = ve*ln((m_dry+m_prop)/m_dry) =
+% = g0*Isp*ln((1+m_
+% = -g0*Isp*ln(mdry/mwet)
+mdry_over_mwet = exp(-sol.dV_tot*1e3/(g0*Isp));
+prop_mass_frac = 1-mdry_over_mwet
 %% Plot orbit asteroids
 % plot_orbits_asteroids(asteroid_names,colors)
 

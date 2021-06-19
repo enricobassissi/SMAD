@@ -431,10 +431,10 @@ Tout = Tout2m.*m * 1000* DU/TU^2;
 
 else
     % Output in case a is complex -> no solution with that tof
-    output.m       = 1 ; % 1 kg, impossible for subsequent legs
+    output.m       = 11 ; % 1 kg, impossible for subsequent legs
     output.t       = 100 ; % very high tof, meaning impossibe for the mission
-    output.Thrust  = [1,1,1] ; % veryhigh T, 1N, over max T available
-    output.T_magn  = sqrt(output.Thrust(:,1).^2 + output.Thrust(:,3).^2);
+    output.Thrust  = [1,1,1] ; % very high T, 1N, over max T available
+    output.T_magn  = sqrt(output.Thrust(:,1).^2 + output.Thrust(:,3).^2); % very high, 1.4, for sure outside the boundaries
     output.r       = nan ;
     output.theta   = nan ;
     output.z       = nan ;

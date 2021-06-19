@@ -239,7 +239,7 @@ if isreal(l_d)
         
         m = l;
         m(sim.n_sol) = M;
-        K = -a_vect/(PS.Is*sim.g0)./l_d;
+        K = -a_vect/(PS.Isp*sim.g0)./l_d;
         m(sim.n_sol-1) = m(sim.n_sol) -dl/2*(K(sim.n_sol)*m(sim.n_sol)+K(sim.n_sol-1)*m(sim.n_sol-1));
         m(sim.n_sol-2) = m(sim.n_sol-1) -dl/2*(K(sim.n_sol-1)*m(sim.n_sol-1)+K(sim.n_sol-2)*m(sim.n_sol-2));
         
@@ -252,7 +252,7 @@ if isreal(l_d)
         
         m = l; %% actually k - what is k? 
         m(1) = M;
-        K = -a_vect/(PS.Is*sim.g0)./l_d;
+        K = -a_vect/(PS.Isp*sim.g0)./l_d;
         m(2) = m(1) +dl/2*(K(1)*m(1)+K(2)*m(2));
         m(3) = m(2) +dl/2*(K(2)*m(2)+K(3)*m(3));
         
@@ -282,7 +282,7 @@ if isreal(l_d)
     output.w       = l_d;
     output.v_z     = v_z;    
 else
-    
+
     output.u       = nan ;
     output.m       = nan ;
     output.t       = nan ;

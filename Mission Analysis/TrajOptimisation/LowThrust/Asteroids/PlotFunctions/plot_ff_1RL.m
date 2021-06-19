@@ -99,23 +99,43 @@ v_launcher = v_inf_magn*[cos(el)*cos(az); cos(el)*sin(az); sin(el)];
 v_dep = v_EA + v_launcher;  %if parabolic escape (v_extra = 0)
 sol.v_launcher = v_launcher;
 
-%% 1st leg - Earth -> Ast 1
+%% NLI
+Isp = sim.PS.Isp*sim.TU;
+g0 = sim.g0/sim.TU^2*(1000*sim.DU);
+
+% 1st leg - Earth -> Ast 1
 [output_1] = NL_interpolator( r_EA , rA1 , v_dep , vA1 , N_rev1 , TOF1 , sim.M ,sim.PS.Isp , sim );
+
+sol.mass_depleted_Leg1 = output_1.m(1) - output_1.m(end);
+sol.dV_associated_Leg1 = -g0*Isp*log(output_1.m(end)/output_1.m(1)); % -ve*ln(m_final/m_initial)
 
 % 2nd leg - Ast1 -> Ast2
 M_start_2nd_leg = output_1.m(end) - sim.M_pods;
 [output_2] = NL_interpolator( rD1 , rA2 , vD1 , vA2 , N_rev2 , TOF2 , M_start_2nd_leg ,sim.PS.Isp , sim );
 
+sol.mass_depleted_Leg2 = output_2.m(1) - output_2.m(end);
+sol.dV_associated_Leg2 = -g0*Isp*log(output_2.m(end)/output_2.m(1)); % -ve*ln(m_final/m_initial)
+
 % 3rd leg - Ast2 -> Ast3
 M_start_3rd_leg = output_2.m(end) - sim.M_pods;
 [output_3] = NL_interpolator( rD2 , rA3 , vD2 , vA3 , N_rev3 , TOF3 , M_start_3rd_leg ,sim.PS.Isp , sim );
+
+sol.mass_depleted_Leg3 = output_3.m(1) - output_3.m(end);
+sol.dV_associated_Leg3 = -g0*Isp*log(output_3.m(end)/output_3.m(1)); % -ve*ln(m_final/m_initial)
 
 % 4th leg - Ast3 -> Ast4
 M_start_4th_leg = output_3.m(end) - sim.M_pods;
 [output_4] = NL_interpolator( rD3 , rA4 , vD3 , vA4 , N_rev4 , TOF4 , M_start_4th_leg ,sim.PS.Isp , sim );
 
+sol.mass_depleted_Leg4 = output_4.m(1) - output_4.m(end);
+sol.dV_associated_Leg4 = -g0*Isp*log(output_4.m(end)/output_4.m(1)); % -ve*ln(m_final/m_initial)
+
 %% Extract quantities from output struct
-sol.mass_fract = (output_1.m(1) - output_4.m(end))/output_1.m(1);
+% sol.mass_fract = (output_1.m(1) - output_4.m(end))/output_1.m(1); % now
+% there are the pods! and they are mass ok but not propellant
+sol.tot_mass_depleted = sol.mass_depleted_Leg1+sol.mass_depleted_Leg2+sol.mass_depleted_Leg3+sol.mass_depleted_Leg4;
+sol.mass_dry_and_pods = output_1.m(1) - sol.tot_mass_depleted;
+sol.mass_fract = (output_1.m(1) - sol.mass_dry_and_pods)/output_1.m(1);
 
 sol.T_1 = [output_1.Thrust(:,1),output_1.Thrust(:,2),output_1.Thrust(:,3)];
 sol.T_2 = [output_2.Thrust(:,1),output_2.Thrust(:,2),output_2.Thrust(:,3)];

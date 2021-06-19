@@ -124,17 +124,27 @@ v_rel_astb = v_inf_astb_magn* [cos(el_astb)*cos(az_astb); cos(el_astb)*sin(az_as
 v_abs_astb = vb + v_rel_astb;
 
 %% NLI
+Isp = sim.PS.Isp*sim.TU;
+g0 = sim.g0/sim.TU^2*(1000*sim.DU);
 % SC1
 % 1st leg - Earth -> ast1
 [output_1] = NL_interpolator( r_EA , r1 , v_dep , v_abs_ast1, N_rev1 , TOF1 , sim.M1 ,sim.PS.Isp , sim );
 
+sol.mass_depleted_Leg1 = output_1.m(1) - output_1.m(end);
+sol.dV_associated_Leg1 = -g0*Isp*log(output_1.m(end)/output_1.m(1)); % -ve*ln(m_final/m_initial)
 
 % 2nd leg - Ast1 -> Ast2
 M_start_2nd_leg = output_1.m(end) - sim.M_pods; %  
 [output_2] = NL_interpolator( r1 , r2 , v_abs_ast1 , v_abs_ast2 , N_rev2 , TOF2 , M_start_2nd_leg ,sim.PS.Isp , sim );
 
+sol.mass_depleted_Leg2 = output_2.m(1) - output_2.m(end);
+sol.dV_associated_Leg2 = -g0*Isp*log(output_2.m(end)/output_2.m(1)); % -ve*ln(m_final/m_initial)
 
-sol.mass_fract_SC1 = (output_1.m(1) - output_2.m(end))/output_1.m(1);
+% sol.mass_fract_SC1 = (output_1.m(1) - output_2.m(end))/output_1.m(1);
+% there are the pods! and they are mass ok but not propellant
+sol.tot_mass_depleted_SC1 = sol.mass_depleted_Leg1+sol.mass_depleted_Leg2;
+sol.mass_dry_and_pods_SC1 = output_1.m(1) - sol.tot_mass_depleted_SC1;
+sol.mass_fract_SC1 = (output_1.m(1) - sol.mass_dry_and_pods_SC1)/output_1.m(1);
 
 sol.T_1 = [output_1.Thrust(:,1),output_1.Thrust(:,2),output_1.Thrust(:,3)];
 sol.T_2 = [output_2.Thrust(:,1),output_2.Thrust(:,2),output_2.Thrust(:,3)];
@@ -149,13 +159,21 @@ T1 = sqrt(T_append1(:,1).^2 + T_append1(:,3).^2);
 % 1st leg - Earth -> asta
 [output_a] = NL_interpolator( r_EA , ra , v_dep , v_abs_asta, N_reva , TOFa , sim.M2 ,sim.PS.Isp , sim );
 
+sol.mass_depleted_Lega = output_a.m(1) - output_a.m(end);
+sol.dV_associated_Lega = -g0*Isp*log(output_a.m(end)/output_a.m(1)); % -ve*ln(m_final/m_initial)
 
 % 2nd leg - Asta -> Astb
 M_start_b_leg = output_a.m(end) - sim.M_pods; % 
 [output_b] = NL_interpolator( ra , rb , v_abs_asta , v_abs_astb , N_revb , TOFb , M_start_b_leg ,sim.PS.Isp , sim );
 
+sol.mass_depleted_Legb = output_b.m(1) - output_b.m(end);
+sol.dV_associated_Legb = -g0*Isp*log(output_b.m(end)/output_b.m(1)); % -ve*ln(m_final/m_initial)
 
-sol.mass_fract_SC2 = (output_a.m(1) - output_b.m(end))/output_a.m(1);
+% sol.mass_fract_SC2 = (output_a.m(1) - output_b.m(end))/output_a.m(1);
+% there are the pods! and they are mass ok but not propellant
+sol.tot_mass_depleted_SC2 = sol.mass_depleted_Lega+sol.mass_depleted_Legb;
+sol.mass_dry_and_pods_SC2 = output_a.m(1) - sol.tot_mass_depleted_SC2;
+sol.mass_fract_SC2 = (output_a.m(1) - sol.mass_dry_and_pods_SC2)/output_a.m(1);
 
 sol.T_a = [output_a.Thrust(:,1),output_a.Thrust(:,2),output_a.Thrust(:,3)];
 sol.T_b = [output_b.Thrust(:,1),output_b.Thrust(:,2),output_b.Thrust(:,3)];

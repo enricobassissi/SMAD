@@ -15,7 +15,8 @@ addpath(genpath(imp_path));
 
 %% 1+4 FLYBY
 clear; clc;
-load('soo_ps_flyby_3-33_1dayeachpointTraj.mat');
+% load('soo_ps_flyby_3-33_1dayeachpointTraj.mat');
+load('ws_1FI_4.3_vrel3.mat');
 dV_not_margined = [sol.dV_extra_launch,sol.dVast1,sol.dVast2,sol.dVast3];
 check_if_bigger_than_10ms = dV_not_margined*0.05; % any case
 dV_margin_DV_010 = sum(check_if_bigger_than_10ms);
@@ -46,7 +47,8 @@ dV_margined = sum(dV_not_margined)+dV_margin_DV_010+dV_margin_DV_080
 
 %% 2SC - RV
 clear; clc;
-load('soo_ps_rendezvous_2sc_23-97.mat');
+% load('soo_ps_rendezvous_2sc_23-97.mat');
+load('ws_2RL_10.mat');
 dV_not_margined = [sol.dV1_ast12, sol.dV2_ast12, sol.dV1_astab, sol.dV2_astab, sol.dV2_EAasta_sc2, sol.dV2_EAast1_sc1, sol.dV_extra_launch_sc2, sol.dV_extra_launch_sc1];
 check_if_bigger_than_10ms = dV_not_margined*0.05; % any case
 dV_margin_DV_010 = sum(check_if_bigger_than_10ms);

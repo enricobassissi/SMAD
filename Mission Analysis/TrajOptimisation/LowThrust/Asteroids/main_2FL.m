@@ -88,10 +88,10 @@ bound.date_ld = [2028, 1, 1, 0, 0, 0]; %2028
 bound.mjd2000_ed = date2mjd2000(bound.date_ed)*3600*24/sim.TU;
 bound.mjd2000_ld = date2mjd2000(bound.date_ld)*3600*24/sim.TU;
 % TOF1 (2)
-bound.TOF1_min = 0.3*3600*24/sim.TU; %0.3*365
+bound.TOF1_min = 0.3*365*3600*24/sim.TU; %0.3*365
 bound.TOF1_max = 3*365*3600*24/sim.TU; %2*365
 % TOF2 (3)
-bound.TOF2_min = 0.3*3600*24/sim.TU; 
+bound.TOF2_min = 0.3*365*3600*24/sim.TU; 
 bound.TOF2_max = 3*365*3600*24/sim.TU; 
 % TOFa (4)
 bound.TOFa_min = 0.3*365*3600*24/sim.TU; 
@@ -286,6 +286,8 @@ sol.v_inf_ast1_magn = x(15)*sim.DU/sim.TU;
 sol.v_inf_ast2_magn = x(18)*sim.DU/sim.TU;
 sol.v_inf_asta_magn = x(21)*sim.DU/sim.TU;
 sol.v_inf_astb_magn = x(24)*sim.DU/sim.TU;
+
+[sol_dates] = sol_to_dates_of_mission_LT(sol,'2FL')
 
 %% characteristic quantities plot and Checks
 [output, r_encounter, sol] = plot_ff_2FL(x,sim,data,sol);

@@ -42,11 +42,11 @@ MJDDa = MJDAa + CTa;
 TOFb =  x(5); % tof sc2 to 2nd asteroid
 MJDAb = MJDDa + TOFb; 
 
-% max_duration = 12*365*(3600*24)/sim.TU;
+max_duration = 12*365*(3600*24)/sim.TU;
 penalty_MAX_DURATION = 0;
-% if max(TOF1+CT1+TOF2,TOFa+CTa+TOFb) > max_duration
-%     penalty_MAX_DURATION = max(TOF1+CT1+TOF2,TOFa+CTa+TOFb) - max_duration; % 12 years max mission time 
-% end
+if max(TOF1+CT1+TOF2,TOFa+CTa+TOFb) > max_duration
+    penalty_MAX_DURATION = max(TOF1+CT1+TOF2,TOFa+CTa+TOFb) - max_duration; % 12 years max mission time 
+end
 
 % N REV1
 N_rev1 = x(6);
@@ -63,25 +63,25 @@ az = x(13);
 elev = x(14);
 
 %% choosing which asteroid to visit
-% % 1ST SPACECRAFT ASTEROID OBJECTIVES
-% IDP1 = x(10); %index of permutation, the column of the Permutation Matrix of the asteroids
-% asteroid_1 = data.PermutationMatrix(IDP1,1);
-% asteroid_2 = data.PermutationMatrix(IDP1,2);
-% 
-% % 2ND SPACECRAFT ASTEROID OBJECTIVES
-% IDP_temp_2 = x(11); % index for 2nd permutation matrix to be built inside depending on the first 2 selected asteroids
-% asteroid_sequence = [asteroid_1,asteroid_2];
-% TF = contains(data.asteroid_names,asteroid_sequence);
-% data_elements_matrix_2SC = data.data_elements_matrix(~TF,:);
-% [~, PermutationMatrix_2SC, HowMany_2SC] = ...
-%             sequences_local_pruning2(data_elements_matrix_2SC, data.p_number);
-% IDP2 = ceil(IDP_temp_2*HowMany_2SC/100);
-% asteroid_a = PermutationMatrix_2SC(IDP2,1);
-% asteroid_b = PermutationMatrix_2SC(IDP2,2);
-asteroid_1 = "2021DR";
-asteroid_2 = "2021JE1";
-asteroid_a = "2020VV";
-asteroid_b = "2013GM3";
+% 1ST SPACECRAFT ASTEROID OBJECTIVES
+IDP1 = x(10); %index of permutation, the column of the Permutation Matrix of the asteroids
+asteroid_1 = data.PermutationMatrix(IDP1,1);
+asteroid_2 = data.PermutationMatrix(IDP1,2);
+
+% 2ND SPACECRAFT ASTEROID OBJECTIVES
+IDP_temp_2 = x(11); % index for 2nd permutation matrix to be built inside depending on the first 2 selected asteroids
+asteroid_sequence = [asteroid_1,asteroid_2];
+TF = contains(data.asteroid_names,asteroid_sequence);
+data_elements_matrix_2SC = data.data_elements_matrix(~TF,:);
+[~, PermutationMatrix_2SC, HowMany_2SC] = ...
+            sequences_local_pruning2(data_elements_matrix_2SC, data.p_number);
+IDP2 = ceil(IDP_temp_2*HowMany_2SC/100);
+asteroid_a = PermutationMatrix_2SC(IDP2,1);
+asteroid_b = PermutationMatrix_2SC(IDP2,2);
+% asteroid_1 = "2021DR";
+% asteroid_2 = "2021JE1";
+% asteroid_a = "2020VV";
+% asteroid_b = "2013GM3";
 
 %% Computing position and velocity of the planets in that days
 % Departure from Earth
@@ -93,40 +93,40 @@ v_EA = v_EA/sim.DU*sim.TU;
 
 % ARRIVAL at 1st ast
 MJDA1_dim = MJDA1*sim.TU/(3600*24);
-[kep_ast_A1] = uNEO2(MJDA1_dim,asteroid_1,data); % [km,-,rad,rad,rad,wrapped rad]
+[kep_ast_A1] = uNEO3(MJDA1_dim,asteroid_1,data); % [km,-,rad,rad,rad,wrapped rad]
 [rA1, vA1] = sv_from_coe(kep_ast_A1,ksun); % km, km/s
 rA1 = rA1/sim.DU;
 vA1 = vA1/sim.DU*sim.TU;
 % DEPARTURE at 1st ast
 MJDD1_dim = MJDD1*sim.TU/(3600*24);
-[kep_ast_D1] = uNEO2(MJDD1_dim,asteroid_1,data); % [km,-,rad,rad,rad,wrapped rad]
+[kep_ast_D1] = uNEO3(MJDD1_dim,asteroid_1,data); % [km,-,rad,rad,rad,wrapped rad]
 [rD1, vD1] = sv_from_coe(kep_ast_D1,ksun); % km, km/s
 rD1 = rD1/sim.DU;
 vD1 = vD1/sim.DU*sim.TU;
 
 % ARRIVAL at 2nd ast
 MJDA2_dim = MJDA2*sim.TU/(3600*24);
-[kep_ast_A2] = uNEO2(MJDA2_dim,asteroid_2,data); % [km,-,rad,rad,rad,wrapped rad]
+[kep_ast_A2] = uNEO3(MJDA2_dim,asteroid_2,data); % [km,-,rad,rad,rad,wrapped rad]
 [rA2, vA2] = sv_from_coe(kep_ast_A2,ksun); % km, km/s
 rA2 = rA2/sim.DU;
 vA2 = vA2/sim.DU*sim.TU;
 
 % ARRIVAL at a_th ast
 MJDAa_dim = MJDAa*sim.TU/(3600*24);
-[kep_ast_Aa] = uNEO2(MJDAa_dim,asteroid_a,data); % [km,-,rad,rad,rad,wrapped rad]
+[kep_ast_Aa] = uNEO3(MJDAa_dim,asteroid_a,data); % [km,-,rad,rad,rad,wrapped rad]
 [rAa, vAa] = sv_from_coe(kep_ast_Aa,ksun); % km, km/s
 rAa = rAa/sim.DU;
 vAa = vAa/sim.DU*sim.TU;
 % DEPARTURE at a_th ast
 MJDDa_dim = MJDDa*sim.TU/(3600*24);
-[kep_ast_Da] = uNEO2(MJDDa_dim,asteroid_a,data); % [km,-,rad,rad,rad,wrapped rad]
+[kep_ast_Da] = uNEO3(MJDDa_dim,asteroid_a,data); % [km,-,rad,rad,rad,wrapped rad]
 [rDa, vDa] = sv_from_coe(kep_ast_Da,ksun); % km, km/s
 rDa = rDa/sim.DU;
 vDa = vDa/sim.DU*sim.TU;
 
 % passage at b_th ast
 MJDAb_dim = MJDAb*sim.TU/(3600*24);
-[kep_ast_Ab] = uNEO2(MJDAb_dim,asteroid_b,data); % [km,-,rad,rad,rad,wrapped rad]
+[kep_ast_Ab] = uNEO3(MJDAb_dim,asteroid_b,data); % [km,-,rad,rad,rad,wrapped rad]
 [rAb, vAb] = sv_from_coe(kep_ast_Ab,ksun); % km, km/s
 rAb = rAb/sim.DU;
 vAb = vAb/sim.DU*sim.TU;
@@ -137,6 +137,9 @@ v_launcher = v_inf_magn*[cos(elev)*cos(az); cos(elev)*sin(az); sin(elev)];
 v_dep = v_EA + v_launcher;  %if parabolic escape (v_extra = 0)
 
 %% NLI
+Isp = sim.PS.Isp*sim.TU;
+g0 = sim.g0/sim.TU^2*(1000*sim.DU);
+
 tol_TOF = 1; % 1 TU means approx 60 days
 penalty_T_leg1 = 0; penalty_T_leg2 = 0; penalty_T_lega = 0; penalty_T_legb = 0; 
 penalty_TOF_leg1 = 0; penalty_TOF_leg2 = 0; penalty_TOF_lega = 0; penalty_TOF_legb = 0;
@@ -151,6 +154,10 @@ end
 if abs(output_1.t(end) - TOF1) > tol_TOF
     penalty_TOF_leg1 = abs(output_1.t(end) - TOF1);
 end
+
+sol.mass_depleted_Leg1 = output_1.m(1) - output_1.m(end);
+sol.dV_associated_Leg1 = -g0*Isp*log(output_1.m(end)/output_1.m(1)); % -ve*ln(m_final/m_initial)
+
 %   2nd leg - Ast1 -> Ast2
 M_start_2nd_leg = output_1.m(end) - sim.M_pods;
 [output_2] = NL_interpolator_of( rD1 , rA2 , vD1 , vA2 , N_rev2 , TOF2 , M_start_2nd_leg ,sim.PS.Isp , sim );
@@ -163,6 +170,13 @@ if abs(output_2.t(end) - TOF2) > tol_TOF
     penalty_TOF_leg2 = abs(output_2.t(end) - TOF2);
 end
 
+sol.mass_depleted_Leg2 = output_2.m(1) - output_2.m(end);
+sol.dV_associated_Leg2 = -g0*Isp*log(output_2.m(end)/output_2.m(1)); % -ve*ln(m_final/m_initial)
+
+sol.tot_mass_depleted_SC1 = sol.mass_depleted_Leg1+sol.mass_depleted_Leg2;
+sol.mass_dry_and_pods_SC1 = output_1.m(1) - sol.tot_mass_depleted_SC1;
+sol.mass_fract_SC1 = (output_1.m(1) - sol.mass_dry_and_pods_SC1)/output_1.m(1);
+
 % SC 2
 [output_a] = NL_interpolator_of( r_EA , rAa , v_dep , vAa , N_reva , TOFa , sim.M2 ,sim.PS.Isp , sim );
 %     if ~isnan(output_a.Thrust(1,1)) && abs(output_a.t(end) - TOFa) < tol_TOF % if is not nan -> it's a valid solution
@@ -173,6 +187,10 @@ end
 if abs(output_a.t(end) - TOFa) > tol_TOF
     penalty_TOF_lega = abs(output_a.t(end) - TOFa);
 end
+
+sol.mass_depleted_Lega = output_a.m(1) - output_a.m(end);
+sol.dV_associated_Lega = -g0*Isp*log(output_a.m(end)/output_a.m(1)); % -ve*ln(m_final/m_initial)
+
 % a_th leg - Earth -> Ast_a
 M_start_b_th_leg = output_a.m(end) - sim.M_pods;
 [output_b] = NL_interpolator_of( rDa , rAb , vDa , vAb , N_revb , TOFb , M_start_b_th_leg ,sim.PS.Isp , sim );
@@ -184,8 +202,15 @@ if abs(output_b.t(end) - TOFb) > tol_TOF
     penalty_TOF_legb = abs(output_b.t(end) - TOFb);
 end
 
-sol.mass_fract_SC1 = (output_1.m(1) - output_2.m(end))/output_1.m(1);
-sol.mass_fract_SC2 = (output_a.m(1) - output_b.m(end))/output_a.m(1);
+sol.mass_depleted_Legb = output_b.m(1) - output_b.m(end);
+sol.dV_associated_Legb = -g0*Isp*log(output_b.m(end)/output_b.m(1)); % -ve*ln(m_final/m_initial)
+
+sol.tot_mass_depleted_SC2 = sol.mass_depleted_Lega+sol.mass_depleted_Legb;
+sol.mass_dry_and_pods_SC2 = output_a.m(1) - sol.tot_mass_depleted_SC2;
+sol.mass_fract_SC2 = (output_a.m(1) - sol.mass_dry_and_pods_SC2)/output_a.m(1);
+
+% sol.mass_fract_SC1 = (output_1.m(1) - output_2.m(end))/output_1.m(1);
+% sol.mass_fract_SC2 = (output_a.m(1) - output_b.m(end))/output_a.m(1);
 
 %     if mass_fract_SC1 > 0 && mass_fract_SC1 < 1 
 %         if mass_fract_SC2 > 0 && mass_fract_SC2 < 1 
@@ -259,6 +284,12 @@ output.t2           = output_2.t;
 output.ta           = output_a.t;
 output.CTa          = t_span_CTa';
 output.tb           = output_b.t;
+
+%% --
+sol.T_1 = output_1.Thrust;
+sol.T_2 = output_2.Thrust;
+sol.T_a = output_a.Thrust;
+sol.T_b = output_b.Thrust;
 
 end
 

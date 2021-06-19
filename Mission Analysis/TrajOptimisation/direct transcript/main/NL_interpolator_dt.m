@@ -431,6 +431,16 @@ Tout = Tout2m.*m * 1000* DU/TU^2;
     output.vr      = r_x.*x_t;
     output.vt      = theta_t.*r;
     output.vz      = z_x.*x_t;
+    output.acc_inplane = Tin2m;
+    output.acc_out = Tout2m;
+    output.acc = T2m;
+    output.L = psi;
+    output.gamma = gamma;
+    output.T_inplane = Tin;
+    output.T_outplane = Tout;
+    output.theta_dot = theta_t;
+    
+    
 
 else
     % Output in case a is complex -> no solution with that tof

@@ -104,10 +104,10 @@ TABLE = table(sel_asteroids_names,H,a_asteroids,e_asteroids,incl_asteroids,OM_as
     om_asteroids)
 
 %% cut down the asteroids on the orbital parameters
-TF_a_up = str2double(data_elements_matrix(:,2))<1.8; % check a upper bound
-TF_a_low = str2double(data_elements_matrix(:,2))> 0.6; % check a lower bound
-TF_e = str2double(data_elements_matrix(:,3))<0.7; % check e
-TF_i = str2double(data_elements_matrix(:,4))<5; % check i
+TF_a_up = str2double(data_elements_matrix(:,2))<1.5; % check a upper bound
+TF_a_low = str2double(data_elements_matrix(:,2))> 0.8; % check a lower bound
+TF_e = str2double(data_elements_matrix(:,3))<0.5; % check e
+TF_i = str2double(data_elements_matrix(:,4))<4; % check i
 
 data_elements_matrix_cut = data_elements_matrix(and(and(and(TF_a_up,TF_e),TF_a_low),TF_i),:);
 

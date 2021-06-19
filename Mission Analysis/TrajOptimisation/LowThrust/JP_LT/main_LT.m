@@ -50,7 +50,7 @@ sim.TU    = (sim.DU^3/sim.mu_dim )^0.5; % time unit [s]
 sim.mu    = 1;                      % non-dimensional attractor parameter [DU^3/TU^2]
 sim.n_sol = 100;                    % number of computational nodes %% 100 initially
 sim.x = linspace(0,1,sim.n_sol)';   % 
-sim.out_shape = 2;                  % out-of-plane shape (2:CONWAY)
+sim.out_shape = 0;                  % out-of-plane shape (2:CONWAY)
 sim.g0 = 9.81*(sim.TU^2/(1000*sim.DU)); % non-dimensional g0
 sim.direction = 1;                     % direction of integration (1 FW, -1 BW)
 sim.tol_vers = 1e-8;
@@ -59,21 +59,36 @@ sim.tol_vers = 1e-8;
 PS.Is = 3000/sim.TU;  % non-dimensional specific impulse
 
 %% Orbits parameters
-RI = [ 1  0 0.1]'; % initial position [DU]  %% ORIGINALE: [1 0 0.1] 
-RF = [-1 -1 0]'; % final position [DU]
+%RI = [ 1  0 0.1]'; % initial position [DU]  %% ORIGINALE: [1 0 0.1] 
+%RF = [-1 -1 0]'; % final position [DU]
 
-VI = [ 0  1 0]'; % initial velocity [DU/TU]
-VF = [ 0.7  -0.7 0]'; % final velocity [DU/TU]
+MJDPGAa_dim = 167.5507*sim.TU/(3600*24);
+[kep_GAa,ksun] = uplanet(MJDPGAa_dim, 3);
+[r_GAa, v_GAa] = sv_from_coe(kep_GAa,ksun);
+RI = r_GAa/sim.DU;
+VI = v_GAa/sim.DU*sim.TU;
 
-N_rev = 1; % number of revolution
-TOF = 25.4; % TOF [TU] %25.4
+
+MJDPGAa_dim = MJDPGAa_dim+ 50;
+[kep_GAa,ksun] = uplanet(MJDPGAa_dim, 3);
+[r_GAa, v_GAa] = sv_from_coe(kep_GAa,ksun);
+RF = r_GAa/sim.DU;
+VF = v_GAa/sim.DU*sim.TU;
+
+
+% VI = [ 0  1 0]'; % initial velocity [DU/TU]
+% %VF = [ 0.7  -0.7 0]'; % final velocity [DU/TU]
+
+
+N_rev = 0; % number of revolution
+TOF = 5; % TOF [TU] %25.4
 M = 1000; % SC mass [kg]
-hp = 3; %3 OUT OF PLANE SHAPE PARAMETERS
-kp = 3; %3
+hp = 0; %3 OUT OF PLANE SHAPE PARAMETERS
+kp = 0; %3
 
 %% conway
 
-sim.TOF_imposed_flag = 1;
+sim.TOF_imposed_flag = 0;
 
 [output] = CW_LowLambert( RI , RF , VI , VF , N_rev , TOF ,M ,hp , kp , PS ,sim );
 
@@ -122,12 +137,13 @@ grid on
 hold on
 plot3(RI(1), RI(2), RI(3),'*m')
 plot3(RF(1), RF(2), RF(3),'*b')
-quiver3(Rglobal(:,1), Rglobal(:,2), Rglobal(:,3),Tglobal(:,1),Tglobal(:,2),Tglobal(:,3),3)
+%quiver3(Rglobal(:,1), Rglobal(:,2), Rglobal(:,3),Tglobal(:,1),Tglobal(:,2),Tglobal(:,3),3)
 
 figure;
 quiver(Rglobal(:,1), Rglobal(:,2),Tglobal(:,1),Tglobal(:,2),3)
 axis equal
 
+return
 
 %% Non linear interpolator
 output2 = NL_interpolator( RI , RF , VI , VF , N_rev , TOF ,M ,PS.Is ,sim );

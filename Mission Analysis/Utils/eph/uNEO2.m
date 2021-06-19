@@ -31,6 +31,6 @@ function [actual_elements] = uNEO2(mjd2000,name,data)
     FT_COEFF = data.y_interp_ft{idx_asteroid_in_the_list};
 
     % Interpolate the actual time we want with a spline between two consecutive lookup-table points
-    actual_elements = interp1(data.t_vector, FT_COEFF, mjd2000, 'linear'); %interpolate data with cubic line
+    actual_elements = interp1(data.t_vector, FT_COEFF, mjd2000, 'spline'); %interpolate data with cubic line
 
 end

@@ -94,16 +94,16 @@ bound.date_ld = [2028, 1, 1, 0, 0, 0]; %2028
 bound.mjd2000_ed = date2mjd2000(bound.date_ed)*3600*24/sim.TU;
 bound.mjd2000_ld = date2mjd2000(bound.date_ld)*3600*24/sim.TU;
 % TOF1 (2)
-bound.TOF1_min = 0*3600*24/sim.TU; %0.3*365
+bound.TOF1_min = 0.3*365*3600*24/sim.TU; %0.3*365
 bound.TOF1_max = 3*365*3600*24/sim.TU; %2*365
 % TOF2 (3)
-bound.TOF2_min = 0*3600*24/sim.TU; 
+bound.TOF2_min = 0.3*365*3600*24/sim.TU; 
 bound.TOF2_max = 3*365*3600*24/sim.TU; 
 % TOF3 (4)
-bound.TOF3_min = 0*365*3600*24/sim.TU; 
+bound.TOF3_min = 0.3*365*3600*24/sim.TU; 
 bound.TOF3_max = 3*365*3600*24/sim.TU; 
 % TOF4 (5)
-bound.TOF4_min = 0*365*3600*24/sim.TU; 
+bound.TOF4_min = 0.3*365*3600*24/sim.TU; 
 bound.TOF4_max = 3*365*3600*24/sim.TU; 
 % N REV 1 (6)
 bound.N_REV1_min = 0; %0
@@ -259,6 +259,12 @@ sol.asteroid_3 = data.PermutationMatrix(x(10),3);
 sol.asteroid_4 = data.PermutationMatrix(x(10),4);
 
 sol.departure_date = mjd20002date(x(1)*sim.TU/(3600*24));
+sol.MJD0 = x(1)*sim.TU/(3600*24);
+sol.TOF1_DIM  = x(2)*sim.TU/(3600*24);
+sol.TOF2_DIM  = x(3)*sim.TU/(3600*24);
+sol.TOF3_DIM  = x(4)*sim.TU/(3600*24);
+sol.TOF4_DIM  = x(5)*sim.TU/(3600*24);
+
 sol.TOF1  = x(2);
 sol.TOF2  = x(3);
 sol.TOF3  = x(4);
@@ -273,11 +279,12 @@ sol.v_inf_magn = x(11)*sim.DU/sim.TU;
 sol.az = x(12);
 sol.el = x(13);
 
-
 sol.v_inf_ast1_magn = x(14)*sim.DU/sim.TU;
 sol.v_inf_ast2_magn = x(17)*sim.DU/sim.TU;
 sol.v_inf_ast3_magn = x(20)*sim.DU/sim.TU;
 sol.v_inf_ast4_magn = x(23)*sim.DU/sim.TU;
+
+[sol_dates] = sol_to_dates_of_mission_LT(sol,'1FL')
 
 %% characteristic quantities plot and Checks
 [output, r_encounter, sol] = plot_ff_1FL(x,sim,data,sol);
