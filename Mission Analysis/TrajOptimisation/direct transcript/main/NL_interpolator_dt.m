@@ -415,8 +415,8 @@ t(n_sol) = t(n_sol-1) + d_time(n_sol-1)*dx ;
 
 
 % Thrust
-Tin = Tin2m.*m * 1000* DU/TU^2;
-Tout = Tout2m.*m * 1000* DU/TU^2;
+Tin = Tin2m.*m; %* 1000* DU/TU^2;
+Tout = Tout2m.*m;% * 1000* DU/TU^2;
 
     % Output
     output.m       = m ;
@@ -436,8 +436,8 @@ Tout = Tout2m.*m * 1000* DU/TU^2;
     output.acc = T2m;
     output.L = psi;
     output.gamma = gamma;
-    output.T_inplane = Tin;
-    output.T_outplane = Tout;
+    output.T_inplane = Tin./sim.M1;
+    output.T_outplane = Tout./sim.M1;
     output.theta_dot = theta_t;
     
     
