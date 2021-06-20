@@ -1,5 +1,11 @@
 %% work environment setup
 clear all
+str_path=split(pwd, 'TrajOptimisation\direct transcript\main');
+util_path=string(str_path(1))+'Utils';
+addpath(genpath(util_path));
+str_path_1=split(pwd, 'main');
+imp_path=string(str_path_1(1))+'functions';
+addpath(genpath(imp_path));
 %% Default options
 set(0, 'DefaultTextFontSize', 12) % modify it if too small
 set(0, 'DefaultAxesFontSize', 11) % modify it if too small
@@ -29,7 +35,7 @@ load('ws_2RL_moo3.mat')
 clear data output
 
 %% DIRECT TRANSCRIPTION
-N=150;
+N=50;
 v_launcher = sol.v_inf_magn/sim.DU*sim.TU*[cos(sol.el)*cos(sol.az); cos(sol.el)*sin(sol.az); sin(sol.el)];
 v_dep = v_encounter.EA + v_launcher;  %if parabolic escape (v_extra = 0)
 [output] = NL_interpolator_dt( r_encounter.EA , r_encounter.astA1 , v_dep , v_encounter.astA1 , sol.Nrev(1) , sol.TOF1_ADIM ,sim.M1 ,sim.PS.Isp ,sim);
