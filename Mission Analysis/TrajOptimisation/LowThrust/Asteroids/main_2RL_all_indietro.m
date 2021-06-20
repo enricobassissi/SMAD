@@ -73,40 +73,40 @@ sim.direction = -1;                     % direction of integration (1 FW, -1 BW)
                                        % 1 is like imposing wet mass at beginning
 sim.TOF_imposed_flag = 1;
 sim.PS.Isp = 3200/sim.TU;  % non-dimensional specific impulse
-sim.M1_end = 106; % SC dry mass [kg] %%
-sim.M2_end = 106; % SC dry mass [kg] %%
+sim.M1_end = 110; % SC dry mass [kg] %%
+sim.M2_end = 110; % SC dry mass [kg] %%
 sim.M_pods = 3.5; % mass of the payloads + landing stuff [kg] %%
 sim.max_Available_Thrust = 0.02; % 5 [mN], BepiColombo is 250 mN but it's much bigger
 
 %% Boundaries
 % Departure dates (1)
-bound.date_ed = [2024, 1, 1, 0, 0, 0]; 
-bound.date_ld =  [2028, 1, 1, 0, 0, 0]; 
+bound.date_ed = [2026, 1, 1, 0, 0, 0]; 
+bound.date_ld =  [2027, 1, 1, 0, 0, 0]; 
 bound.mjd2000_ed = date2mjd2000(bound.date_ed)*3600*24/sim.TU;
 bound.mjd2000_ld = date2mjd2000(bound.date_ld)*3600*24/sim.TU;
 % TOF1 (2)
-bound.TOF1_min = 0*365*3600*24/sim.TU; %1*365
+bound.TOF1_min = 1.5*365*3600*24/sim.TU; %1*365
 bound.TOF1_max = 3*365*3600*24/sim.TU; %3*365
 % TOF2 (3)
-bound.TOF2_min = 0.2*365*3600*24/sim.TU; %600
+bound.TOF2_min = 1.5*365*3600*24/sim.TU; %600
 bound.TOF2_max = 3*365*3600*24/sim.TU; 
 % TOFa (4)
-bound.TOFa_min = 0.2*365*3600*24/sim.TU; %600
+bound.TOFa_min = 1.5*365*3600*24/sim.TU; %600
 bound.TOFa_max = 3*365*3600*24/sim.TU; 
 % TOFb (5)
-bound.TOFb_min = 0*365*3600*24/sim.TU; %0.5*365
+bound.TOFb_min = 1.5*365*3600*24/sim.TU; %0.5*365
 bound.TOFb_max = 3*365*3600*24/sim.TU; 
 % N REV 1 (6)
-bound.N_REV1_min = 0; %0
+bound.N_REV1_min = 1; %0
 bound.N_REV1_max = 2; %3
 % N REV 2 (7)
-bound.N_REV2_min = 0; %0
+bound.N_REV2_min = 1; %0
 bound.N_REV2_max = 2; %3
 % N REV a (8)
-bound.N_REVa_min = 0; %0
+bound.N_REVa_min = 1; %0
 bound.N_REVa_max = 2; %3
 % N REV b (9)
-bound.N_REVb_min = 0; %0
+bound.N_REVb_min = 1; %0
 bound.N_REVb_max = 2; %3
 % ID Permutation (10)
 bound.IDP_min = 1; 
@@ -126,8 +126,8 @@ bound.v_inf_magn_max = sqrt(sim.C3_max)/sim.DU*sim.TU;
 bound.az_min = -pi;
 bound.az_max = pi;
 % elevation (14)
-bound.el_min = -pi/2;
-bound.el_max = pi/2;
+bound.el_min = -pi/6;
+bound.el_max = pi/6;
 
 % Coasting time 1 (15)
 bound.CT1_min = 30*3600*24/sim.TU; % 30 days
@@ -170,7 +170,7 @@ options.Display = 'iter';
 % options.HybridFcn = 'fgoalattain';
 
 options.PopulationSize = 1000; % ideal 1000
-options.MaxGenerations = 300; % ideal 100
+options.MaxGenerations = 200; % ideal 100
 
 options.FunctionTolerance = 1e-6; %1e-9
 options.MaxStallGenerations = ceil(options.MaxGenerations/10);
@@ -271,11 +271,11 @@ xlabel('x [AU]'); ylabel('y [AU]'); zlabel('z [AU]');
 
 % plot of magnitude of the relative distance ast - earth
 figure('Name','magnitude of rel pos')
-plot(coasting.ast1.time-sol.departure_mjd2000,coasting.ast1.norm_rel_pos,'DisplayName','Ast 1','Color',colors(1,:))
+plot(coasting.ast1.time-sol.departure_mjd2000,coasting.ast1.rel_pos_ast_earth,'DisplayName','Ast 1','Color',colors(1,:))
 hold on
-plot(coasting.ast2.time-sol.departure_mjd2000,coasting.ast2.norm_rel_pos,'DisplayName','Ast 2','Color',colors(2,:))
-plot(coasting.asta.time-sol.departure_mjd2000,coasting.asta.norm_rel_pos,'DisplayName','Ast a','Color',colors(3,:))
-plot(coasting.astb.time-sol.departure_mjd2000,coasting.astb.norm_rel_pos,'DisplayName','Ast b','Color',colors(4,:))
+plot(coasting.ast2.time-sol.departure_mjd2000,coasting.ast2.rel_pos_ast_earth,'DisplayName','Ast 2','Color',colors(2,:))
+plot(coasting.asta.time-sol.departure_mjd2000,coasting.asta.rel_pos_ast_earth,'DisplayName','Ast a','Color',colors(3,:))
+plot(coasting.astb.time-sol.departure_mjd2000,coasting.astb.rel_pos_ast_earth,'DisplayName','Ast b','Color',colors(4,:))
 legend('show')
 xlabel('time from departure [d]'); ylabel('norm(REL DIST) [AU]'); 
 

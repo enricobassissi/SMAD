@@ -284,7 +284,7 @@ el_time_min_pp = toc/60;
 
 %% best solution
 idx_knee = find(min(vecnorm(Fval,2,2)) == vecnorm(Fval,2,2));
-% idx_knee = 618;
+idx_knee = 264;
 x = xx(idx_knee,:);
 thrust_limit_in_obj_fun_2 = 20*(0.025 + 0.025 + 0.025 + 0.025);  
 
