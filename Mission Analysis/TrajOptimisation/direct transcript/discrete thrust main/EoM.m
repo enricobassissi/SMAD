@@ -11,7 +11,12 @@ function [c, ceq] = EoM(X, data,sim)
         %adimensional variables
         x(k,:)      = X((k-1)*10 + 1:(k-1)*10+7);
         % dimensional variables
-        T(k)        = X((k-1)*10+8); 
+        if X((k-1)*10+8)>=0.5
+            T(k)=0.020;
+        else
+            T(k)=0;
+        end
+%         T(k)        = X((k-1)*10+8); 
         ualpha(k)   = X((k-1)*10+9);
         ubeta(k)    = X((k-1)*10+10); 
         

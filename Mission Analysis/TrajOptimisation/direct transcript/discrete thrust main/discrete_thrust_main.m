@@ -57,9 +57,13 @@ T_inplane = output.T_inplane.*(sim.DU.*1000./sim.TU^2);
 T_outplane = output.T_outplane.*(sim.DU.*1000./sim.TU^2);
 theta_dot = output.theta_dot;
 time = output.t;
-% for i=1:length(T)
-% t_onoff=0
-% end;
+for i=1:length(T)
+    if and(0<=T(i), T(i)<0.005)
+        t_onoff(i)=0;
+    else 
+        t_onoff(i)=1;
+    end
+end
 % ENRI: L, gamma1, gamma2, v1perp, v2perp, v1tra, v2tra, vnorm, dmdt, TOFr || non li usa mai!
 
 % [ m, T, r, z, s, vr, vt, vz, acc_inplane, acc_out, acc, TH, L, gamma1, gamma2, gamma, v1perp, v2perp, v1tra, v2tra, vnorm, dmdt, T_inplane, T_outplane, theta_dot, time, TOFr] = ...
@@ -164,12 +168,12 @@ subplot(5,1,5), plot(T), title('T'), grid on
  
 %definition of the initial guess (sub-optimal conway solution)
 for ii = 1:N
-    XX0((ii-1)*10 +1: (ii-1)*10+10) = [Xad(ii,:) T(ii) ualpha(ii) ubeta(ii)];
+    XX0((ii-1)*10 +1: (ii-1)*10+10) = [Xad(ii,:) t_onoff(ii) ualpha(ii) ubeta(ii)];
 end
 %boundaries
 Mat_cos=eye(7);%-[0 0 0 0 0 ; 0 0 0 0 0; 0 0 1 0 0; 0 0 0 0 0;0 0 0 0 0; ];
 Aeq=[Mat_cos zeros(7,(N*10)-7);zeros(6,(N*10)-9) eye(6) zeros(6,3)];
-Beq=[XX0(1:7)';XX0(end-5:end)'];       
+Beq=[XX0(1:7)';XX0(end-9:end-2)'];       
 %%
 % kepMtry = uplanet(t0 + TOF,4);
 % rMtry = kep2car2(kepMtry, muS);
@@ -284,7 +288,7 @@ function [lb, ub] = LBUB(XX0, X,  data)
 %X0 vector of propagated ODE45
     N = data.n_int;
     T_lb = 0;
-    T_ub = data.Tmax;
+    T_ub = 1;%data.Tmax;
     alpha_lb = deg2rad(-360);%-pi;
     alpha_ub = deg2rad(360);%pi;
     beta_lb = deg2rad(-360);%-pi/4;

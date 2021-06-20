@@ -169,7 +169,7 @@ end
 %boundaries
 Mat_cos=eye(7);%-[0 0 0 0 0 ; 0 0 0 0 0; 0 0 1 0 0; 0 0 0 0 0;0 0 0 0 0; ];
 Aeq=[Mat_cos zeros(7,(N*10)-7);zeros(6,(N*10)-9) eye(6) zeros(6,3)];
-Beq=[XX0(1:7)';XX0(end-9:end-4)'];       
+Beq=[XX0(1:7)';XX0(end-9:end-3)'];       
 %%
 % kepMtry = uplanet(t0 + TOF,4);
 % rMtry = kep2car2(kepMtry, muS);
@@ -182,7 +182,7 @@ find(XX0 > UB)
 [c, ceq] = EoM(XX0, data, sim);
 nlcon=@(x_hand) EoM(x_hand,data,sim);
 cost_fun=@(x_hand) DTmethod(x_hand,data);
-[XSOL,fval,exitflag,fminoutput,lambda,grad,hessian] = fmincon(cost_fun, XX0,[],[],[],[],LB,UB,nlcon, options);
+[XSOL,fval,exitflag,fminoutput,lambda,grad,hessian] = fmincon(cost_fun, XX0,[],[],Aeq,Beq,LB,UB,nlcon, options);
 %%
 
 %XSOL=fminoutput.bestfeasible.x;
@@ -211,7 +211,7 @@ sgtitle('Control allocation')
 subplot(3,1,1), plot(timead, THS), hold on, plot(timead, T), hold on, title('T')
 subplot(3,1,2), plot(timead, rad2deg(alphaHS)), hold on, plot(timead, rad2deg(ualpha)), hold on, title('alpha')
 subplot(3,1,3), plot(timead, rad2deg(betaHS)), hold on, plot(timead, rad2deg(ubeta)), hold on, title('beta')
-% figure()
+figure()
 %plot(timead, rHS), hold on, plot(timead, r), hold on,
 %% CHECK PHYSICS VALIDITY
 clear Xpropad
@@ -250,12 +250,20 @@ subplot(7,1,7), hold on, plot(Xpropad(:,7)), legend('conway','propagate dt')
 %%
 function J = DTmethod(X, data)
 
-%     N =data.n_int;
+    N =data.n_int;
+    m = zeros(1, N);
+    x = zeros(N,7);
     %T = m;
     %time = data.time;
 % alpha = m; beta = m;
-    m(1)=X(7);
-    m(2)=X(end-3);
+
+
+    for k=1:N
+%         x(k,:) = X((k-1)*10 + 1:(k-1)*10+7);
+        m(k) = X(k,7);
+%         T(k) = X((k-1)*10+8); 
+
+    end
 %     
 %     J = 0;
 %     for k = 2:N-1
@@ -267,7 +275,7 @@ function J = DTmethod(X, data)
 %     T_inplane = a_in .*m * 1000;
 %     T_outplane = a_out .*m * 1000;
 %     T = (T_inplane.^2 + T_outplane.^2).^0.5;
-    J = (m(1) - m(2))*data.MU;
+    J = (m(1) - m(end))*data.MU;
 
 end
 
