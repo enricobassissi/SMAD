@@ -46,6 +46,7 @@ function [actual_elements] = uNEO3(mjd2000,name,data)
     % Interpolate the actual time we want with a spline between two consecutive lookup-table points
     % a is in [km], e stays how the fuck it is, i,OM,om are in [rad],
     % theta is in [rad] too and needs to be wrapped to 2pi
-    actual_elements(1,1:5) = interp1(data.t_vector_1_5, FT_COEFF_1_5(:,1:5), mjd2000, 'spline'); %interpolate data with cubic line
-    actual_elements(1,6) = wrapTo2Pi(interp1(data.t_vector_6, FT_COEFF_6, mjd2000, 'spline')); %interpolate data with cubic line
+    method = 'spline';
+    actual_elements(1,1:5) = interp1(data.t_vector_1_5, FT_COEFF_1_5(:,1:5), mjd2000, method); %interpolate data with cubic line
+    actual_elements(1,6) = wrapTo2Pi(interp1(data.t_vector_6, FT_COEFF_6, mjd2000, method)); %interpolate data with cubic line
 end

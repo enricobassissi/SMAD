@@ -255,8 +255,8 @@ options.CreationFcn = @int_pop_2RL_GA_ball_DSM_moo;
 options.MutationFcn = @int_mutation_2RL_GA_ball_DSM_moo;
 options.CrossoverFcn = @int_crossoverarithmetic_2RL_GA_ball_DSM_moo;
 
-options.PopulationSize = 1000; % ideal 1000
-options.ParetoFraction = 0.5;
+options.PopulationSize = 1500; % ideal 1000
+options.ParetoFraction = 0.6;
 options.MaxGenerations = 300; % ideal 100
 
 options.FunctionTolerance = 1e-9;
@@ -284,7 +284,7 @@ el_time_min_pp = toc/60;
 
 %% best solution
 idx_knee = find(min(vecnorm(Fval,2,2)) == vecnorm(Fval,2,2));
-% idx_knee = 618;
+idx_knee = 729;
 x = xx(idx_knee,:);
 thrust_limit_in_obj_fun_2 = 20*(0.025 + 0.025 + 0.025 + 0.025);  
 
@@ -344,7 +344,7 @@ sol.Nrev = [x(9), x(12), x(20), x(23)];
 % [sol_dates] = sol_to_dates_of_mission_LT(sol,'2RL_GA_DSM')
 
 %% characteristic quantities plot
-[output, r_encounter, v_encounter, sol] = plot_ff_2RL_GA_ball_DSM(x,sim,data,sol);
+[output, r_encounter, v_encounter, sol] = plot_ff_2RL_all_indietro_GA_ball_DSM(x,sim,data,sol);
 sol.max_T_SC1 = max(output.T_magn_SC1);
 sol.max_T_SC2 = max(output.T_magn_SC2);
 

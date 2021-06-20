@@ -74,28 +74,28 @@ sim.direction = -1;                     % direction of integration (1 FW, -1 BW)
 sim.TOF_imposed_flag = 1;
 sim.PS.Isp = 3200/sim.TU;  % non-dimensional specific impulse
 % sim.PS.Isp = 4500/sim.TU;  % non-dimensional specific impulse % simone
-sim.M1_end = 106; % SC wet mass [kg] %%
-sim.M2_end = 106; % SC wet mass [kg] %%
+sim.M1_end = 110; % SC wet mass [kg] %%
+sim.M2_end = 110; % SC wet mass [kg] %%
 sim.M_pods = 3.5; % mass of the payloads + landing stuff [kg] %%
-sim.max_Available_Thrust = 0.02; % 5 [mN], BepiColombo is 250 mN but it's much bigger
+sim.max_Available_Thrust = 0.025; % 5 [mN], BepiColombo is 250 mN but it's much bigger
 
 %% Boundaries
 % Departure dates (1)
-bound.date_ed = [2026, 1, 1, 0, 0, 0]; 
+bound.date_ed = [2027, 1, 1, 0, 0, 0]; 
 bound.date_ld =  [2028, 1, 1, 0, 0, 0]; 
 bound.mjd2000_ed = date2mjd2000(bound.date_ed)*3600*24/sim.TU;
 bound.mjd2000_ld = date2mjd2000(bound.date_ld)*3600*24/sim.TU;
 % TOF1 (2)
-bound.TOF1_min = 0.8*365*3600*24/sim.TU; %1*365
+bound.TOF1_min = 1*365*3600*24/sim.TU; %1*365
 bound.TOF1_max = 4*365*3600*24/sim.TU; %3*365
 % TOF2 (3)
-bound.TOF2_min = 0.8*365*3600*24/sim.TU; %600
+bound.TOF2_min = 1*365*3600*24/sim.TU; %600
 bound.TOF2_max = 4*365*3600*24/sim.TU; 
 % TOFa (4)
-bound.TOFa_min = 0.8*365*3600*24/sim.TU; %600
+bound.TOFa_min = 1*365*3600*24/sim.TU; %600
 bound.TOFa_max = 4*365*3600*24/sim.TU; 
 % TOFb (5)
-bound.TOFb_min = 0.8*365*3600*24/sim.TU; %0.5*365
+bound.TOFb_min = 1*365*3600*24/sim.TU; %0.5*365
 bound.TOFb_max = 4*365*3600*24/sim.TU; 
 % N REV 1 (6)
 bound.N_REV1_min = 1; %0
@@ -105,9 +105,9 @@ bound.N_REV2_min = 1; %0
 bound.N_REV2_max = 2; %3
 % N REV a (8)
 bound.N_REVa_min = 1; %0
-bound.N_REVa_max = 1; %3
+bound.N_REVa_max = 2; %3
 % N REV b (9)
-bound.N_REVb_min = 2; %0
+bound.N_REVb_min = 1; %0
 bound.N_REVb_max = 2; %3
 % ID Permutation (10)
 bound.IDP_min = 1; 
@@ -127,8 +127,8 @@ bound.v_inf_magn_max = sqrt(sim.C3_max)/sim.DU*sim.TU;
 bound.az_min = -pi;
 bound.az_max = pi;
 % elevation (14)
-bound.el_min = -pi/4;
-bound.el_max = pi/4;
+bound.el_min = -pi/5;
+bound.el_max = pi/5;
 
 % Coasting time 1 (15)
 bound.CT1_min = 30*3600*24/sim.TU; % 30 days
@@ -171,7 +171,7 @@ options.CrossoverFcn = @int_crossoverarithmetic_2RL_moo;
 
 options.PopulationSize = 1000; % ideal 1000
 options.ParetoFraction = 0.7;
-options.MaxGenerations = 100; % ideal 100
+options.MaxGenerations = 200; % ideal 100
 
 options.FunctionTolerance = 1e-9;
 options.MaxStallGenerations = ceil(options.MaxGenerations/10);
@@ -199,9 +199,9 @@ el_time_min_pp = toc/60;
 %% best solution
 knee_sol_Fval = sqrt(Fval(:,1).^2+(Fval(:,2)./500).^2);
 idx_knee = find(min(knee_sol_Fval) == knee_sol_Fval);
-idx_knee = 80; 
+% idx_knee = 208;
 x = xx(idx_knee,:);
-thrust_limit_in_obj_fun_2 = 100*(0.018 + 0.018 + 0.018 + 0.018);  
+thrust_limit_in_obj_fun_2 = 100*(0.025 + 0.025 + 0.025 + 0.025);  
 
 % Plot Pareto Plot
 figure('Name','GA MO Pareto Plot')
@@ -258,95 +258,7 @@ sol.el_deg = rad2deg(x(14));
 [sol_dates] = sol_to_dates_of_mission_LT(sol,'2RL')
 
 %% relative position stuff
-coasting.ast1.arr_mjd2000 = sol.departure_mjd2000 + sol.TOF1;
-coasting.ast1.dep_mjd2000 = sol.departure_mjd2000 + sol.TOF1 + sol.CT1; %
-coasting.ast1 = time_and_distance_at_asteroid(sol.asteroid_1,coasting.ast1.arr_mjd2000,coasting.ast1.dep_mjd2000,data,sim);
-
-coasting.ast2.arr_mjd2000 = sol.departure_mjd2000 + sol.TOF1 + sol.CT1 + sol.TOF2;
-coasting.ast2.dep_mjd2000 = sol.departure_mjd2000 + sol.TOF1 + sol.CT1 + sol.TOF2 + 50; % arbitrary 50 day of prox ops on last ast
-coasting.ast2 = time_and_distance_at_asteroid(sol.asteroid_2,coasting.ast2.arr_mjd2000,coasting.ast2.dep_mjd2000,data,sim);
-
-coasting.asta.arr_mjd2000 = sol.departure_mjd2000 + sol.TOFa;
-coasting.asta.dep_mjd2000 = sol.departure_mjd2000 + sol.TOFa + sol.CTa;
-coasting.asta = time_and_distance_at_asteroid(sol.asteroid_a,coasting.asta.arr_mjd2000,coasting.asta.dep_mjd2000,data,sim);
-
-coasting.astb.arr_mjd2000 = sol.departure_mjd2000 + sol.TOFa + sol.CTa + sol.TOFb;
-coasting.astb.dep_mjd2000 = sol.departure_mjd2000 + sol.TOFa + sol.CTa + sol.TOFb + 50; % arbitrary 50 day of prox ops on last ast
-coasting.astb = time_and_distance_at_asteroid(sol.asteroid_b,coasting.astb.arr_mjd2000,coasting.astb.dep_mjd2000,data,sim);
-
-% 3D plot of the relative position of all ast during coasting
-figure('Name','Coasting rel pos ast earth')
-plot3(coasting.ast1.rel_pos_ast_earth(:,1),coasting.ast1.rel_pos_ast_earth(:,2),coasting.ast1.rel_pos_ast_earth(:,3),...
-    'DisplayName','Ast 1','Color',colors(1,:));
-axis equal; hold on;
-plot3(coasting.ast2.rel_pos_ast_earth(:,1),coasting.ast2.rel_pos_ast_earth(:,2),coasting.ast2.rel_pos_ast_earth(:,3),...
-    'DisplayName','Ast 2','Color',colors(2,:));
-plot3(coasting.asta.rel_pos_ast_earth(:,1),coasting.asta.rel_pos_ast_earth(:,2),coasting.asta.rel_pos_ast_earth(:,3),...
-    'DisplayName','Ast a','Color',colors(3,:));
-plot3(coasting.astb.rel_pos_ast_earth(:,1),coasting.astb.rel_pos_ast_earth(:,2),coasting.astb.rel_pos_ast_earth(:,3),...
-    'DisplayName','Ast b','Color',colors(4,:));
-plot3(0,0,0,'o','DisplayName','Earth','Color',colors(8,:))
-legend('show')
-xlabel('x [AU]'); ylabel('y [AU]'); zlabel('z [AU]');
-
-% plot of magnitude of the relative distance ast - earth
-figure('Name','magnitude of rel pos')
-plot(coasting.ast1.time-sol.departure_mjd2000,coasting.ast1.norm_rel_pos,'DisplayName','Ast 1','Color',colors(1,:))
-hold on
-plot(coasting.ast2.time-sol.departure_mjd2000,coasting.ast2.norm_rel_pos,'DisplayName','Ast 2','Color',colors(2,:))
-plot(coasting.asta.time-sol.departure_mjd2000,coasting.asta.norm_rel_pos,'DisplayName','Ast a','Color',colors(3,:))
-plot(coasting.astb.time-sol.departure_mjd2000,coasting.astb.norm_rel_pos,'DisplayName','Ast b','Color',colors(4,:))
-legend('show')
-xlabel('time from departure [d]'); ylabel('norm(REL DIST) [AU]'); 
-
-% actual plot of asteroid and earth, heliocentric
-figure('Name','ast ea')
-plot3(coasting.ast1.r_ast(:,1)./sim.DU,coasting.ast1.r_ast(:,2)./sim.DU,coasting.ast1.r_ast(:,3)./sim.DU,...
-    'DisplayName','Ast 1','Color',colors(1,:),'DisplayName','ast');
-axis equal; hold on;
-plot3(coasting.ast1.rEA(:,1)./sim.DU,coasting.ast1.rEA(:,2)./sim.DU,coasting.ast1.rEA(:,3)./sim.DU,...
-    'DisplayName','Ast 1','Color',colors(2,:),'DisplayName','EA');
-plot3(0,0,0,'o','Color',colors(4,:))
-legend('show')
-view(2)
-
-% cartesian element of the asteroid 1, just to check
-figure('Name','ast1 xyz')
-plot(coasting.ast1.time, coasting.ast1.r_ast(:,1)./sim.DU,...
-    'DisplayName','Ast 1','Color',colors(1,:),'DisplayName','x');
-hold on
-plot(coasting.ast1.time, coasting.ast1.r_ast(:,2)./sim.DU,...
-    'DisplayName','Ast 1','Color',colors(2,:),'DisplayName','y');
-plot(coasting.ast1.time, coasting.ast1.r_ast(:,3)./sim.DU,...
-    'DisplayName','Ast 1','Color',colors(3,:),'DisplayName','z');
-legend('show')
-
-% orbital parameters plot of 1st ast to check
-figure('Name','orbital params')
-subplot(3,2,1)
-plot(coasting.ast1.time, coasting.ast1.coe_ast(:,1),...
-    'DisplayName','Ast 1','Color',colors(1,:),'DisplayName','a');
-legend('show')
-subplot(3,2,2)
-plot(coasting.ast1.time, coasting.ast1.coe_ast(:,2),...
-    'DisplayName','Ast 1','Color',colors(1,:),'DisplayName','e');
-legend('show')
-subplot(3,2,3)
-plot(coasting.ast1.time, coasting.ast1.coe_ast(:,3),...
-    'DisplayName','Ast 1','Color',colors(1,:),'DisplayName','i');
-legend('show')
-subplot(3,2,4)
-plot(coasting.ast1.time, coasting.ast1.coe_ast(:,4),...
-    'DisplayName','Ast 1','Color',colors(1,:),'DisplayName','OM');
-legend('show')
-subplot(3,2,5)
-plot(coasting.ast1.time, coasting.ast1.coe_ast(:,5),...
-    'DisplayName','Ast 1','Color',colors(1,:),'DisplayName','om');
-legend('show')
-subplot(3,2,6)
-plot(coasting.ast1.time, coasting.ast1.coe_ast(:,6),...
-    'DisplayName','Ast 1','Color',colors(1,:),'DisplayName','theta');
-legend('show')
+relative_position_coasting_stuff
 
 %% characteristic quantities plot
 [output, r_encounter, v_encounter, sol] = plot_ff_2RL_all_indietro(x,sim,data,sol);
