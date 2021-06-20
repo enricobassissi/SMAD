@@ -166,9 +166,9 @@ subplot(5,1,5), plot(T), title('T'), grid on
 for ii = 1:N
     XX0((ii-1)*10 +1: (ii-1)*10+10) = [Xad(ii,:) T(ii) ualpha(ii) ubeta(ii)];
 end
-%boundaries
+%boundaries NOT IN USE
 Mat_cos=eye(7);%-[0 0 0 0 0 ; 0 0 0 0 0; 0 0 1 0 0; 0 0 0 0 0;0 0 0 0 0; ];
-Aeq=[Mat_cos zeros(7,(N*10)-7);zeros(6,(N*10)-9) eye(6) zeros(6,3)];
+Aeq=[Mat_cos zeros(7,(N*10)-7);zeros(6,(N*10)-10) eye(6) zeros(6,4)];
 Beq=[XX0(1:7)';XX0(end-9:end-4)'];       
 %%
 % kepMtry = uplanet(t0 + TOF,4);
@@ -182,7 +182,7 @@ find(XX0 > UB)
 [c, ceq] = EoM(XX0, data, sim);
 nlcon=@(x_hand) EoM(x_hand,data,sim);
 cost_fun=@(x_hand) DTmethod(x_hand,data);
-[XSOL,fval,exitflag,fminoutput,lambda,grad,hessian] = fmincon(cost_fun, XX0,[],[],[],[],LB,UB,nlcon, options);
+[XSOL,fval,exitflag,fminoutput,lambda,grad,hessian] = fmincon(cost_fun, XX0,[],[],Aeq,Beq,LB,UB,nlcon, options);
 %%
 
 %XSOL=fminoutput.bestfeasible.x;
