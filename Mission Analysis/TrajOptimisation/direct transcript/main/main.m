@@ -31,7 +31,8 @@ colors = [0    50   71;... % (1) DEEP SPACE
           0    0    0]./255; % (12) BLACK
       
 %% LOAD INIT GUESS DATA
-load('ws_2RL_moo3.mat')
+load('ws_2RL_all_indietro_moo2.mat')
+sim.M1=output.m_SC1(1);
 clear data output
 
 %% DIRECT TRANSCRIPTION
