@@ -3,7 +3,7 @@ r = x(1); th = x(2); z = x(3); vr = x(4); thd = x(5); vz = x(6); m = x(7);
 s = (r^2 + z^2)^0.5;
 DU = sim.DU;
 TU = sim.TU;
-MU = sim.M1; % ENRI: they considered Mdry as adimensional params, we cosnider mwet at beginning
+MU = data.MU; % ENRI: they considered Mdry as adimensional params, we cosnider mwet at beginning
 muS = 1;
 
 m_dim = m.*MU;

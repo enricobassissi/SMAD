@@ -39,7 +39,7 @@ coasting.norm_rel_vel = vecnorm(coasting.rel_vel_ast_earth,2,2);
 coasting.rel_pos_earth_ast =  rEA/sim.DU - r_ast/sim.DU;
 coasting.norm_rel_pos_earth_ast = vecnorm(coasting.rel_pos_earth_ast,2,2);
 
-% [coasting.az,coasting.el,coasting.r] = cart2sph(coasting.rel_pos_earth_ast);
+[coasting.az,coasting.el,coasting.r] = cart2sph(coasting.rel_pos_earth_ast);
 
 
 end

@@ -219,7 +219,7 @@ clearvars h_pp h_kpp
 sol.asteroid_1 = data.PermutationMatrix(x(10),1);
 sol.asteroid_2 = data.PermutationMatrix(x(10),2);
 IDP_temp_2 = x(11); % index for 2nd permutation matrix to be built inside depending on the first 2 selected asteroids
-TF = contains(data.asteroid_names,[sol.asteroid_1,sol.asteroid_1]);
+TF = contains(data.asteroid_names,[sol.asteroid_1,sol.asteroid_2]);
 data_elements_matrix_2SC = data.data_elements_matrix(~TF,:);
 [~, PermutationMatrix_2SC, HowMany_2SC] = ...
             sequences_local_pruning2(data_elements_matrix_2SC, data.p_number);
@@ -261,7 +261,7 @@ sol.el_deg = rad2deg(x(14));
 relative_position_coasting_stuff
 
 %% characteristic quantities plot
-[output, r_encounter, v_encounter, sol] = plot_ff_2RL_all_indietro(x,sim,data,sol);
+[output, r_encounter, v_encounter, sol] = plot_ff_2RL_all_indietro2(x,sim,data,sol);
 % Thrust
 sol.max_T_SC1 = max(output.T_magn_SC1);
 sol.max_T_SC2 = max(output.T_magn_SC2);
@@ -350,6 +350,7 @@ xline(sol.TOF1+sol.CT1+sol.TOF2,'LineWidth',2,'LineStyle',':','Color',colors(1,:
 xline(sol.TOFa,'LineWidth',2,'LineStyle',':','Color',colors(2,:)); 
 xline(sol.TOFa+sol.CTa,'LineWidth',2,'LineStyle',':','Color',colors(2,:));
 xline(sol.TOFa+sol.CTa+sol.TOFb,'LineWidth',2,'LineStyle',':','Color',colors(2,:));
+yline(0.025);
 xlabel('Time [days]')
 ylabel('Thrust [N]')
 
@@ -405,14 +406,14 @@ hold on
 hpt2 = plot3(R_transf_orbit_2(:,1),R_transf_orbit_2(:,2),R_transf_orbit_2(:,3),...
     'Color',colors(1,:));
 hpt2.Annotation.LegendInformation.IconDisplayStyle = 'off';
-plot3(R_transf_orbit_a(:,1),R_transf_orbit_a(:,2),R_transf_orbit_a(:,3),...
-    'Color',colors(2,:),'DisplayName','Traj SC2');
+% plot3(R_transf_orbit_a(:,1),R_transf_orbit_a(:,2),R_transf_orbit_a(:,3),...
+%     'Color',colors(2,:),'DisplayName','Traj SC2');
 % hca = plot3( yCa(:,1)/sim.DU, yCa(:,2)/sim.DU, yCa(:,3)/sim.DU,'*','Color',colors(2,:),...
 %     'Markersize',3,'DisplayName','CT2');
 % hca.Annotation.LegendInformation.IconDisplayStyle = 'off';
-hpt4 = plot3(R_transf_orbit_b(:,1),R_transf_orbit_b(:,2),R_transf_orbit_b(:,3),...
-    'Color',colors(2,:));
-hpt4.Annotation.LegendInformation.IconDisplayStyle = 'off';
+% hpt4 = plot3(R_transf_orbit_b(:,1),R_transf_orbit_b(:,2),R_transf_orbit_b(:,3),...
+%     'Color',colors(2,:));
+% hpt4.Annotation.LegendInformation.IconDisplayStyle = 'off';
 plot3(r_encounter.EA(1),r_encounter.EA(2),r_encounter.EA(3),...
     '*','Color',colors(8,:),'DisplayName','Earth Dep')
 plot3(r_encounter.astA1(1),r_encounter.astA1(2),r_encounter.astA1(3),...
@@ -421,12 +422,12 @@ plot3(r_encounter.astD1(1),r_encounter.astD1(2),r_encounter.astD1(3),...
     '*','Color',colors(3,:),'DisplayName',sol.asteroid_1+' Dep')
 plot3(r_encounter.astA2(1),r_encounter.astA2(2),r_encounter.astA2(3),...
     '^','Color',colors(4,:),'DisplayName',sol.asteroid_2+' Arr')
-plot3(r_encounter.astAa(1),r_encounter.astAa(2),r_encounter.astAa(3),...
-    '^','Color',colors(5,:),'DisplayName',sol.asteroid_a+' Arr')
-plot3(r_encounter.astDa(1),r_encounter.astDa(2),r_encounter.astDa(3),...
-    '*','Color',colors(5,:),'DisplayName',sol.asteroid_a+' Dep')
-plot3(r_encounter.astAb(1),r_encounter.astAb(2),r_encounter.astAb(3),...
-    '^','Color',colors(6,:),'DisplayName',sol.asteroid_b+' Arr')
+% plot3(r_encounter.astAa(1),r_encounter.astAa(2),r_encounter.astAa(3),...
+%     '^','Color',colors(5,:),'DisplayName',sol.asteroid_a+' Arr')
+% plot3(r_encounter.astDa(1),r_encounter.astDa(2),r_encounter.astDa(3),...
+%     '*','Color',colors(5,:),'DisplayName',sol.asteroid_a+' Dep')
+% plot3(r_encounter.astAb(1),r_encounter.astAb(2),r_encounter.astAb(3),...
+%     '^','Color',colors(6,:),'DisplayName',sol.asteroid_b+' Arr')
 axis equal; grid on;
 xlabel('x [AU]'); ylabel('y [AU]'); ylabel('y [AU]'); 
 % PLANETS

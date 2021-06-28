@@ -436,8 +436,8 @@ Tout = Tout2m.*m;% * 1000* DU/TU^2;
     output.acc = T2m;
     output.L = psi;
     output.gamma = gamma;
-    output.T_inplane = Tin./sim.M1;
-    output.T_outplane = Tout./sim.M1;
+    output.T_inplane = Tin./m(1);
+    output.T_outplane = Tout./m(1);
     output.theta_dot = theta_t;
     
     

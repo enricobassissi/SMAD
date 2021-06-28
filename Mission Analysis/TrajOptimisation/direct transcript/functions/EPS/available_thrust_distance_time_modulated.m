@@ -1,0 +1,57 @@
+function [T_max_modulated] = available_thrust_distance_time_modulated(T_max, t, RR)
+%	available_thrust_distance_time_angle_modulated - Modulate the maximum thrust with
+%	the distance  and degradation 
+%
+% PROTOTYPE:
+%  [T_max_modulated] = available_thrust_distance_time_angle_modulated(t, RR, data)
+%
+% DESCRIPTION:
+%   Compute the thrust available for the
+%	propulsion system during the mission
+%
+%  INPUT :
+%   T_max:      [1] maximum thrust [xN]
+%   t:      [Nx1] Array of times [years]
+%   RR:     [Nx3] Array of vectors position in heliocentric cartesian frame [AU]
+%
+%  OUTPUT:
+%   T_max_modulated:                       [Nx1] MAx thrust modulated [xN]
+%
+%  FUNCTIONS CALLED:
+%   solar_irradiance_cooler
+% AUTHOR:
+%   Marco Elia
+%
+% PREVIOUS VERSION:
+%   \\
+%
+% CHANGELOG:
+%   22/06/2021, Marco Elia
+%
+% -------------------------------------------------------------------------
+% REFERENCES:
+D = 0.01674;
+%distance from the sun
+d_sun = vecnorm(RR,2,2);
+eta_space = solar_irradiance_cooler(d_sun, 1, 1);
+
+
+% degradation
+eta_degradation = (1-D).^t;
+
+%total efficency
+eta = eta_space.*eta_degradation;
+
+eta = eta/max(eta);
+T_max_modulated = T_max*eta;
+
+
+
+end
+
+
+
+
+
+
+
