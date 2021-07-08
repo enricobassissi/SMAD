@@ -15,7 +15,7 @@ imp_path=string(str_path_1(1))+'functions';
 addpath(genpath(imp_path));
 
 %% 2RL final 15 mN
-load('MA4.mat')
+load('MA5_160kg_dry.mat')
 % fuel_wet = 1-(exp(-sol.dV_tot*1e3/(g0*Isp))); 
 g0 = 9.81;
 Isp = 2600;
@@ -65,4 +65,4 @@ mass_frac_margined_SC2 = 1-(exp(-dV_margined_tot_SC2/(g0*Isp)))
 
 mass_depleted_Lega_margined = (1-(exp(-dV_margined_SC2(1)/(g0*Isp))))*MA.SC2.lega.mass_start
 mass_depleted_Legb_margined = (1-(exp(-dV_margined_SC2(2)/(g0*Isp))))*MA.SC2.legb.mass_start
-mass_fuel_margined_SC2 = mass_depleted_Leg1_margined+mass_depleted_Leg2_margined
+mass_fuel_margined_SC2 = mass_depleted_Lega_margined+mass_depleted_Legb_margined

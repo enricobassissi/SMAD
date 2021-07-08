@@ -40,7 +40,8 @@ imp_path=string(str_path_1(1))+'functions';
 addpath(genpath(imp_path));
 
 %% LOAD INIT GUESS DATA
-load('ws_2RL_all_indietro_moo2.mat')
+load('160kg_dry_64mN.mat')
+% load('ws_2RL_all_indietro_moo2.mat')
 % the process there is at -1, from dry to wet... so we define the wet a posteriori
 sol.M_start_SC1_leg1=output.m_SC1(1);
 % sol.M_start_SC1_leg2=output.m_SC1(2*sim.n_sol);
@@ -53,18 +54,26 @@ EphData = data;
 clearvars -except colors sim sol r_encounter v_encounter EphData
 
 %% --------------------- DIRECT TRANSCRIPTION -------------------------- %%
-data.Tmax = 0.015; % max thrust available for EGI
-data.Pmax = 450; % max power related to 15 mN thrust on qitetiq t5
-% data.Tmax = 0.025; % max thrust available for Hall thruster
-% data.Isp = sim.PS.Isp; 
-data.Isp = 2600/sim.TU; % for 13 mN the Isp of nikita thruster is 2600s
-% data.Isp = 1600/sim.TU; % for 25 mN the Isp of SETS ST40 Hall Thruster is 1600s
-% data.Isp = 2800/sim.TU; % for 15 mN the Isp of Qinetiq T5 is 2800s
+%% Thruster
+% --- 13 mN max
+% data.Isp = 2600/sim.TU; % for 13 mN the Isp of nikita thruster is 2600s
+% --- 15 mN max
+% data.Tmax = 0.015; % max thrust available for EGI
+% data.Pmax = 450; % max power related to 15 mN thrust on qitetiq t5
+% data.Isp = 2750/sim.TU; % for 15 mN the Isp of Qinetiq T5 is 2750s
+% --- 20 mN max
+data.Tmax = 0.02; % max thrust available for EGI
+data.Pmax = 550; % max power related to 20 mN thrust on qitetiq t5
+data.Isp = 2900/sim.TU; % for 20 mN the Isp of Qinetiq T5 is 2900s
+% --- 25 mN max
 % data.Isp = 3200/sim.TU; % for 25 mN the Isp of RitEvo T5 is 3200s
-% data.LifeTime = 5000; % h, for hall thruster
-% data.TotImpulse_max = data.Tmax*data.LifeTime*3600; % [Ns], Hall thruster
 data.LifeTime = 20*1e3; % h, for Qinetiq T5
 data.TotImpulse_max = 3.5*1e6; % [Ns], Qinetiq T5
+% --- Hall Thrusers
+% data.Tmax = 0.025; % max thrust available for Hall thruster
+% data.Isp = 1600/sim.TU; % for 25 mN the Isp of SETS ST40 Hall Thruster is 1600s
+% data.LifeTime = 5000; % h, for hall thruster
+% data.TotImpulse_max = data.Tmax*data.LifeTime*3600; % [Ns], Hall thruster
 data.muS = sim.mu_dim;   
 data.ThrustModulationFlag = 1; % 0 -> nothing, only T_max
                                % 1 -> only sun distance
@@ -72,7 +81,10 @@ data.ThrustModulationFlag = 1; % 0 -> nothing, only T_max
                                % 3 -> sun distance + time degradation + SAA degradation
 
 %% DT - SC 1 - LEG 1
-data.n_int = 50; % discretisation selected
+data.Tmax = 0.02; % max thrust available for EGI
+data.Pmax = 550; % max power related to 20 mN thrust on qitetiq t5
+data.Isp = 2900/sim.TU; % for 20 mN the Isp of Qinetiq T5 is 2900s
+data.n_int = 20; % discretisation selected
 data.angle_inplane_panels_max = 20; % degrees
 data.MU = sol.M_start_SC1_leg1; % mass adimensionalisation on wet mass
 SC1.asteroid_1 = sol.asteroid_1;
@@ -130,9 +142,12 @@ SC1.leg1.EPS = marco_elia(SC1.leg1,r_encounter.EA,data,sim,SC1.leg1.Href,colors)
     SC1.TOF1,SC1.CT1,data.n_int,EphData,sim,colors);%leg1.timead(end)*sim.TU/86400
 
 %% DT - SC 1 - LEG 2
+data.Tmax = 0.015; % max thrust available for EGI
+data.Pmax = 450; % max power related to 15 mN thrust on qitetiq t5
+data.Isp = 2750/sim.TU; % for 15 mN the Isp of Qinetiq T5 is 2750s
 data.ThrustModulationFlag = 2;
 data.angle_inplane_panels_max = 10; % degrees
-data.n_int = 50;
+data.n_int = 70;
 % data.MU = sol.M_start_SC1_leg2; % mass adimensionalisation on wet mass
 data.MU = SC1.leg1.mass_end - sim.M_pods; % mass adimensionalisation on wet mass
 SC1.asteroid_2 = sol.asteroid_2;
@@ -231,9 +246,12 @@ plot(SC1.uniform.time, vecnorm(SC1.uniform.Thrust,2,2))
 xlabel('t [mjd2000]'); ylabel('T magnitude [N]');
 
 %% DT - SC 2 - LEG a
+data.Tmax = 0.015; % max thrust available for EGI
+data.Pmax = 450; % max power related to 15 mN thrust on qitetiq t5
+data.Isp = 2750/sim.TU; % for 15 mN the Isp of Qinetiq T5 is 2750s
 data.ThrustModulationFlag = 2;
 data.angle_inplane_panels_max = 10; % degrees
-data.n_int = 50;
+data.n_int = 70;
 data.MU = sol.M_start_SC2_lega; % mass adimensionalisation on wet mass
 SC2.asteroid_a = sol.asteroid_a;
 
@@ -288,9 +306,12 @@ SC2.lega.mass_fraction = SC2.lega.mass_depleted/SC2.lega.mass_start;
     SC2.TOFa,SC2.CTa,data.n_int,EphData,sim,colors);
 
 %% DT - SC 2 - LEG b
+data.Tmax = 0.015; % max thrust available for EGI
+data.Pmax = 450; % max power related to 15 mN thrust on qitetiq t5
+data.Isp = 2750/sim.TU; % for 15 mN the Isp of Qinetiq T5 is 2750s
 data.ThrustModulationFlag = 1;
-data.angle_inplane_panels_max = 15; % degrees
-data.n_int = 50;
+data.angle_inplane_panels_max = 20; % degrees
+data.n_int = 20;
 % data.MU = sol.M_start_SC2_legb; % mass adimensionalisation on wet mass
 data.MU = SC2.lega.mass_end - sim.M_pods; % mass adimensionalisation on wet mass
 SC2.asteroid_b = sol.asteroid_b;

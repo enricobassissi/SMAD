@@ -795,3 +795,120 @@ def get_earth_ephemerides(epoch_start,epoch_stop,step_size,type_elements):
 
     return data
 
+def get_horizons_ephemerides_elements(name,pov,epoch_start):
+    
+    # step: step size, [10m, 1d, 1y]
+    
+    if pov.lower() == 'sun':
+        loc = '500@10' # position relative to the sun
+    elif pov.lower() == 'goldstone':
+        loc = '257' # from goldstone
+    elif pov.lower() == 'maunakea':
+        loc = '568' # maunakea
+    else:
+        print('Not Valid Location Point Of View')
+    
+    # Process to get homogeneity from main script full name '2012QD8' to a valid name for Horizon call '2012 QD8'
+    if len(re.findall('([0-9])', name)) <= 4: # 4 is the min numbers in every name, the date year of discovery
+        r = re.compile("([0-9]+)([a-zA-Z]+)").match(name)
+        k1 = r.group(1) # the date of the name
+        k2 = r.group(2) # the code of the date
+        valid_name = k1 + " " + k2 
+    else:
+        r = re.compile("([0-9]+)([a-zA-Z]+)([0-9]+)").match(name)
+        k1 = r.group(1) # the date of the name
+        k2 = r.group(2) # the code of the date
+        k3 = r.group(3) # id after the letters
+        valid_name = k1 + " " + k2 + k3
+    
+    # always a day after the input, anyway you consider the moment of input, the first of the data output extracted
+    epoch_start
+    chunks = epoch_start.split('-')
+    chunks2 = int(chunks[2]) + 1 # add 1 day
+    list_string = [chunks[0], chunks[1], str(chunks2)]
+    epoch_stop = '-'.join(list_string)
+
+    step_size = '1d'
+    
+    obj = Horizons(id=valid_name, 
+               location=loc, 
+               epochs={'start': epoch_start, 'stop':epoch_stop,
+                       'step': step_size})
+    
+    # refsystem = 'J2000', # Element reference system for geometric and astrometric quantities
+    # refplane = 'ecliptic' #ecliptic and mean equinox of reference epoch
+    data = obj.elements(refsystem = 'J2000',refplane = 'ecliptic')
+
+    len_cols = 7 # jd,ec,qr,tp,incl,OM,om
+    adata =  np.zeros([1,len_cols]) 
+    # always assign the first row of output data -> the first date required!
+    #for row in range(len_rows):
+    adata[0,0] = data[0][5] # 6th column of data -> e, eccentricity (-)
+    adata[0,1] = data[0][6] # 7th column of data -> qr, periapsis distance (AU)
+    adata[0,2] = data[0][10] # 11th column of data -> tp, time of periapsis (JD)
+    adata[0,3] = data[0][7] # 8th column of data -> incl, inclination (deg)
+    adata[0,4] = data[0][8] # 10th column of data -> OM, longitude of Asc. Node (deg)
+    adata[0,5] = data[0][9] # 11th column of data -> om, argument of periapsis (deg)
+    adata[0,6] = data[0][1] # 2nd column of the data extracted -> jd of evaluation
+        
+    return adata
+
+# Mode T - Request list of small bodies that come closest (or within a prescribed distance) to a user-specified heliocentric 
+# orbit (assumes two-body dynamics). Proxy for easiest-to-reach targets for an extended mission phase.
+# example url
+# https://ssd-api.jpl.nasa.gov/mdesign.api?ec=0.2056408220896557&qr=0.3074958016246215&tp=2459067.6508400026&
+# om=48.30597718083336&w=29.18348714438387&in=7.003733902930839&jd0=2458849.5&jdf=2459132.5&maxout=100&maxdist=0.0010
+
+def get_close_approach_to_asteroid(orb_params,jd0,jdf,n_object_requested,distance_within):
+    # The reference heliocentric orbit is defined by providing the corresponding set of cometary elements.
+    # orb_params:            array containing the orbital parameters required to run the query
+    #     ec:                eccentricity [>0]
+    #     qr:                perihelion distance [>0]
+    #     tp:                time of perihelion passage (JD)
+    #     incl:              inclination (deg) [0,180]
+    #     OM:                longitude of the ascending node (deg) [0,360]
+    #     om:                argument of periapsis (deg) [0,360]
+    # jd0:                   beginning of the requested time span (JD)
+    # jdf:                   end of the requested time span (JD). Time span must not be longer than one year
+    # n_object_requested:    maximum number of records to be returned
+    # distance_within:       ignore objects with distance of closest approach greater than "distance_within" [>0, optional]
+    
+    # Extraction of inputs
+    ec = orb_params[0,0]
+    qr = orb_params[0,1]
+    tp = orb_params[0,2]
+    incl = orb_params[0,3]
+    OM = orb_params[0,4]
+    om = orb_params[0,5]
+    
+    # Construction of the HTTP request
+    url_base = 'https://ssd-api.jpl.nasa.gov/mdesign.api'
+    url = f'{url_base}?ec={str(ec)}&qr={str(qr)}&tp={str(tp)}&in={str(incl)}&om={str(OM)}&w={str(om)}&jd0={str(jd0)}&jdf={str(jdf)}&maxout={str(n_object_requested)}&maxdist={str(distance_within)}'
+    r = requests.get(url)
+    data = r.json()
+    
+    return data
+
+def get_CAD_params(cad_input, idx_element):
+    # obtain close approach data interesting to be analysed
+    adata =  np.zeros([1,6]) 
+    if cad_input['data'][1][9] == 'Y':
+        # vector with the object names
+        aname1 = cad_input['data'][idx_element][0] # name
+        aname2 = aname1.strip()
+        aname3 = aname2.split('(')
+        aname4 = aname3[1].split(')')
+        aname = aname4[0]
+        
+        adata[0,0] = cad_input['data'][idx_element][2] # jd of encounter
+        adata[0,1] = cad_input['data'][idx_element][4] # distance close approach km
+        adata[0,2] = cad_input['data'][idx_element][5] # relative velocity km/s
+        adata[0,3] = cad_input['data'][idx_element][7] # absolute magnitude H
+        adata[0,4] = cad_input['data'][idx_element][8] # orbit condition code
+        if cad_input['data'][idx_element][10] == 'Y':
+            adata[0,5] = 1 # pha flag true -> 1
+        elif cad_input['data'][idx_element][10] == 'N':
+            adata[0,5] = 0 # pha flag false -> 0
+            
+    return aname, adata
+

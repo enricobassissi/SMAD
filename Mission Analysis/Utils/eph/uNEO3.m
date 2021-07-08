@@ -34,7 +34,7 @@ function [actual_elements] = uNEO3(mjd2000,name,data)
 %}
 
     % Find which asteroid we want
-    idx_asteroid_in_the_list = name == data.asteroid_names;
+    idx_asteroid_in_the_list = name == string(data.asteroid_names); % 2021_7_8 i added string()
 
     % all this because now it's 1-5 discretised with 400 points and the 6th
     % -> theta is with N = 1000

@@ -79,6 +79,13 @@ IDP2 = ceil(IDP_temp_2*HowMany_2SC/100);
 asteroid_a = PermutationMatrix_2SC(IDP2,1);
 asteroid_b = PermutationMatrix_2SC(IDP2,2);
 
+% cancel this parte later
+list_to_avoid = ['2020VV','2009TD17','2021JE1',"2011BP40"];
+for i=1:4
+    if asteroid_1 == list_to_avoid(i) || asteroid_2 == list_to_avoid(i) || asteroid_a == list_to_avoid(i) || asteroid_b == list_to_avoid(i)
+       penalty_MAX_DURATION = penalty_MAX_DURATION + 1000;
+    end
+end
 %% Computing position and velocity of the planets in that days
 % Departure from Earth
 MJD01_dim = MJD01*sim.TU/(3600*24);
@@ -132,7 +139,7 @@ v_launcher = v_inf_magn*[cos(elev)*cos(az); cos(elev)*sin(az); sin(elev)];
 v_dep = v_EA + v_launcher;  %if parabolic escape (v_extra = 0)
 
 %% NLI
-tol_TOF = 1; % 1 TU means approx 60 days
+tol_TOF = 0.5; % 1 TU means approx 60 days
 penalty_T_leg1 = 0; penalty_T_leg2 = 0; penalty_T_lega = 0; penalty_T_legb = 0; 
 penalty_TOF_leg1 = 0; penalty_TOF_leg2 = 0; penalty_TOF_lega = 0; penalty_TOF_legb = 0;
 % ------------ SC1 ------------- %
