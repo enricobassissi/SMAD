@@ -64,7 +64,7 @@ end
 
 %% Asteroids
 load('data_elements_matrix_44_63_2SC.mat')
-load('ws_2RL_all_indietro_moo2.mat')
+load('160kg_dry_64mN.mat')
 
 %% simulation parameters
 sim.mu_dim    = 132712440018              ; % actractor parameter [km^3 s^-2]
@@ -80,10 +80,10 @@ sim.direction = -1;                     % direction of integration (1 FW, -1 BW)
 sim.TOF_imposed_flag = 1;
 sim.PS.Isp = 3200/sim.TU;  % non-dimensional specific impulse
 % sim.PS.Isp = 4500/sim.TU;  % non-dimensional specific impulse % simone
-sim.M1_end = 110; % SC wet mass [kg] %%
-sim.M2_end = 110; % SC wet mass [kg] %%
+sim.M1_end = 160; % SC wet mass [kg] %%
+sim.M2_end = 160; % SC wet mass [kg] %%
 sim.M_pods = 3.5; % mass of the payloads + landing stuff [kg] %%
-sim.max_Available_Thrust = 0.025; % 5 [mN], BepiColombo is 250 mN but it's much bigger
+sim.max_Available_Thrust = 0.02; % 5 [mN], BepiColombo is 250 mN but it's much bigger
 
 %% Flexibility Parameters
 % --- delay
@@ -184,9 +184,9 @@ options.DistanceMeasureFcn = {@distancecrowding,'phenotype'};
 % options.MutationFcn = @int_mutation_2RL_moo_flex;
 % options.CrossoverFcn = @int_crossoverarithmetic_2RL_moo_flex;
 
-options.PopulationSize = 1000; % ideal 1000
+options.PopulationSize = 300; % ideal 1000
 options.ParetoFraction = 0.6;
-options.MaxGenerations = 300; % ideal 100
+options.MaxGenerations = 30; % ideal 100
 
 options.FunctionTolerance = 1e-9;
 options.MaxStallGenerations = ceil(options.MaxGenerations/2);
@@ -261,7 +261,7 @@ clearvars i idx
 %% plot the result
 N = length(lw_vector);
 date_vect = zeros(N,1);
-% N = 18;
+% N = 10;
 for i=1:N
     
     OBJ1(i,1) = flex{i}.max_MF;

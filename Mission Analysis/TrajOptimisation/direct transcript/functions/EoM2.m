@@ -1,4 +1,4 @@
-function [c, ceq] = EoM(X, data,sim,DT)
+function [c, ceq] = EoM2(X, data,sim,DT)
     muS = data.muS;
     time = data.time;
     N = data.n_int;

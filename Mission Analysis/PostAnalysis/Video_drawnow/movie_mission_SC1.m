@@ -220,30 +220,39 @@ SC1.uniform.R = [SC1.leg1.EPS.R_cartesian; SC1.coasting.leg1.r_ast;
 figure()
 % plot3(SC1.uniform.R(:,1),SC1.uniform.R(:,2),SC1.uniform.R(:,3));
 plot3(SC1.uniform.R(1:sim.n_sol,1),SC1.uniform.R(1:sim.n_sol,2),SC1.uniform.R(1:sim.n_sol,3),...
-    'Color',colors(1,:),'DisplayName','Leg 1');
-hold on
+    'Color',colors(1,:),'DisplayName','Cruise - Leg 1');
+axis equal; grid on; hold on;
 plot3(SC1.uniform.R(sim.n_sol+1:2*sim.n_sol,1),SC1.uniform.R(sim.n_sol+1:2*sim.n_sol,2),...
     SC1.uniform.R(sim.n_sol+1:2*sim.n_sol,3),...
-    'Color',colors(2,:),'DisplayName','Rendezvous 1');
+    'Color',colors(2,:),'DisplayName','Rendezvous - 2020VV');
 plot3(SC1.uniform.R(2*sim.n_sol+1:3*sim.n_sol,1),SC1.uniform.R(2*sim.n_sol+1:3*sim.n_sol,2),...
     SC1.uniform.R(2*sim.n_sol+1:3*sim.n_sol,3),...
-    'Color',colors(3,:),'DisplayName','Leg 2');
+    'Color',colors(3,:),'DisplayName','Cruise - Leg 2');
 plot3(SC1.uniform.R(3*sim.n_sol+1:4*sim.n_sol,1),SC1.uniform.R(3*sim.n_sol+1:4*sim.n_sol,2),...
     SC1.uniform.R(3*sim.n_sol+1:4*sim.n_sol,3),...
-    'Color',colors(4,:),'DisplayName','Rendezvous 2');
+    'Color',colors(4,:),'DisplayName','Rendezvous - 2009TD17');
 plot3(new_r_encounter.EA(1), new_r_encounter.EA(2), new_r_encounter.EA(3),'*',...
-    'Color',colors(8,:),'DisplayName','EA Dep');
+    'Color',colors(8,:),'DisplayName','Earth Dep');
 plot3(new_r_encounter.astA1(1), new_r_encounter.astA1(2), new_r_encounter.astA1(3),'^',...
-    'DisplayName','Ast 1 Arr');
-plot3(new_r_encounter.astD1(1), new_r_encounter.astD1(2), new_r_encounter.astD1(3),'^',...
-    'DisplayName','Ast 1 Dep');
+    'DisplayName','2020VV Arr');
+plot3(new_r_encounter.astD1(1), new_r_encounter.astD1(2), new_r_encounter.astD1(3),'*',...
+    'DisplayName','2020VV Dep');
 plot3(new_r_encounter.astA2(1), new_r_encounter.astA2(2), new_r_encounter.astA2(3),'^',...
-    'DisplayName','Ast 2 Arr');
-plot3(new_r_encounter.astD2(1), new_r_encounter.astD2(2), new_r_encounter.astD2(3),'^',...
+    'DisplayName','2009TD17 Arr');
+plot3(new_r_encounter.astD2(1), new_r_encounter.astD2(2), new_r_encounter.astD2(3),'*',...
     'DisplayName','End Mission');
-plot3(0,0,0,'*','Color',colors(4,:));
-xlabel('x [km]'); ylabel('y [km]'); zlabel('z [km]'); axis equal, grid on;
-legend('show');
+hsun = plot3(0,0,0,'*','Color',colors(4,:));
+hsun.Annotation.LegendInformation.IconDisplayStyle = 'off';
+
+[~, h_earth_whole] = plot_object_orbit(new_time_vect(1),'earth',365,sim,data,100,colors,8);
+[~, h_mars_whole] = plot_object_orbit(new_time_vect(1),'mars',687,sim,data,100,colors,6);
+h_earth_whole.Annotation.LegendInformation.IconDisplayStyle = 'off';
+h_mars_whole.Annotation.LegendInformation.IconDisplayStyle = 'off';
+h_earth_whole.Color(4) = 0.2;
+h_mars_whole.Color(4) = 0.2;
+legend('show','Location','northeastoutside');
+view(2)
+xlabel('x [AU]'); ylabel('y [AU]'); zlabel('z [AU]');
 
 SC1.uniform.time = [SC1.mjd2000_dep+SC1.leg1.timead.*sim.TU/86400; SC1.coasting.leg1.time;
     SC1.coasting.leg1.time(end)+SC1.leg2.timead.*sim.TU/86400; SC1.coasting.leg2.time;]; % mjd 2000
@@ -390,7 +399,7 @@ hold on
 plot(new_time_vect,alpha_SC1_post)
 xlabel('t [mjd2000]'); ylabel('alpha[rad]'); 
 
-%% video stuff
+%% video stuff SC1
 load('data_before_video_sc1.mat')
 
 % --- limits of the camera pov
@@ -423,16 +432,16 @@ lim_max_helio = max(vecnorm(rMA,2,2));
 
 tic
 % --- movie
-figure('Name','Mission Video'); %,'WindowState','maximized'
+figure('Name','Mission Video SC1'); %,'WindowState','maximized'
 set(gca,'nextplot','replacechildren');
 set(gcf, 'Position', get(0, 'Screensize'));
-v = VideoWriter('mission7','MPEG-4');
+v = VideoWriter('mission_SC1_1','MPEG-4');
 % v = VideoWriter('mission4', 'Uncompressed AVI');
 v.Quality = 100;
 open(v);  
 
 % set(gca, 'CameraPosition', [0 lim_max lim_max]);
-for i=1:12:n % i=1:6:n % i=1:389:n
+for i=1:2:n % i=1:6:n % i=1:389:n
     % ---- start orbit subplot
     subplot(4,3,[1,2,4,5,7,8,10,11])
     % --- whole orbits
@@ -450,8 +459,8 @@ for i=1:12:n % i=1:6:n % i=1:389:n
     h_sun.Annotation.LegendInformation.IconDisplayStyle = 'off';
     h_ast1_whole.Color(4) = 0.3;
     h_ast2_whole.Color(4) = 0.3;
-    h_earth_whole.Color(4) = 0.3;
-    h_mars_whole.Color(4) = 0.3;
+    h_earth_whole.Color(4) = 0.2;
+    h_mars_whole.Color(4) = 0.2;
     
     % --- highlight the actual planet position
     [~, h_ast1_highlight] = plot_object_orbit(new_time_vect(i),'asteroid',0.25*365,sim,data,30,colors,3,MA.SC1.asteroid_1);
@@ -464,8 +473,8 @@ for i=1:12:n % i=1:6:n % i=1:389:n
     h_mars_highlight.Annotation.LegendInformation.IconDisplayStyle = 'off';
     h_ast1_highlight.Color(4) = 0.5;
     h_ast2_highlight.Color(4) = 0.5;
-    h_earth_highlight.Color(4) = 0.5;
-    h_mars_highlight.Color(4) = 0.5;
+    h_earth_highlight.Color(4) = 0.3;
+    h_mars_highlight.Color(4) = 0.3;
     
     [~, h_ast1_highlight2] = plot_object_orbit(new_time_vect(i),'asteroid',0.08*365,sim,data,10,colors,3,MA.SC1.asteroid_1);
     [~, h_ast2_highlight2] = plot_object_orbit(new_time_vect(i),'asteroid',0.08*365,sim,data,10,colors,4,MA.SC1.asteroid_2);
@@ -477,8 +486,8 @@ for i=1:12:n % i=1:6:n % i=1:389:n
     h_mars_highlight2.Annotation.LegendInformation.IconDisplayStyle = 'off';
     h_ast1_highlight2.Color(4) = 1;
     h_ast2_highlight2.Color(4) = 1;
-    h_earth_highlight2.Color(4) = 1;
-    h_mars_highlight2.Color(4) = 1;
+    h_earth_highlight2.Color(4) = 0.6;
+    h_mars_highlight2.Color(4) = 0.6;
     
     % --- the coma of the spacecraft trajectory
     if i > 41
@@ -497,13 +506,12 @@ for i=1:12:n % i=1:6:n % i=1:389:n
     end
 
     % --- normal condition, nominal trajectory heliocentric, point by point
-    h0 = plot3( yplot(i,1), yplot(i,2), yplot(i,3),'s','Color',colors(1,:),'MarkerSize',7,...
+    h0 = plot3( yplot(i,1), yplot(i,2), yplot(i,3),'s','Color',colors(1,:),'MarkerSize',9,...
         'DisplayName','SC1');
-    h3 = plot3( rEA(i,1), rEA(i,2), rEA(i,3),'*','Color',colors(8,:),'MarkerSize',5,...
-        'DisplayName','Earth');
-%         full_orbit_repr('mars')
-    h4 = plot3( rMA(i,1), rMA(i,2), rMA(i,3),'*','Color',colors(6,:),'MarkerSize',5,...
-        'DisplayName','Mars');
+    h3 = plot3( rEA(i,1), rEA(i,2), rEA(i,3),'o','Color',colors(8,:),'MarkerSize',4,...
+        'LineWidth',1.5,'DisplayName','Earth');
+    h4 = plot3( rMA(i,1), rMA(i,2), rMA(i,3),'o','Color',colors(6,:),'MarkerSize',4,...
+        'LineWidth',1.5,'DisplayName','Mars');
     hast1 = plot3( r_ast1(i,1), r_ast1(i,2), r_ast1(i,3),'*','Color',colors(3,:),...
         'MarkerSize',5,'DisplayName',MA.SC1.asteroid_1);
     hast2 = plot3( r_ast2(i,1), r_ast2(i,2), r_ast2(i,3),'*','Color',colors(4,:),...

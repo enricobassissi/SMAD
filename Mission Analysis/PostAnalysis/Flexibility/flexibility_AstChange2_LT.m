@@ -79,10 +79,10 @@ sim.direction = -1;                     % direction of integration (1 FW, -1 BW)
 sim.TOF_imposed_flag = 1;
 sim.PS.Isp = 3200/sim.TU;  % non-dimensional specific impulse
 % sim.PS.Isp = 4500/sim.TU;  % non-dimensional specific impulse % simone
-sim.M1_end = 110; % SC wet mass [kg] %%
-sim.M2_end = 110; % SC wet mass [kg] %%
+sim.M1_end = 160; % SC wet mass [kg] %%
+sim.M2_end = 160; % SC wet mass [kg] %%
 sim.M_pods = 3.5; % mass of the payloads + landing stuff [kg] %%
-sim.max_Available_Thrust = 0.025; % 5 [mN], BepiColombo is 250 mN but it's much bigger
+sim.max_Available_Thrust = 0.02; % 5 [mN], BepiColombo is 250 mN but it's much bigger
 
 %% Flexibility Parameters
 ast_solution = [sol.asteroid_1,sol.asteroid_2,sol.asteroid_a,sol.asteroid_b];
@@ -205,7 +205,7 @@ options.CreationFcn = @int_pop_2RL_moo_AC2_flex;
 options.MutationFcn = @int_mutation_2RL_moo_AC2_flex;
 options.CrossoverFcn = @int_crossoverarithmetic_2RL_moo_AC2_flex;
 
-options.PopulationSize = 100; % ideal 1000
+options.PopulationSize = 300; % ideal 1000
 options.ParetoFraction = 0.6;
 options.MaxGenerations = 50; % ideal 100
 
@@ -354,10 +354,10 @@ for i=1:2 % rows
             T_flex_order(k,1) = flex_order{i,j,k}.max_T*1000;
 %             MF_flex_order(k,1) = max(flex_order{i,j,k}.obj_fun1);
 %             T_flex_order(k,1) = max(flex_order{i,j,k}.obj_fun2);
-            if MF_flex_order(k,1) == 0 || MF_flex_order(k,1) > 0.7
+            if MF_flex_order(k,1) == 0 || MF_flex_order(k,1) > 0.6
                 MF_flex_order(k,1) = NaN;
             end
-            if T_flex_order(k,1) == 0 || T_flex_order(k,1) > 800
+            if T_flex_order(k,1) == 0 || T_flex_order(k,1) > 400
                 T_flex_order(k,1) = NaN;
             end
         end

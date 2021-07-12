@@ -114,10 +114,10 @@ asteroids = {'2009TD17';'2011BP40';'2020VV';'2021JE1'};
 % --- closest approach moment under analysis
 % 2009TD17
 date_ca{1,1} = [2033,05,14,13,18,3;
-              2039,05,07,13,44,33;
-              2052,09,07,2,26,16;
-              2058,05,09,20,17,40;
-              2064,04,26,11,17,37];
+                2039,05,07,13,44,33;
+                2052,09,07,2,26,16;
+                2058,05,09,20,17,40;
+                2064,04,26,11,17,37];
 
 % 2011BP40
 date_ca{2,1} = [2035,09,08,22,0,0;%.91886
@@ -176,31 +176,37 @@ for i=1:size(date_ca,1) % rows
     vel_rel_magn{i,1}(j,1) = sqrt((vAst(1)-vEA(1))^2 + (vAst(2)-vEA(2))^2 + (vAst(3)-vEA(3))^2); % km/s
 
     % -- proj in ast-earth line
-    % versor of asteroid position, positive outward
+    % versor single position vector
+    r_Ast_vers = rAst/norm(rAst);
+    r_EA_vers = rEA/norm(rEA);
+    % versor of asteroid position relative position wrt earth, positive outward
     r_Ast_EA = rAst - rEA;
     r_Ast_EA_vers = r_Ast_EA/norm(r_Ast_EA);
-    % versor of velocity , clockwise
+    % versor of relative velocity , clockwise
     v_Ast_EA = vAst - vEA;
     v_Ast_EA_vers = v_Ast_EA/norm(v_Ast_EA);
-    % versor normal to the plane of the ast orbit
-    h_Ast_EA_vers = cross(r_Ast_EA_vers,v_Ast_EA_vers);
+    % versor normal to the plane of the ast and earth orbit, containing the sun
+%     h_Ast_EA_vers = cross(r_Ast_EA_vers,v_Ast_EA_vers);
+    h_Ast_EA_Sun_vers = cross(r_Ast_vers,r_EA_vers);
     % tg versor, normal to r_vers and h_vers
-    tg_Ast_EA_vers = cross(r_Ast_EA_vers,h_Ast_EA_vers);
+    tg_Ast_EA_vers = cross(r_Ast_EA_vers,h_Ast_EA_Sun_vers);
 
     % projection of rel velocity of the ast wrt the earth
     dot_prod_r = dot(v_Ast_EA,r_Ast_EA_vers);
     dot_prod_th = dot(v_Ast_EA,tg_Ast_EA_vers);
-    dot_prod_z = dot(v_Ast_EA,h_Ast_EA_vers);
+    dot_prod_z = dot(v_Ast_EA,h_Ast_EA_Sun_vers);
     r_Ast_EA = dot_prod_r*r_Ast_EA_vers;
     th_Ast_EA = dot_prod_th*tg_Ast_EA_vers;
-    z_Ast_EA = dot_prod_z*h_Ast_EA_vers;
+    z_Ast_EA = dot_prod_z*h_Ast_EA_Sun_vers;
 
     velocity_Ast_EA = r_Ast_EA + th_Ast_EA + z_Ast_EA; % in the polar frame of Ast_EA
 
     % the first position should be the direction radial, in the conjunction ast-ea
-    % the second is the transversal velocity, the one we want
-    transv_vel{i,1}(j,1) = velocity_Ast_EA(2);
+    % the second is the transversal velocity, the one we want + the z component
+    transv_vel{i,1}(j,1) = sqrt(velocity_Ast_EA(2)^2+velocity_Ast_EA(3)^2);
 
+    % ---- velocity aberration angle [micro rad]
+    vel_aberr_angle_micro_rad{i,1}(j,1) = asin((2*transv_vel{i,1}(j,1)/(physconst('LightSpeed')*1e-3)))*1e6;
     end
 end
 

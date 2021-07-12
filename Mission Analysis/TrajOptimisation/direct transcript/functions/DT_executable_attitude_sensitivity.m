@@ -46,7 +46,7 @@ X = [r, TH, z, vr, theta_dot, vz, m];
 options = optimoptions(@fmincon);
 options.Display = 'iter';
 options.Algorithm = 'interior-point';
-options.MaxIter = 1000;
+options.MaxIter = data.fmincon_iter;
 options.MaxFunEvals = 5e7;   
 options.UseParallel = true;
 options.ConstraintTolerance = 1e-10;
@@ -124,7 +124,7 @@ Beq=[XX0(1:7)';XX0(end-9:end-4)'];
 % find(XX0 > UB)
 
 % [c, ceq] = EoM(XX0, data, sim);
-nlcon=@(x_hand) EoM(x_hand,data,sim);
+nlcon=@(x_hand) EoM2(x_hand,data,sim,DT);
 cost_fun=@(x_hand) DTmethod(x_hand,data);
 
 % ----- call at fmincon
