@@ -538,7 +538,10 @@ def refined_selection(dict_risk_list):
                         break
                     else:
                         word=word+c
-                if int(word)<2048 and int(word)>2026:
+                if int(word)<2058 and int(word)>2026: 
+                    # nominal MORPHEUS: 2026 < date impact < 2048; 
+                    # for Mission extension, get asteroid impacting later, decided after mission ended 
+                    # as 2032 < date impact < 2058... same other parameters as before
                     date_flag=1
                     if float(dict_risk_list[key]['impacts'][imp_id]['ps'])>max_P:
                         max_P=float(dict_risk_list[key]['impacts'][imp_id]['ps']);

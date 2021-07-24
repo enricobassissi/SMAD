@@ -434,7 +434,7 @@ tic
 figure('Name','Mission Video SC2'); %,'WindowState','maximized'
 set(gca,'nextplot','replacechildren');
 set(gcf, 'Position', get(0, 'Screensize'));
-v = VideoWriter('mission_SC2_1','MPEG-4');
+v = VideoWriter('mission_SC2_2','MPEG-4');
 % v = VideoWriter('mission4', 'Uncompressed AVI');
 v.Quality = 100;
 open(v);  

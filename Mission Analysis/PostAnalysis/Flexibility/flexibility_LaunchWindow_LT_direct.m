@@ -319,3 +319,64 @@ for i = 1:length(lw_vector)
     close all
     
 end
+
+%% data masses and margined : LW and sol
+for i = 1:21
+    margined = marginssss(flex_dt{i}.SC1,flex_dt{i}.SC2);
+    mean_mass_mission(i,1) = (margined.mass_fuel_SC1+margined.mass_fuel_SC2)/2;
+    mean_mass_mission_margined(i,1) = (margined.mass_fuel_margined_SC1+margined.mass_fuel_margined_SC2)/2;
+    max_mass_mission_margined(i,1) = max(margined.mass_fuel_margined_SC1,margined.mass_fuel_margined_SC2);
+end
+
+SC1_marg = 53.97+22.31;
+SC2_marg = 22.01+53.50;
+mean_margined_sol = (SC1_marg+SC2_marg)/2;
+max_margined_sol = max(SC1_marg,SC2_marg);
+
+%% plot the result
+N = length(lw_vector);
+date_vect = zeros(N,1);
+% N = 10;
+for i=1:N
+    
+%     OBJ1(i,1) = flex_dt{i}.max_MF;
+%     OBJ1(i,1) = flex_dt{i}.obj_fun1;
+%     if OBJ1(i,1) == 0 || OBJ1(i,1) > 0.4
+%         OBJ1(i,1) = NaN;
+%     end
+
+%     OBJ2(i,1) = flex_dt{i}.max_T*1000; % mN
+% %     OBJ2(i,1) = flex_dt{i}.obj_fun2; % mN
+%     if OBJ2(i,1) == 0 || OBJ2(i,1) > 800
+%         OBJ2(i,1) = NaN;
+%     end
+    
+    % plot date
+    date_vect(i,1) = datenum(datetime(mjd20002date(lw_vector(i))));
+    if date_vect(i,1) == datenum(datetime(mjd20002date(sol.departure_mjd2000)))
+        OBJ1(i,1) = NaN;
+        OBJ2(i,1) = NaN;
+        date_vect(i,1) = NaN;
+    end
+end
+clearvars i N
+
+figure('Name','Flexibility over Departure Time')
+% yyaxis left
+plot(date_vect,max_mass_mission_margined,'*','Color',colors(1,:))
+hold on
+plot(datenum(datetime(mjd20002date(sol.departure_mjd2000))), max_margined_sol,'*','Color',colors(3,:))
+ylabel('Mass Fuel')
+set(gca,'ycolor',colors(1,:)) 
+% yyaxis right
+% plot(date_vect,OBJ2,'o','Color',colors(2,:))
+% plot(datenum(datetime(mjd20002date(sol.departure_mjd2000))),max(sol.max_T_SC1, sol.max_T_SC2)*1000,'o','Color',colors(3,:))
+% ylabel('Max Thrust [mN]')
+% set(gca,'ycolor',colors(2,:)) 
+% xlabel('Departure MJD2000')
+ax = gca;
+ax.XTick=date_vect(1:4:end) ;
+xtickangle(30)
+datetick('x','yyyy mmm dd','keepticks')
+xlim ([date_vect(1) date_vect(end)])
+xline (datenum(datetime(mjd20002date(sol.departure_mjd2000))),'--','Color',colors(3,:),'LineWidth',2)

@@ -120,6 +120,8 @@ PROP.mass_end = SC.HS.X(end,7); % last node, 7th param is the mass
     % the thruster we selected
     [~, T_max_modulated, ~] = qinetiq_t5_future(P_modulated); % column vector
     
+    PROP.T_max_modulated = T_max_modulated;
+    
 figure('Name','T')
 plot(SC.timead, SC.HS.T,'Color', colors(1,:),'DisplayName','T requested')
 hold on; grid on;

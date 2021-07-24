@@ -133,6 +133,7 @@ for name = 1:length(cad_objects_2009TD17)
         py.str(step),py.str(type_elements));
     encounter_data_2009TD17_temp = double(py_data_of_encounter);  
     encounter_data_2009TD17 = encounter_data_2009TD17_temp(1,:); % only the actual date
+    encounter_data_2009TD17_mat(name,:) = encounter_data_2009TD17;
     
     % --- data extraction section
     % complete orbit
@@ -145,6 +146,7 @@ for name = 1:length(cad_objects_2009TD17)
         py.str(step),py.str(type_elements));
     encounter_data_temp = double(py_data_of_encounter);  
     encounter_data = encounter_data_temp(1,:); % only the actual date
+    encounter_data_mat(name,:) = encounter_data;
     
     % plotting section
     h_fig = figure();
@@ -167,3 +169,19 @@ for name = 1:length(cad_objects_2009TD17)
     %exportgraphics(gca,sprintf('./Figures/Orbits/orb%d.png',name),'ContentType','image');
 end
 
+%% data about close appraoch rel vel
+cad_2009TD17_2010RM80(1,:) = encounter_data_2009TD17_mat(4,4:6);
+cad_2009TD17_2010RM80(2,:) = encounter_data_mat(4,4:6);
+
+cad_2009TD17_2011GJ3(1,:) = encounter_data_2009TD17_mat(5,4:6);
+cad_2009TD17_2011GJ3(2,:) = encounter_data_mat(5,4:6);
+
+cad_2009TD17_2010RM80_v_rel = sqrt((cad_2009TD17_2010RM80(1,1)-cad_2009TD17_2010RM80(2,1))^2 + ...
+            (cad_2009TD17_2010RM80(1,2)-cad_2009TD17_2010RM80(2,2))^2 + ...
+            (cad_2009TD17_2010RM80(1,3)-cad_2009TD17_2010RM80(2,3))^2);
+cad_2009TD17_2010RM80_v_rel_kms = cad_2009TD17_2010RM80_v_rel*astroConstants(2)/86400;
+
+cad_2009TD17_2011GJ3_v_rel = sqrt((cad_2009TD17_2011GJ3(1,1)-cad_2009TD17_2011GJ3(2,1))^2 + ...
+            (cad_2009TD17_2011GJ3(1,2)-cad_2009TD17_2011GJ3(2,2))^2 + ...
+            (cad_2009TD17_2011GJ3(1,3)-cad_2009TD17_2011GJ3(2,3))^2);
+cad_2009TD17_2011GJ3_v_rel_kms = cad_2009TD17_2011GJ3_v_rel*astroConstants(2)/86400;

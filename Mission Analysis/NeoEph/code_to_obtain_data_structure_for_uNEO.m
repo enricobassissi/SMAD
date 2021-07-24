@@ -124,8 +124,10 @@ data.i_perm_mat = i_perm_mat;
 %% --------------------------------------------------------------------- %%
 %% Asteroid real ephemerides
 PointOfView = 'Sun';
-epoch_start = '2020-01-01';
-epoch_stop = '2050-01-01';
+% epoch_start = '2020-01-01'; % nominal MORPHEUS
+% epoch_stop = '2050-01-01'; % nominal MORPHEUS
+epoch_start = '2030-01-01'; % for mission extension
+epoch_stop = '2060-01-01'; % for mission extension
 step = '1d';
 type_elements = 'elements';
 
@@ -163,4 +165,4 @@ data.t_vector_1_5 = t_vector2;
 data.t_vector_6 = t_vector22;
 
 %% save the data structure
-save data_elements_matrix_44_63_2SC.mat data
+save data_elements_matrix_61_86_2SC.mat data
