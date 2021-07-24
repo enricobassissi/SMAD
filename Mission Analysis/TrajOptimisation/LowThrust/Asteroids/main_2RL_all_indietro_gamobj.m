@@ -82,7 +82,7 @@ sim.max_Available_Thrust = 0.010; % 5 [mN], BepiColombo is 250 mN but it's much 
 %% Boundaries
 % Departure dates (1)
 bound.date_ed = [2028, 1, 1, 0, 0, 0]; 
-bound.date_ld =  [2033, 1, 1, 0, 0, 0]; 
+bound.date_ld =  [2038, 1, 1, 0, 0, 0]; 
 bound.mjd2000_ed = date2mjd2000(bound.date_ed)*3600*24/sim.TU;
 bound.mjd2000_ld = date2mjd2000(bound.date_ld)*3600*24/sim.TU;
 % TOF1 (2)
@@ -169,9 +169,9 @@ options.CreationFcn = @int_pop_2RL_moo;
 options.MutationFcn = @int_mutation_2RL_moo;
 options.CrossoverFcn = @int_crossoverarithmetic_2RL_moo;
 
-options.PopulationSize = 200; % ideal 1000
+options.PopulationSize = 1200; % ideal 1000
 options.ParetoFraction = 0.7;
-options.MaxGenerations = 60; % ideal 100
+options.MaxGenerations = 300; % ideal 100
 
 options.FunctionTolerance = 1e-9;
 options.MaxStallGenerations = ceil(options.MaxGenerations/10);
@@ -200,7 +200,7 @@ el_time_min_pp = toc/60;
 knee_sol_Fval = sqrt(Fval(:,1).^2+(Fval(:,2)./500).^2);
 idx_knee = find(min(knee_sol_Fval) == knee_sol_Fval);
 idx_knee = idx_knee(1);
-idx_knee = 12;
+idx_knee = 655;
 x = xx(idx_knee,:);
 thrust_limit_in_obj_fun_2 = 100*(0.025 + 0.025 + 0.025 + 0.025);  
 
@@ -258,8 +258,8 @@ sol.el_deg = rad2deg(x(14));
 
 [sol_dates] = sol_to_dates_of_mission_LT(sol,'2RL')
 
-%% relative position stuff
-relative_position_coasting_stuff
+% %% relative position stuff
+% relative_position_coasting_stuff
 
 %% characteristic quantities plot
 [output, r_encounter, v_encounter, sol] = plot_ff_2RL_all_indietro(x,sim,data,sol);
@@ -360,6 +360,7 @@ lgd = legend([hp1,hp2],'SC1','SC2');
 lgd.NumColumns = 1;
 clearvars lgd hp1 hp2
 
+return
 %% orbit plots
 % transfer orbits
 % SC1
