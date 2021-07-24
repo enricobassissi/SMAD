@@ -79,14 +79,6 @@ IDP2 = ceil(IDP_temp_2*HowMany_2SC/100);
 asteroid_a = PermutationMatrix_2SC(IDP2,1);
 asteroid_b = PermutationMatrix_2SC(IDP2,2);
 
-% cancel this parte later
-list_to_avoid = ["2020VV";"2009TD17";"2021JE1";"2011BP40"];
-for i=1:4
-    if asteroid_1 == list_to_avoid(i) || asteroid_2 == list_to_avoid(i) || asteroid_a == list_to_avoid(i) || asteroid_b == list_to_avoid(i)
-       penalty_MAX_DURATION = penalty_MAX_DURATION + 1000;
-    end
-end
-
 %% Computing position and velocity of the planets in that days
 % Departure from Earth
 MJD01_dim = MJD01*sim.TU/(3600*24);

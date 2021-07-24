@@ -88,7 +88,7 @@ data.n_int = 20; % discretisation selected
 data.angle_inplane_panels_max = 20; % degrees
 data.MU = sol.M_start_SC1_leg1; % mass adimensionalisation on wet mass
 SC1.asteroid_1 = sol.asteroid_1;
-data.fmincon_iter = 200;
+data.fmincon_iter = 500;
 
 v_launcher = sol.v_inf_magn/sim.DU*sim.TU*[cos(sol.el)*cos(sol.az); cos(sol.el)*sin(sol.az); sin(sol.el)];
 v_dep = v_encounter.EA + v_launcher;  %if parabolic escape (v_extra = 0)

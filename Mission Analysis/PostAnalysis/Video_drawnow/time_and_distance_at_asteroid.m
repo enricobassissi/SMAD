@@ -21,7 +21,9 @@ coasting.coe_EA = kep_EA;
 % ---- frame centered in the sun ------ %
 % ---- heliocentric absolute positions ----- %
 coasting.r_ast = r_ast;
+coasting.v_ast = v_ast;
 coasting.rEA = rEA;
+coasting.vEA = vEA;
 
 % ---- frame centered in the earth ------ %
 % ---- relative positions asteroid wrt earth ----- %
